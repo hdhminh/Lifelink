@@ -886,7 +886,7 @@ async function loadAdminStats(isSilent = false) {
   if (!isSilent) stats.loading = true
   try {
     const usersSnap = await getDocs(collection(db, 'users'))
-    stats.usersCount = usersSnap.size + 1000
+    stats.usersCount = usersSnap.size + 998
 
     const reqSnap = await getDocs(query(collection(db, 'emergencyRequests'), where('status', '==', 'active')))
     stats.activeRequestsCount = reqSnap.size
@@ -985,7 +985,7 @@ async function fetchUsers(isSilent = false) {
     const snap = await getDocs(collection(db, 'users'))
     const realUsers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
 
-    // Generate 1000 local mock users with unaccented and foreign names
+    // Generate 998 local mock users with unaccented and foreign names
     const mockUsers = []
     const firstNames = ['John', 'Emily', 'Michael', 'Sarah', 'David', 'Jessica', 'James', 'Rachel', 'Alex', 'Nguyen', 'Tran', 'Le', 'Pham', 'Vu', 'Hoang', 'Do', 'Dang', 'Bui']
     const middleNames = ['', 'Van', 'Thanh', 'Minh', 'Huu', 'Duc', 'Quang', 'Ngoc', 'Kim', 'Thi', 'Phuong', 'Edward', 'Marie', 'Lee']
@@ -993,7 +993,7 @@ async function fetchUsers(isSilent = false) {
     const citiesList = ['Ho Chi Minh City', 'Ha Noi', 'Da Nang', 'Can Tho', 'Hue']
     const bloodTypes = ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+']
 
-    for (let i = 1; i <= 1000; i++) {
+    for (let i = 1; i <= 998; i++) {
       const fn = firstNames[(i * 3 + 7) % firstNames.length]
       const mn = middleNames[(i * 2 + 1) % middleNames.length]
       const ln = lastNames[(i * 5 + 4) % lastNames.length]

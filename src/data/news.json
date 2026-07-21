@@ -2,138 +2,138 @@
   "news": [
     {
       "id": 1,
-      "date": "2026-06-11",
-      "title": "Vietnam's remarkable journey of voluntary blood donation",
-      "content": "This is a journey of sharing love, compassion, and solidarity among millions of Vietnamese hearts, bringing life and happiness to countless families of patients.",
-      "category": "Campaign",
+      "date": "2024-03-27",
+      "title": "Binh Duong promotes industrial tourism",
+      "content": "Binh Duong Province is known as one of the largest industrial hubs in the country, so it has a lot of potential to develop industrial tourism.",
+      "category": "Emergency",
       "link": "https://vietnamnews.vn/society/1652758/viet-nam-s-remarkable-journey-of-voluntary-blood-donation.html",
-      "likes": 24
+      "likes": 18
     },
     {
       "id": 2,
-      "date": "2026-06-09",
+      "date": "2023-04-10",
       "title": "Regular blood donations ensure sufficient supplies for emergency treatment",
       "content": "For some, blood donation has become a beautiful lifestyle, including Tran Thi Mai from Long Bien District in Ha Noi, who has donated blood more than 20 times since 2018.",
       "category": "Emergency",
       "link": "https://vietnamnews.vn/society/1517744/regular-blood-donations-ensure-sufficient-supplies-for-emergency-treatment.html",
-      "likes": 15
-    },
-    {
-      "id": 3,
-      "date": "2026-04-07",
-      "title": "Experts call on community to keep donating blood",
-      "content": "Health experts have called on the community to maintain blood donation activities to ensure blood sources for emergency aid and treatment at hospitals.",
-      "category": "Emergency",
-      "link": "https://vietnamnews.vn/society/973819/experts-call-on-community-to-keep-donating-blood.html",
-      "likes": 38
-    },
-    {
-      "id": 4,
-      "date": "2025-07-09",
-      "title": "NA leader calls for long-term strategy on voluntary blood donation",
-      "content": "National Assembly (NA) Chairman Tran Thanh Man emphasised the need for the development of a long-term strategy for voluntary blood donation, ensuring a stable and sustainable blood supply.",
-      "category": "Policy",
-      "link": "https://vietnamnews.vn/society/1652674/na-leader-calls-for-long-term-strategy-on-voluntary-blood-donation.html",
-      "likes": 8
-    },
-    {
-      "id": 5,
-      "date": "2024-07-02",
-      "title": "The health sector calls on people to donate blood",
-      "content": "The health sector is calling people to donate blood to address the severe blood shortage, which is critical for emergency needs and patient treatment at hospitals.",
-      "category": "Emergency",
-      "link": "https://vietnamnews.vn/society/1653896/health-sector-calls-on-people-to-donate-blood.html",
       "likes": 12
     },
     {
+      "id": 3,
+      "date": "2021-06-13",
+      "title": "Experts call on community to keep donating blood",
+      "content": "Health experts have called on the community to maintain blood donation activities to ensure blood sources for emergency aid and treatment at hospitals on the occasion of World Blood Donor Day (June 14).",
+      "category": "Emergency",
+      "link": "https://vietnamnews.vn/society/973819/experts-call-on-community-to-keep-donating-blood.html",
+      "likes": 42
+    },
+    {
+      "id": 4,
+      "date": "2024-03-26",
+      "title": "Central bank works on bad debt regulations",
+      "content": "The draft circular supplements regulations that VAMC can sell collateral of a NPL higher or lower than the principal balance of the NPL.",
+      "category": "Emergency",
+      "link": "https://vietnamnews.vn/society/1652674/na-leader-calls-for-long-term-strategy-on-voluntary-blood-donation.html",
+      "likes": 30
+    },
+    {
+      "id": 5,
+      "date": "2024-04-14",
+      "title": "Tourism sector's human resources need to adapt better",
+      "content": "After the Covid-19 pandemic, the tourism industry has to face many challenges, including a shortage of human resources, especially skilled workers. With the rapid recovery and growth, issues regarding the quality of human resources are always urgent.",
+      "category": "Emergency",
+      "link": "https://vietnamnews.vn/society/1653896/health-sector-calls-on-people-to-donate-blood.html",
+      "likes": 20
+    },
+    {
       "id": 6,
-      "date": "2024-01-24",
-      "title": "Hanoi hospitals receive early morning deliveries from blood bank",
-      "content": "Efforts to improve logistics include initiatives like dawn deliveries from blood banks in Hanoi to ensure hospitals receive supplies promptly.",
+      "date": "2024-02-09",
+      "title": "Quang Binh fishermen delighted with year-end seafood catch",
+      "content": "In Quang Binh, in recent days, fishing boats have been returning to shore to supply seafood the Lunar New Year, creating a busy and bustling atmosphere at the fishing ports.",
       "category": "Emergency",
       "link": "https://vietnamnews.vn/society/1650389/hanoi-hospitals-receive-early-morning-deliveries-from-blood-bank.html",
-      "likes": 5
+      "likes": 15
     },
     {
       "id": 7,
-      "date": "2023-04-10",
-      "title": "Record-breaking blood donors tell their stories",
-      "content": "For some regular blood donors, it's a journey of persistent determination and pride in order to live a meaningful life.",
-      "category": "Tips",
+      "date": "2024-03-17",
+      "title": "Soc Trang troupe promotes ethnic Khmer art",
+      "content": "The troupe is one of the biggest performing arts groups in the Mekong Delta, performing traditional art forms of the Khmer people.",
+      "category": "Emergency",
       "link": "https://vietnamnews.vn/society/1652033/record-breaking-blood-donors-tell-their-stories.html",
-      "likes": 19
+      "likes": 35
     },
     {
       "id": 8,
-      "date": "2021-06-13",
-      "title": "Firm uses AR technology to promote blood donation",
-      "content": "Corporations have integrated blood donation into their corporate social responsibility efforts, incorporating new technologies to promote donation drives.",
-      "category": "Campaign",
+      "date": "2024-03-16",
+      "title": "Changes in regulations on \".vn\" domain names proposed",
+      "content": "In the draft Decree detailing a number of articles of the Telecommunications Law, the MIC has supplemented and improved regulations on transfer procedures, rights and obligations (including tax obligations) of related parties.",
+      "category": "Emergency",
       "link": "https://vietnamnews.vn/society/1652077/firm-uses-ar-technology-to-promote-blood-donation.html",
-      "likes": 11
+      "likes": 37
     },
     {
       "id": 9,
-      "date": "2026-06-20",
-      "title": "Voluntary blood donation campaign Red Journey underway",
-      "content": "The annual national blood donation campaign has successfully expanded to dozens of provinces and cities, helping address clinical blood needs.",
-      "category": "Campaign",
+      "date": "2024-03-26",
+      "title": "Quang Tri’s $580m deep-water port commences construction after 4-year delay",
+      "content": "This project holds strategic importance for Quang Tri Province, serving not only the local industrial parks but also facilitating cargo flow along the East-West Economic Corridor which links Viet Nam, Laos, Cambodia, Thailand and Myanmar.",
+      "category": "Emergency",
       "link": "https://vietnamnews.vn/society/1652726/voluntary-blood-donation-campaign-red-journey-underway.html",
-      "likes": 32
+      "likes": 23
     },
     {
       "id": 10,
-      "date": "2026-06-18",
-      "title": "Healthy Living: What to eat before and after donating blood",
-      "content": "Important dietary guidelines for donors include maintaining a healthy, iron-rich diet, staying hydrated, and avoiding fatty foods before donating.",
-      "category": "Tips",
+      "date": "2024-04-02",
+      "title": "NEFIN Secured HKD $22.15 Million Green Project Finance Loan From Bank SinoPac Hong Kong Branch",
+      "content": "NEFIN Secured HKD $22.15 Million Green Project Finance Loan From Bank SinoPac Hong Kong Branch",
+      "category": "Emergency",
       "link": "https://vietnamnews.vn/society/1653154/healthy-living-blood-donation-tips.html",
-      "likes": 14
+      "likes": 45
     },
     {
       "id": 11,
-      "date": "2026-06-15",
-      "title": "Red Spring Festival aims to collect over 8,000 blood units",
-      "content": "Organizers call on Capital youth and families to join the largest voluntary campaign to ensure emergency reserves during peak periods.",
-      "category": "Campaign",
+      "date": "2024-02-16",
+      "title": "Orders are returning but firms struggle with capital shortage",
+      "content": "Enterprises are in need of support more than ever. It’s time to introduce drastic solutions to nurture their confidence and improve their capacity, as well as the entire economy.",
+      "category": "Emergency",
       "link": "https://vietnamnews.vn/society/1650534/red-spring-festival-aims-to-collect-over-8000-blood-units.html",
-      "likes": 41
+      "likes": 26
     },
     {
       "id": 12,
-      "date": "2026-06-12",
-      "title": "Capital's outstanding young faces honoured for donor contributions",
-      "content": "Dedicated individuals are honoured for their milestone contributions, including volunteers who have donated blood and platelets over 100 times.",
-      "category": "Research",
+      "date": "2024-04-04",
+      "title": "Quang Ninh hospital first outside cities to successfully harvest multiple organs from donor",
+      "content": "A successful case of multi-organ harvesting from a brain-dead donor was performed at the Viet Nam - Sweden Uong Bi Hospital in Quang Ninh Province on April 2, the local Department of Health reported.",
+      "category": "Emergency",
       "link": "https://vietnamnews.vn/society/1653303/capital-outstanding-young-faces-honoured.html",
-      "likes": 29
+      "likes": 41
     },
     {
       "id": 13,
-      "date": "2026-06-05",
-      "title": "World Blood Donor Day voluntary blood donation campaign launched",
-      "content": "World Blood Donor Day campaign centers on the importance of regular donations to maintain a safe and sustainable blood supply.",
-      "category": "Policy",
+      "date": "2024-04-17",
+      "title": "Heated tobacco to be regulated as tobacco products",
+      "content": "National Assembly delegate Pham Khanh Phong Lan, who also participated in passing the Law on Prevention and Control of Harmful Effects of Tobacco 2012, commented that the law clearly defines tobacco and related products, including electronic cigarettes and heated tobacco products.",
+      "category": "Emergency",
       "link": "https://vietnamnews.vn/society/1654033/world-blood-donor-day-voluntary-blood-donation-campaign-launched.html",
-      "likes": 19
+      "likes": 24
     },
     {
       "id": 14,
-      "date": "2026-06-02",
-      "title": "Red Sunday blood donation campaign launched in Hanoi",
-      "content": "The annual Red Sunday blood donation festival launched in Hanoi to coordinate thousands of safe blood units to address peak holiday shortages.",
-      "category": "Campaign",
+      "date": "2024-02-25",
+      "title": "Rare rhesus monkey released into natural environment",
+      "content": "A rare rhesus monkey, whose scientific name is Macaca mulatta, has been released into natural forest environment in the Chi San Nature Reserve in Ha Giang northern mountainous province.",
+      "category": "Emergency",
       "link": "https://vietnamnews.vn/society/1650893/red-sunday-blood-donation-campaign-launched-in-hanoi.html",
-      "likes": 47
+      "likes": 44
     },
     {
       "id": 15,
-      "date": "2026-05-28",
-      "title": "Rare blood types and platelets demand surges in municipal hospitals",
-      "content": "Hospitals report a significant surge in demand for rare blood types and platelet transfusions, requiring active coordination from voluntary donor groups.",
-      "category": "Research",
+      "date": "2023-11-07",
+      "title": "Party official highlights relationship with China in Viet Nam's foreign policy",
+      "content": "The NPC stands ready to enhance cooperation with Viet Nam to promote high-level exchanges as well as those between specialised committees, friendship parliamentarians’ groups, and people’s councils of localities, share experience in law-making, and coordinate with Viet Nam in regional and international forums",
+      "category": "Policy",
       "link": "https://vietnamnews.vn/society/1636254/rare-blood-types-and-platelets-demand-surges-in-hospitals.html",
-      "likes": 36
+      "likes": 42
     }
   ]
 }

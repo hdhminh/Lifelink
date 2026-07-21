@@ -116,6 +116,24 @@
       "category": "Policy",
       "link": "https://vietnamnews.vn/society/1654033/world-blood-donor-day-voluntary-blood-donation-campaign-launched.html",
       "likes": 19
+    },
+    {
+      "id": 14,
+      "date": "2026-06-02",
+      "title": "Red Sunday blood donation campaign launched in Hanoi",
+      "content": "The annual Red Sunday blood donation festival launched in Hanoi to coordinate thousands of safe blood units to address peak holiday shortages.",
+      "category": "Campaign",
+      "link": "https://vietnamnews.vn/society/1650893/red-sunday-blood-donation-campaign-launched-in-hanoi.html",
+      "likes": 47
+    },
+    {
+      "id": 15,
+      "date": "2026-05-28",
+      "title": "Rare blood types and platelets demand surges in municipal hospitals",
+      "content": "Hospitals report a significant surge in demand for rare blood types and platelet transfusions, requiring active coordination from voluntary donor groups.",
+      "category": "Research",
+      "link": "https://vietnamnews.vn/society/1636254/rare-blood-types-and-platelets-demand-surges-in-hospitals.html",
+      "likes": 36
     }
   ]
 }

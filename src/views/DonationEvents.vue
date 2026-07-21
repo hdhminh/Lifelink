@@ -111,7 +111,7 @@ import AlertMessage from '@/components/AlertMessage.vue'
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import { useToast } from '@/composables/useToast.js'
 
-const ITEMS_PER_PAGE = 6
+const ITEMS_PER_PAGE = 3
 const router = useRouter()
 const { user, isAdmin } = useAuth()
 const { events, loading, error, startListening, stopListening, fetchEvents, toggleInterested, createEvent, updateEvent, deleteEvent } = useDonationEvents()

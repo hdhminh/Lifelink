@@ -93,7 +93,7 @@
           <p class="ll-empty-state__body">{{ hasFilters ? 'Try clearing your filters.' : 'Check back soon.' }}</p>
         </div>
         <div v-else class="row g-4" ref="requestListContainer">
-          <div v-for="request in filteredRequests" :key="request.id" class="col-md-6 col-12 emergency-grid-item">
+          <div v-for="request in paginatedRequests" :key="request.id" class="col-md-6 col-12 emergency-grid-item">
             <RequestCard
               :request="request"
               :is-admin="isAdmin"
@@ -104,6 +104,13 @@
               @status-change="handleStatusChange(request)"
             />
           </div>
+
+          <PaginationControls
+            :current-page="currentPage"
+            :total-pages="totalPages"
+            @page-change="currentPage = $event"
+            class="mt-4"
+          />
         </div>
       </div>
 
@@ -300,6 +307,7 @@ import RequestForm from '@/components/RequestForm.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import AlertMessage from '@/components/AlertMessage.vue'
 import ConfirmModal from '@/components/ConfirmModal.vue'
+import PaginationControls from '@/components/PaginationControls.vue'
 import { useToast } from '@/composables/useToast.js'
 import { canDonateTo } from '@/utils/bloodCompatibility.js'
 
@@ -370,6 +378,13 @@ const filterUrgency = ref('')
 const filterCompatibleOnly = ref(false)
 const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Any']
 
+const currentPage = ref(1)
+const ITEMS_PER_PAGE = 2
+
+watch([filterBloodType, filterCity, filterUrgency, filterCompatibleOnly], () => {
+  currentPage.value = 1
+})
+
 watch([filterBloodType, filterCity, filterUrgency], () => {
   if (!user.value) {
     const updates = {
@@ -410,6 +425,12 @@ const filteredRequests = computed(() => {
     // 2. Sort by urgency level
     return urgencyOrder[a.urgency] - urgencyOrder[b.urgency]
   })
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredRequests.value.length / ITEMS_PER_PAGE)))
+const paginatedRequests = computed(() => {
+  const start = (currentPage.value - 1) * ITEMS_PER_PAGE
+  return filteredRequests.value.slice(start, start + ITEMS_PER_PAGE)
 })
 
 const hasFilters = computed(() => filterBloodType.value || filterCity.value || filterUrgency.value || filterCompatibleOnly.value)

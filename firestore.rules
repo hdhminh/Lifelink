@@ -72,7 +72,7 @@ service cloud.firestore {
     }
 
     match /users/{uid} {
-      allow create: if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid);
       allow read, update: if isOwner(uid) || isAdmin();
       allow delete: if isAdmin();
     }

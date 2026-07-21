@@ -108,14 +108,7 @@ Node.js (v18+) and npm.
    npm run dev
    ```
 
-5. Seed Database Collections:
-   Initialize your Google Firebase collections (Users, Emergency Requests, and Outreach Events) with clean, unaccented realistic mock data:
-   ```bash
-   npm run db:seed
-   ```
-   *(Note: Ensure your Firestore Security Rules temporarily allow write access during seeding).*
-
-6. Build production bundle:
+5. Build production bundle:
    ```bash
    npm run build
    ```

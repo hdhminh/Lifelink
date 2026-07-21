@@ -11,18 +11,17 @@ The application is styled with a warm beige and deep crimson wine theme, focusin
 ### Home and Community Overview
 ![Homepage Hero](./docs/screenshots/homepage.png)
 
-### Emergency Request Board (Live Sync)
+### Emergency Request Board
 ![Emergency Board](./docs/screenshots/emergency_board.png)
+
+### Outreach Events
+![Outreach Events](./docs/screenshots/event_dashboard.png)
 
 ### Admin Operations Dashboard
 ![Admin Dashboard](./docs/screenshots/admin_dashboard.png)
 
-### Responsive Mobile Interface
-![Mobile View](./docs/screenshots/mobile_view.png)
-
-### Integrated Live Support & Custom Profiles
-![Support Chat](./docs/screenshots/support_chat.png)
-![Donor Profile](./docs/screenshots/profile.png)
+### Donor Dashboard
+![Donor Dashboard](./docs/screenshots/donor_dashboard.png)
 
 ---
 

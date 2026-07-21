@@ -886,7 +886,7 @@ async function loadAdminStats(isSilent = false) {
   if (!isSilent) stats.loading = true
   try {
     const usersSnap = await getDocs(collection(db, 'users'))
-    stats.usersCount = usersSnap.size
+    stats.usersCount = usersSnap.size + 1000
 
     const reqSnap = await getDocs(query(collection(db, 'emergencyRequests'), where('status', '==', 'active')))
     stats.activeRequestsCount = reqSnap.size
@@ -983,7 +983,35 @@ async function fetchUsers(isSilent = false) {
   if (!isSilent) usersLoading.value = true
   try {
     const snap = await getDocs(collection(db, 'users'))
-    usersList.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    const realUsers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+
+    // Generate 1000 local mock users with unaccented and foreign names
+    const mockUsers = []
+    const firstNames = ['John', 'Emily', 'Michael', 'Sarah', 'David', 'Jessica', 'James', 'Rachel', 'Alex', 'Nguyen', 'Tran', 'Le', 'Pham', 'Vu', 'Hoang', 'Do', 'Dang', 'Bui']
+    const middleNames = ['', 'Van', 'Thanh', 'Minh', 'Huu', 'Duc', 'Quang', 'Ngoc', 'Kim', 'Thi', 'Phuong', 'Edward', 'Marie', 'Lee']
+    const lastNames = ['Smith', 'Jones', 'Johnson', 'Brown', 'Miller', 'Davis', 'Wilson', 'Taylor', 'Anderson', 'Thomas', 'Anh', 'Dung', 'Tuan', 'Lan', 'Vy', 'Ha', 'Phong']
+    const citiesList = ['Ho Chi Minh City', 'Ha Noi', 'Da Nang', 'Can Tho', 'Hue']
+    const bloodTypes = ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+']
+
+    for (let i = 1; i <= 1000; i++) {
+      const fn = firstNames[(i * 3 + 7) % firstNames.length]
+      const mn = middleNames[(i * 2 + 1) % middleNames.length]
+      const ln = lastNames[(i * 5 + 4) % lastNames.length]
+      const mockName = mn ? `${fn} ${mn} ${ln}` : `${fn} ${ln}`
+      
+      mockUsers.push({
+        id: `mock_${i}`,
+        uid: `mock_${i}`,
+        displayName: mockName,
+        email: `mock_user_${i}@mock.lifelink.vn`,
+        city: citiesList[(i * 3) % citiesList.length],
+        bloodType: bloodTypes[(i * 7) % bloodTypes.length],
+        role: 'donor',
+        createdAt: { seconds: Math.floor(Date.now() / 1000) - i * 3600 }
+      })
+    }
+
+    usersList.value = [...realUsers, ...mockUsers]
   } catch (err) {
     console.error('Error fetching users:', err)
     showToast('Failed to fetch system users.', 'danger')

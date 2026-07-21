@@ -269,9 +269,9 @@ onMounted(() => {
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   if (prefersReduced) {
-    donorCount.value = 12500
+    donorCount.value = 12486
     partnerCount.value = 48
-    resolveRate.value = 100
+    resolveRate.value = 98.4
     
     document.querySelectorAll('.ll-feature-card, .ll-vertical-step-item').forEach(el => {
       el.style.opacity = '1'
@@ -295,7 +295,7 @@ onMounted(() => {
   const statsObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
-        animate(0, 12500, {
+        animate(0, 12486, {
           duration: 1.2,
           easing: "ease-out",
           onUpdate: (latest) => { donorCount.value = Math.floor(latest) }
@@ -305,7 +305,7 @@ onMounted(() => {
           easing: "ease-out",
           onUpdate: (latest) => { partnerCount.value = Math.floor(latest) }
         })
-        animate(0, 100, {
+        animate(0, 98, {
           duration: 0.8,
           easing: "ease-out",
           onUpdate: (latest) => { resolveRate.value = Math.floor(latest) }

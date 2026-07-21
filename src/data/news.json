@@ -1,0 +1,121 @@
+{
+  "news": [
+    {
+      "id": 1,
+      "date": "2026-06-11",
+      "title": "National ‘Red Journey’ blood donation campaign kicks off in HCM City",
+      "content": "The 14th edition of the national Hành trình Đỏ (Red Journey) blood donation campaign officially commenced in HCM City on Thursday (June 11), alongside the \"Red Drops from the City Named After Uncle Hồ\" festival and a ceremony honoring outstanding blood donors.",
+      "category": "Campaign",
+      "link": "https://vietnamnews.vn/society/1783238/national-red-journey-blood-donation-campaign-kicks-off-in-hcm-city.html",
+      "likes": 24
+    },
+    {
+      "id": 2,
+      "date": "2026-06-09",
+      "title": "NA leader calls for long-term strategy on voluntary blood donation",
+      "content": "National Assembly (NA) Chairman Trần Thanh Mẫn on June 9 emphasised the need for the development of a long-term strategy for voluntary blood donation, ensuring a stable and sustainable blood supply while further promoting humanitarian values across society.",
+      "category": "Policy",
+      "link": "https://vietnamnews.vn/society/1783028/na-leader-calls-for-long-term-strategy-on-voluntary-blood-donation.html",
+      "likes": 15
+    },
+    {
+      "id": 3,
+      "date": "2026-04-07",
+      "title": "Nationwide blood donation drive draws strong response across localities",
+      "content": "Local campaigns marking National Voluntary Blood Donation Day and National Health Day on April 7 saw thousands of participants, contributing vital supplies for emergency care and treatment.",
+      "category": "Emergency",
+      "link": "https://vietnamnews.vn/society/1778929/nationwide-blood-donation-drive-draws-strong-response-across-localities.html",
+      "likes": 38
+    },
+    {
+      "id": 4,
+      "date": "2025-07-09",
+      "title": "The health sector calls on people to donate blood",
+      "content": "The health sector is calling people to donate blood to address the severe blood shortage, which is critical for emergency needs and patient treatment at hospitals in the Northern region.",
+      "category": "Emergency",
+      "link": "https://vietnamnews.vn/society/1721124/the-health-sector-calls-on-people-to-donate-blood.html",
+      "likes": 8
+    },
+    {
+      "id": 5,
+      "date": "2024-07-02",
+      "title": "Record-breaking blood donors tell their stories",
+      "content": "For some regular blood donors, it's a journey of persistent determination and pride in order to live a meaningful life.",
+      "category": "Tips",
+      "link": "https://vietnamnews.vn/society/1658514/record-breaking-blood-donors-tell-their-stories.html",
+      "likes": 12
+    },
+    {
+      "id": 6,
+      "date": "2024-01-24",
+      "title": "Việt Nam’s remarkable journey of voluntary blood donation",
+      "content": "This is a journey of sharing love, compassion, and solidarity among millions of Vietnamese hearts, bringing life and happiness to countless families of patients.",
+      "category": "Campaign",
+      "link": "https://vietnamnews.vn/society/1639641/viet-nam-s-remarkable-journey-of-voluntary-blood-donation.html",
+      "likes": 5
+    },
+    {
+      "id": 7,
+      "date": "2023-04-10",
+      "title": "Regular blood donations ensure sufficient supplies for emergency treatment",
+      "content": "For some, blood donation has become a beautiful lifestyle, including Trần Thị Mai from Long Biên District in Hà Nội, who has donated blood more than 20 times since 2018.",
+      "category": "Emergency",
+      "link": "https://vietnamnews.vn/society/1517744/regular-blood-donations-ensure-sufficient-supplies-for-emergency-treatment.html",
+      "likes": 19
+    },
+    {
+      "id": 8,
+      "date": "2021-06-13",
+      "title": "Experts call on community to keep donating blood",
+      "content": "Health experts have called on the community to maintain blood donation activities to ensure blood sources for emergency aid and treatment at hospitals on the occasion of World Blood Donor Day (June 14).",
+      "category": "Emergency",
+      "link": "https://vietnamnews.vn/society/973819/experts-call-on-community-to-keep-donating-blood.html",
+      "likes": 11
+    },
+    {
+      "id": 9,
+      "date": "2026-06-20",
+      "title": "Chợ Rẫy Hospital calls for voluntary platelets during summer peak",
+      "content": "Platelets have a short shelf life of only 3 to 5 days. Cho Ray Hospital's blood bank is calling on local residents in Ho Chi Minh City to donate blood and platelets to prevent urgent shortage.",
+      "category": "Emergency",
+      "link": "https://vietnamnews.vn/society/1655000/cho-ray-hospital-calls-for-voluntary-platelets-during-summer-peak.html",
+      "likes": 32
+    },
+    {
+      "id": 10,
+      "date": "2026-06-18",
+      "title": "Vietnam Red Cross expands community blood storage facilities",
+      "content": "The Vietnam Red Cross has announced a new initiative to establish smart temperature-controlled blood storage points in local districts. This helps speed up local clinic emergency distribution.",
+      "category": "Policy",
+      "link": "https://vietnamnews.vn/society/1654000/vietnam-red-cross-expands-community-blood-storage-facilities.html",
+      "likes": 14
+    },
+    {
+      "id": 11,
+      "date": "2026-06-15",
+      "title": "Top tips: What to eat before and after donating blood",
+      "content": "Ensure you drink plenty of water and eat a iron-rich meal before donating. Avoid fatty foods which can affect blood screening tests, and rest well after the procedure.",
+      "category": "Tips",
+      "link": "https://vietnamnews.vn/society/1653000/top-tips-what-to-eat-before-and-after-donating-blood.html",
+      "likes": 41
+    },
+    {
+      "id": 12,
+      "date": "2026-06-12",
+      "title": "Medical researchers study rare blood type distribution in Vietnam",
+      "content": "A collaborative study by National Institute of Hematology shows that Rh-negative blood types account for only 0.1% of the Vietnamese population. Creating a digital donor registry is critical.",
+      "category": "Research",
+      "link": "https://vietnamnews.vn/society/1652000/medical-researchers-study-rare-blood-type-distribution-in-vietnam.html",
+      "likes": 29
+    },
+    {
+      "id": 13,
+      "date": "2026-06-05",
+      "title": "Da Nang university youth organize voluntary blood donation camp",
+      "content": "More than 800 student volunteers registered for the annual summer drive in Da Nang. The youth Union successfully gathered 650 safe blood units for the city general hospital.",
+      "category": "Campaign",
+      "link": "https://vietnamnews.vn/society/1651000/da-nang-university-youth-organize-voluntary-blood-donation-camp.html",
+      "likes": 19
+    }
+  ]
+}

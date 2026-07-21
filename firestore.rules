@@ -1,0 +1,165 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return signedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isValidUrgency(value) {
+      return value in ['critical', 'urgent', 'moderate'];
+    }
+
+    function isValidRequestStatus(value) {
+      return value in ['active', 'fulfilled', 'cancelled'];
+    }
+
+    function isValidEventCategory(value) {
+      return value in ['Drive', 'Campaign', 'Workshop'];
+    }
+
+    function isGuestThreadId(threadId) {
+      return threadId.matches('^guest_.*$');
+    }
+
+    function canAccessThread(threadId, threadData) {
+      return isAdmin() ||
+        (signedIn() &&
+          threadData.participantType == 'user' &&
+          threadData.participantId == request.auth.uid &&
+          threadId == request.auth.uid) ||
+        (!signedIn() &&
+          threadData.participantType == 'guest' &&
+          threadData.participantId == threadId &&
+          isGuestThreadId(threadId));
+    }
+
+    function canCreateThread(threadId) {
+      return isAdmin() ||
+        (signedIn() &&
+          request.resource.data.participantType == 'user' &&
+          request.resource.data.participantId == request.auth.uid &&
+          threadId == request.auth.uid) ||
+        (!signedIn() &&
+          request.resource.data.participantType == 'guest' &&
+          request.resource.data.participantId == threadId &&
+          isGuestThreadId(threadId));
+    }
+
+    function isParticipantThreadMutation(threadId) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        'participantDisplayName',
+        'participantEmail',
+        'lastMessage',
+        'lastMessageAt',
+        'lastMessageSenderRole',
+        'participantLastReadAt',
+        'updatedAt'
+      ]) &&
+      canAccessThread(threadId, resource.data);
+    }
+
+    function isAllowedPublicRequestRead() {
+      return true;
+    }
+
+    match /users/{uid} {
+      allow create: if isOwner(uid);
+      allow read, update: if isOwner(uid) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /emergencyRequests/{requestId} {
+      allow read: if isAllowedPublicRequestRead();
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() && isValidRequestStatus(request.resource.data.status) ||
+        (
+          signedIn() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'confirmedCount',
+            'lastConfirmedAt',
+            'lastConfirmedBy',
+            'updatedAt'
+          ]) &&
+          request.resource.data.confirmedCount == resource.data.confirmedCount + 1 &&
+          request.resource.data.lastConfirmedBy == request.auth.uid &&
+          existsAfter(
+            /databases/$(database)/documents/confirmations/$(requestId + "_" + request.auth.uid)
+          )
+        ) ||
+        (
+          !signedIn() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'confirmedCount',
+            'lastConfirmedAt',
+            'lastConfirmedBy',
+            'updatedAt'
+          ]) &&
+          request.resource.data.confirmedCount == resource.data.confirmedCount + 1 &&
+          isGuestThreadId(request.resource.data.lastConfirmedBy) &&
+          existsAfter(
+            /databases/$(database)/documents/guestConfirmations/$(requestId + "_" + request.resource.data.lastConfirmedBy)
+          )
+        );
+    }
+
+    match /confirmations/{confirmationId} {
+      allow read: if isAdmin() || (signedIn() && (resource == null || resource.data.donorId == request.auth.uid));
+      allow create: if signedIn() &&
+        request.resource.data.donorId == request.auth.uid &&
+        confirmationId == request.resource.data.requestId + "_" + request.auth.uid;
+      allow delete: if isAdmin() || (signedIn() && resource.data.donorId == request.auth.uid);
+      allow update: if isAdmin();
+    }
+
+    match /guestConfirmations/{confId} {
+      allow read: if isAdmin();
+      allow create: if !signedIn() &&
+        confId == request.resource.data.requestId + "_" + request.resource.data.guestSessionId &&
+        isGuestThreadId(request.resource.data.guestSessionId);
+      allow update, delete: if isAdmin();
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() && isValidEventCategory(request.resource.data.category) ||
+        (signedIn() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['interestedCount', 'likedBy', 'updatedAt']));
+    }
+
+    match /supportThreads/{threadId} {
+      allow read: if isAdmin() ||
+        (signedIn() && threadId == request.auth.uid) ||
+        (!signedIn() && isGuestThreadId(threadId));
+      allow create: if canCreateThread(threadId);
+      allow update: if isAdmin() || isParticipantThreadMutation(threadId);
+      allow delete: if isAdmin();
+
+      match /messages/{messageId} {
+        allow read: if isAdmin() ||
+          (signedIn() && threadId == request.auth.uid) ||
+          (!signedIn() && isGuestThreadId(threadId));
+        allow create: if isAdmin() ||
+          (signedIn() && threadId == request.auth.uid) ||
+          (!signedIn() && isGuestThreadId(threadId));
+        allow update, delete: if false;
+      }
+    }
+
+    match /newsLikes/{likeId} {
+      allow read: if true;
+      allow create: if signedIn() &&
+        request.resource.data.userId == request.auth.uid;
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+  }
+}

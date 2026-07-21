@@ -23,10 +23,10 @@ export async function seedDatabaseIfEmpty() {
           bloodType: 'O-',
           urgency: 'critical',
           unitsNeeded: 5,
-          confirmedCount: 0,
+          confirmedCount: 1,
           status: 'active',
           description: 'A patient in emergency surgery after a severe traffic accident requires immediate O negative blood transfusion.',
-          contactInfo: 'Contact blood bank at Ext. 4031',
+          contactInfo: '0989123456',
           createdAt: serverTimestamp()
         },
         {
@@ -38,7 +38,7 @@ export async function seedDatabaseIfEmpty() {
           confirmedCount: 1,
           status: 'active',
           description: 'A patient undergoing complex cardiac bypass surgery needs AB positive blood.',
-          contactInfo: 'Contact blood bank at Ext. 2933',
+          contactInfo: '0912345678',
           createdAt: serverTimestamp()
         },
         {
@@ -50,7 +50,7 @@ export async function seedDatabaseIfEmpty() {
           confirmedCount: 0,
           status: 'active',
           description: 'Scheduled orthopedic procedure requires backup B positive blood units.',
-          contactInfo: 'Contact blood bank at Ext. 1022',
+          contactInfo: '0939123456',
           createdAt: serverTimestamp()
         },
         {
@@ -62,7 +62,7 @@ export async function seedDatabaseIfEmpty() {
           confirmedCount: 2,
           status: 'active',
           description: 'Pediatric leukemia patient requires A negative platelets/blood units.',
-          contactInfo: 'Contact blood bank at Ext. 8839',
+          contactInfo: '0909123456',
           createdAt: serverTimestamp()
         },
         {
@@ -74,7 +74,43 @@ export async function seedDatabaseIfEmpty() {
           confirmedCount: 0,
           status: 'active',
           description: 'Maternal ward requires O positive blood for postpartum hemorrhage backup.',
-          contactInfo: 'Contact blood bank at Ext. 3021',
+          contactInfo: '0905123456',
+          createdAt: serverTimestamp()
+        },
+        {
+          hospitalName: 'Viet Duc Hospital',
+          city: 'Ha Noi',
+          bloodType: 'A+',
+          urgency: 'critical',
+          unitsNeeded: 4,
+          confirmedCount: 1,
+          status: 'active',
+          description: 'Emergency brain surgery patient requires urgent A positive blood transfusion.',
+          contactInfo: '0944123456',
+          createdAt: serverTimestamp()
+        },
+        {
+          hospitalName: 'Binh Duong General Hospital',
+          city: 'Binh Duong',
+          bloodType: 'B-',
+          urgency: 'urgent',
+          unitsNeeded: 3,
+          confirmedCount: 0,
+          status: 'active',
+          description: 'Severe anemia patient needs matching B negative blood transfusion immediately.',
+          contactInfo: '0988123456',
+          createdAt: serverTimestamp()
+        },
+        {
+          hospitalName: 'Gia Dinh People Hospital',
+          city: 'Ho Chi Minh City',
+          bloodType: 'O-',
+          urgency: 'critical',
+          unitsNeeded: 2,
+          confirmedCount: 0,
+          status: 'active',
+          description: 'Gastrointestinal bleeding patient requires urgent O negative blood units.',
+          contactInfo: '0977123456',
           createdAt: serverTimestamp()
         }
       ]
@@ -155,6 +191,72 @@ export async function seedDatabaseIfEmpty() {
           category: 'Drive',
           location: 'Luu Huu Phuoc Park Can Tho',
           description: 'The largest blood donation festival in the Mekong Delta region, marking the concluding leg of Red Journey 2026.',
+          interestedCount: 0,
+          likedBy: [],
+          createdAt: serverTimestamp()
+        },
+        {
+          title: '"Youth Blood Drive" Campaign — Binh Duong',
+          date: '2026-08-05',
+          city: 'Binh Duong',
+          category: 'Campaign',
+          location: 'Binh Duong Youth Center',
+          description: 'Youth-led community blood donation drive focusing on young donors and first-time participants.',
+          interestedCount: 0,
+          likedBy: [],
+          createdAt: serverTimestamp()
+        },
+        {
+          title: '"Green Summer Donation" Drive — Dong Nai',
+          date: '2026-08-12',
+          city: 'Bien Hoa',
+          category: 'Drive',
+          location: 'Dong Nai Children House',
+          description: 'Annual summer campaign collecting blood units from local workers and college students in Bien Hoa.',
+          interestedCount: 0,
+          likedBy: [],
+          createdAt: serverTimestamp()
+        },
+        {
+          title: '"Coastal Pink Drop" Festival — Khanh Hoa',
+          date: '2026-08-19',
+          city: 'Nha Trang',
+          category: 'Campaign',
+          location: 'Nha Trang Youth Center',
+          description: 'Humanitarian blood festival gathering blood units for pediatric clinics and general hospitals.',
+          interestedCount: 0,
+          likedBy: [],
+          createdAt: serverTimestamp()
+        },
+        {
+          title: '"Capital Heart Donation" Campaign — Ha Noi',
+          date: '2026-09-02',
+          city: 'Ha Noi',
+          category: 'Campaign',
+          location: 'Hanoi Medical University',
+          description: 'Large-scale National Day campaign coordinating volunteers and students across Thang Long area.',
+          interestedCount: 0,
+          likedBy: [],
+          createdAt: serverTimestamp()
+        },
+        {
+          title: '"Red River Delta Drive" — Hai Phong',
+          date: '2026-09-10',
+          city: 'Hai Phong',
+          category: 'Drive',
+          location: 'Hai Phong Sports Stadium',
+          description: 'Joint voluntary blood donation campaign organized with local universities and industrial zones.',
+          interestedCount: 0,
+          likedBy: [],
+          createdAt: serverTimestamp()
+        },
+        {
+          title: '"Central Coast Blood Drive" — Hue',
+          date: '2026-09-20',
+          city: 'Hue',
+          category: 'Drive',
+          location: 'Hue Cultural Palace',
+          description: 'Community blood donation drive to establish safety reserves for local Thua Thien Hue clinics.',
           interestedCount: 0,
           likedBy: [],
           createdAt: serverTimestamp()

@@ -379,7 +379,7 @@ const filterCompatibleOnly = ref(false)
 const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Any']
 
 const currentPage = ref(1)
-const ITEMS_PER_PAGE = 2
+const ITEMS_PER_PAGE = 4
 
 watch([filterBloodType, filterCity, filterUrgency, filterCompatibleOnly], () => {
   currentPage.value = 1

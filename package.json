@@ -16,7 +16,11 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "db:seed-users": "node --env-file=.env scripts/seed-users.js",
+    "db:seed-events": "node --env-file=.env scripts/seed-events.js",
+    "db:seed-requests": "node --env-file=.env scripts/seed-requests.js",
+    "db:seed": "npm run db:seed-users && npm run db:seed-events && npm run db:seed-requests"
   },
   "dependencies": {
     "bootstrap": "^5.3.8",

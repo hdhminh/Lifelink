@@ -104,13 +104,6 @@
               @status-change="handleStatusChange(request)"
             />
           </div>
-
-          <PaginationControls
-            :current-page="currentPage"
-            :total-pages="totalPages"
-            @page-change="currentPage = $event"
-            class="mt-4"
-          />
         </div>
       </div>
 
@@ -146,6 +139,13 @@
             </div>
           </div>
         </aside>
+
+        <!-- Pagination controls on the right column -->
+        <PaginationControls
+          :current-page="currentPage"
+          :total-pages="totalPages"
+          @page-change="currentPage = $event"
+        />
       </div>
     </div>
 
@@ -626,7 +626,7 @@ watch(loading, (newLoading) => {
   }
 })
 
-watch([filterBloodType, filterCity, filterUrgency, filterCompatibleOnly], () => {
+watch([filterBloodType, filterCity, filterUrgency, filterCompatibleOnly, currentPage], () => {
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     animateCards()
   } else {

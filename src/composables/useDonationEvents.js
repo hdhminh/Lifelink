@@ -22,9 +22,11 @@ import {
 } from 'firebase/firestore'
 import { db } from '@/firebase.js'
 
+const cachedEvents = ref([])
+
 export function useDonationEvents() {
-  const events = ref([])
-  const loading = ref(false)
+  const events = ref(cachedEvents.value)
+  const loading = ref(cachedEvents.value.length === 0)
   const error = ref(null)
   let unsubscribeFn = null
 
@@ -33,12 +35,19 @@ export function useDonationEvents() {
   }
 
   function startListening() {
-    loading.value = true
+    if (cachedEvents.value.length > 0) {
+      events.value = cachedEvents.value
+      loading.value = false
+    } else {
+      loading.value = true
+    }
     error.value = null
 
     const q = query(collection(db, 'events'), orderBy('date', 'asc'))
     unsubscribeFn = onSnapshot(q, (snap) => {
-      events.value = sortEvents(snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() })))
+      const sorted = sortEvents(snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() })))
+      cachedEvents.value = sorted
+      events.value = sorted
       loading.value = false
     }, (err) => {
       error.value = 'Failed to load events. Please try again.'

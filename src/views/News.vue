@@ -116,21 +116,57 @@ function parsePubDate(pubDateStr) {
 
 async function fetchLiveNews() {
   loadingLive.value = true
+  const rssUrl = 'https://vietnamnews.vn/rss/health.rss'
+  const proxies = [
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`,
+    `https://corsproxy.io/?url=${encodeURIComponent(rssUrl)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(rssUrl)}`
+  ]
+
+  let xmlText = null
+  for (const proxyUrl of proxies) {
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 2000)
+      const response = await fetch(proxyUrl, { signal: controller.signal })
+      clearTimeout(timeoutId)
+      if (response.ok) {
+        xmlText = await response.text()
+        if (xmlText && xmlText.includes('<item>')) break
+      }
+    } catch {
+      // Try next proxy silently
+    }
+  }
+
   try {
-    const rssUrl = 'https://vietnamnews.vn/rss/health.rss'
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`
+    if (!xmlText) {
+      loadingLive.value = false
+      return
+    }
 
-    const response = await fetch(proxyUrl)
-    if (!response.ok) throw new Error('CORS proxy error')
-
-    const xmlText = await response.text()
     const parser = new DOMParser()
     const xmlDoc = parser.parseFromString(xmlText, 'text/xml')
     const items = xmlDoc.getElementsByTagName('item')
-
-    if (items.length === 0) throw new Error('No items inside RSS')
+    if (items.length === 0) return
 
     const parsedNews = []
+
+    function sanitizeEnglishText(str) {
+      if (!str) return ''
+      return str
+        .replace(/Việt Nam/g, 'Vietnam')
+        .replace(/Viet Nam/g, 'Vietnam')
+        .replace(/Hà Nội/g, 'Hanoi')
+        .replace(/Ha Noi/g, 'Hanoi')
+        .replace(/Hải Phòng/g, 'Hai Phong')
+        .replace(/Trần Thanh Mẫn/g, 'Tran Thanh Man')
+        .replace(/VNĐ/g, 'VND')
+        .replace(/Hành trình Đỏ/g, 'Red Journey')
+        .replace(/Chủ nhật đỏ/g, 'Red Sunday')
+        .replace(/Xuân hồng/g, 'Red Spring')
+        .replace(/Tết/g, 'Tet')
+    }
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i]
@@ -142,7 +178,6 @@ async function fetchLiveNews() {
       const cleanDesc = cleanHtml(description)
       const formattedDate = parsePubDate(pubDate)
 
-      // Strict topic filter: only include items containing blood donation keywords
       const searchText = (title + ' ' + cleanDesc).toLowerCase()
       const isBloodRelated = searchText.includes('blood') || 
                             searchText.includes('donor') || 
@@ -165,22 +200,6 @@ async function fetchLiveNews() {
         category = 'Campaign'
       }
 
-      function sanitizeEnglishText(str) {
-        if (!str) return ''
-        return str
-          .replace(/Việt Nam/g, 'Vietnam')
-          .replace(/Viet Nam/g, 'Vietnam')
-          .replace(/Hà Nội/g, 'Hanoi')
-          .replace(/Ha Noi/g, 'Hanoi')
-          .replace(/Hải Phòng/g, 'Hai Phong')
-          .replace(/Trần Thanh Mẫn/g, 'Tran Thanh Man')
-          .replace(/VNĐ/g, 'VND')
-          .replace(/Hành trình Đỏ/g, 'Red Journey')
-          .replace(/Chủ nhật đỏ/g, 'Red Sunday')
-          .replace(/Xuân hồng/g, 'Red Spring')
-          .replace(/Tết/g, 'Tet')
-      }
-
       if (title && link.trim()) {
         const cleanTitle = sanitizeEnglishText(title.trim())
         const cleanContent = sanitizeEnglishText(cleanDesc)
@@ -199,18 +218,14 @@ async function fetchLiveNews() {
     }
 
     if (parsedNews.length > 0) {
-      // Merge RSS news with local verified news, avoiding duplicates by link
       const existingLinks = new Set(sortedLocalNews.map(n => n.link))
       const newItems = parsedNews.filter(n => !existingLinks.has(n.link))
       const combined = [...newItems, ...sortedLocalNews]
       combined.sort((a, b) => new Date(b.date) - new Date(a.date))
       allNews.value = combined
-      console.log(`[News] Live fetched ${newItems.length} new blood donation articles. Total: ${combined.length}`)
-    } else {
-      console.log('[News] No live health articles matched blood donation filter. Using local fallback.')
     }
-  } catch (err) {
-    console.warn('[News] Live RSS fetch failed. Using news.json fallback.', err)
+  } catch {
+    // Keep verified news database cleanly
   } finally {
     loadingLive.value = false
   }

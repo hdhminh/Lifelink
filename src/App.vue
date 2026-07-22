@@ -597,9 +597,9 @@ function getAlertIcon(type) {
   --ll-critical-bg:     #FDF4F5;
   --ll-critical-text:   #8E2435;
   
-  --ll-urgent-border:   #D99B26;
-  --ll-urgent-bg:       #FFFDF8;
-  --ll-urgent-text:     #D99B26;
+  --ll-urgent-border:   #B45309;
+  --ll-urgent-bg:       #FFFBEB;
+  --ll-urgent-text:     #92400E;
   
   --ll-moderate-border: #547A6B;
   --ll-moderate-bg:     #F6FAF8;

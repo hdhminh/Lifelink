@@ -21,9 +21,11 @@ import {
 } from 'firebase/firestore'
 import { db } from '@/firebase.js'
 
+const cachedRequests = ref([])
+
 export function useEmergencyRequests() {
-  const requests = ref([])
-  const loading = ref(false)
+  const requests = ref(cachedRequests.value)
+  const loading = ref(cachedRequests.value.length === 0)
   const error = ref(null)
   let unsubscribeFn = null
 
@@ -32,7 +34,12 @@ export function useEmergencyRequests() {
    * @returns {void}
    */
   function startListening() {
-    loading.value = true
+    if (cachedRequests.value.length > 0) {
+      requests.value = cachedRequests.value
+      loading.value = false
+    } else {
+      loading.value = true
+    }
     error.value = null
 
     const q = query(
@@ -48,6 +55,7 @@ export function useEmergencyRequests() {
           id: docSnap.id,
           ...docSnap.data()
         }))
+        cachedRequests.value = list
         requests.value = list
         loading.value = false
       },

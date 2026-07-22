@@ -36,21 +36,21 @@
   font-family: 'Outfit', sans-serif;
   font-weight: 800;
   font-size: 1.25rem;
-  color: var(--ll-wine-red);
+  color: #F87171;
   letter-spacing: -0.02em;
   transition: opacity var(--ll-transition-fast);
 }
 .ll-footer__brand:hover {
-  color: var(--ll-wine-red);
+  color: #F87171;
   opacity: 0.85;
 }
 .ll-footer__copy {
-  color: var(--ll-slate-400);
+  color: #E2E8F0;
   margin-top: 0.35rem;
   font-size: 0.825rem;
 }
 .ll-footer-link {
-  color: var(--ll-slate-300);
+  color: #E2E8F0;
   font-size: 0.9rem;
   font-weight: 500;
   transition: color var(--ll-transition-fast);
@@ -59,8 +59,8 @@
   color: #fff;
 }
 .ll-footer-meta {
-  border-top-color: rgba(255, 255, 255, 0.05) !important;
-  color: var(--ll-slate-400); /* Fixed contrast ratio (>= 4.5:1) for WCAG AA compliance */
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+  color: #CBD5E1;
   font-size: 0.8rem;
 }
 </style>

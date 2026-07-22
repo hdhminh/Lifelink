@@ -168,6 +168,12 @@ const selectedImage = computed(() => {
 
 onMounted(() => {
   reveal('.reveal-item', 60)
+  const base = import.meta.env.BASE_URL || './'
+  const prefix = base.endsWith('/') ? base : `${base}/`
+  const img1 = new Image()
+  img1.src = `${prefix}images/about-donors.jpg`
+  const img2 = new Image()
+  img2.src = `${prefix}images/about-hospital.jpg`
 })
 </script>
 

@@ -1,6 +1,6 @@
 <template>
   <div class="ll-page-container">
-    <LoadingSpinner v-if="authLoading" message="Loading your dashboard..." />
+    <LoadingSpinner v-if="authLoading || (user && !userProfile)" message="Loading your dashboard..." />
     <div v-else-if="!userProfile" class="ll-empty-state">
       <div class="ll-empty-state__icon"><i class="bi bi-person-fill text-muted"></i></div>
       <div class="ll-empty-state__title">Profile not found</div>
@@ -818,7 +818,7 @@ import { useConfirmDonation } from '@/composables/useConfirmDonation.js'
 import { useToast } from '@/composables/useToast.js'
 import { useEligibility } from '@/composables/useEligibility.js'
 
-const { userProfile, isAdmin, authLoading } = useAuth()
+const { user, userProfile, isAdmin, authLoading } = useAuth()
 const { isEligible, nextEligibleDate, daysUntilEligible } = useEligibility()
 const { showToast } = useToast()
 
@@ -887,20 +887,23 @@ const stats = reactive({
   loading: false
 })
 
+function updateAdminStatsFromLists() {
+  stats.usersCount = usersList.value.length
+  stats.activeRequestsCount = requestList.value.filter(req => req.status === 'active').length
+  stats.totalConfirmationsCount = allConfirmationsList.value.length
+  stats.eventsCount = eventsList.value.length
+}
+
 async function loadAdminStats(isSilent = false) {
   if (!isSilent) stats.loading = true
   try {
-    const usersSnap = await getDocs(collection(db, 'users'))
-    stats.usersCount = usersSnap.size
-
-    const reqSnap = await getDocs(query(collection(db, 'emergencyRequests'), where('status', '==', 'active')))
-    stats.activeRequestsCount = reqSnap.size
-
-    const confSnap = await getDocs(collection(db, 'confirmations'))
-    stats.totalConfirmationsCount = confSnap.size
-
-    const eventsSnap = await getDocs(collection(db, 'events'))
-    stats.eventsCount = eventsSnap.size
+    await Promise.all([
+      fetchUsers(true),
+      fetchEvents(true),
+      fetchRequests(true),
+      fetchAllConfirmations(true)
+    ])
+    updateAdminStatsFromLists()
   } catch (err) {
     console.error('Error loading admin stats:', err)
   } finally {
@@ -1472,14 +1475,10 @@ watch(activeChatMessages, () => {
   })
 }, { deep: true })
 
-watch(userProfile, (newProfile) => {
+watch(userProfile, async (newProfile) => {
   if (newProfile) {
     if (isAdmin.value) {
-      loadAdminStats()
-      fetchUsers()
-      fetchEvents()
-      fetchRequests()
-      fetchAllConfirmations()
+      await loadAdminStats()
       listenToAllSupportMessages()
     } else {
       loadHistory()

@@ -1,6 +1,6 @@
 <template>
   <div class="ll-page-container">
-    <LoadingSpinner v-if="authLoading" message="Loading profile..." />
+    <LoadingSpinner v-if="authLoading || (user && !userProfile)" message="Loading profile..." />
     <div v-else-if="!userProfile" class="ll-empty-state">
       <div class="ll-empty-state__icon"><i class="bi bi-person-x-fill text-muted"></i></div>
       <div class="ll-empty-state__title">Profile not available</div>
@@ -150,7 +150,7 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import { useToast } from '@/composables/useToast.js'
 import { useEligibility } from '@/composables/useEligibility.js'
 
-const { userProfile, authLoading, updateProfile } = useAuth()
+const { user, userProfile, authLoading, updateProfile } = useAuth()
 const { isEligible, nextEligibleDate, daysUntilEligible } = useEligibility()
 const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 const isEditing = ref(false)

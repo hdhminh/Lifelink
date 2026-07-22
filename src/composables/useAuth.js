@@ -39,9 +39,15 @@ async function fetchUserProfile(uid) {
 onAuthStateChanged(auth, async (firebaseUser) => {
   user.value = firebaseUser
   if (firebaseUser) {
-    const profile = await fetchUserProfile(firebaseUser.uid)
-    userProfile.value = profile
-    authLoading.value = false
+    authLoading.value = true
+    try {
+      const profile = await fetchUserProfile(firebaseUser.uid)
+      userProfile.value = profile
+    } catch (err) {
+      console.error('Failed to fetch user profile:', err)
+    } finally {
+      authLoading.value = false
+    }
   } else {
     userProfile.value = null
     authLoading.value = false

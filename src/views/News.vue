@@ -165,14 +165,32 @@ async function fetchLiveNews() {
         category = 'Campaign'
       }
 
+      function sanitizeEnglishText(str) {
+        if (!str) return ''
+        return str
+          .replace(/Việt Nam/g, 'Vietnam')
+          .replace(/Viet Nam/g, 'Vietnam')
+          .replace(/Hà Nội/g, 'Hanoi')
+          .replace(/Ha Noi/g, 'Hanoi')
+          .replace(/Hải Phòng/g, 'Hai Phong')
+          .replace(/Trần Thanh Mẫn/g, 'Tran Thanh Man')
+          .replace(/VNĐ/g, 'VND')
+          .replace(/Hành trình Đỏ/g, 'Red Journey')
+          .replace(/Chủ nhật đỏ/g, 'Red Sunday')
+          .replace(/Xuân hồng/g, 'Red Spring')
+          .replace(/Tết/g, 'Tet')
+      }
+
       if (title && link.trim()) {
-        const uniqueId = 'rss_' + title.trim().substring(0, 30).toLowerCase().replace(/[^a-z0-9]/g, '_')
-        const defaultLikes = (title.length % 15) + 3
+        const cleanTitle = sanitizeEnglishText(title.trim())
+        const cleanContent = sanitizeEnglishText(cleanDesc)
+        const uniqueId = 'rss_' + cleanTitle.substring(0, 30).toLowerCase().replace(/[^a-z0-9]/g, '_')
+        const defaultLikes = (cleanTitle.length % 15) + 3
         parsedNews.push({
           id: uniqueId,
           date: formattedDate,
-          title: title.trim(),
-          content: cleanDesc,
+          title: cleanTitle,
+          content: cleanContent,
           link: link.trim(),
           category,
           likes: defaultLikes

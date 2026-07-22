@@ -102,10 +102,13 @@
           <div class="ll-chat-window-footer border-top p-2" style="flex-shrink: 0;">
             <form @submit.prevent="sendChatMessage" class="d-flex gap-2 align-items-stretch">
               <input 
+                id="global-chat-input"
                 type="text" 
                 class="form-control form-control-sm" 
                 placeholder="Type your message..." 
                 v-model="chatInputText"
+                aria-label="Type your message"
+                autocomplete="off"
                 style="height: 36px;"
               />
               <button type="submit" class="btn btn-sm btn-danger px-3 d-flex align-items-center justify-content-center" style="height: 36px;"><i class="bi bi-send-fill"></i></button>

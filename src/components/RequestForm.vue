@@ -62,7 +62,7 @@
         </div>
         <div class="col-md-6 ll-form-group">
           <label for="request-blood-type">Blood Type</label>
-          <select id="request-blood-type" v-model="form.bloodType" class="form-select" :class="{ 'is-invalid': errors.bloodType }">
+          <select id="request-blood-type" v-model="form.bloodType" class="form-select" :class="{ 'is-invalid': errors.bloodType }" aria-label="Blood Type">
             <option value="">Select blood type</option>
             <option v-for="type in bloodTypes" :key="type" :value="type">{{ type }}</option>
           </select>
@@ -73,7 +73,7 @@
       <div class="row g-3">
         <div class="col-md-6 ll-form-group">
           <label for="request-urgency">Urgency</label>
-          <select id="request-urgency" v-model="form.urgency" class="form-select" :class="{ 'is-invalid': errors.urgency }">
+          <select id="request-urgency" v-model="form.urgency" class="form-select" :class="{ 'is-invalid': errors.urgency }" aria-label="Urgency Level">
             <option value="">Select urgency</option>
             <option value="critical">Critical</option>
             <option value="urgent">Urgent</option>
@@ -83,20 +83,20 @@
         </div>
         <div class="col-md-6 ll-form-group">
           <label for="request-units">Units Needed</label>
-          <input id="request-units" v-model.number="form.unitsNeeded" class="form-control" :class="{ 'is-invalid': errors.unitsNeeded }" type="number" min="1" max="20">
+          <input id="request-units" v-model.number="form.unitsNeeded" class="form-control" :class="{ 'is-invalid': errors.unitsNeeded }" type="number" min="1" max="20" aria-label="Units Needed" autocomplete="off">
           <div v-if="errors.unitsNeeded" class="invalid-feedback d-block">{{ errors.unitsNeeded }}</div>
         </div>
       </div>
 
       <div class="ll-form-group">
         <label for="request-description">Description</label>
-        <textarea id="request-description" v-model.trim="form.description" class="form-control" :class="{ 'is-invalid': errors.description }" rows="4" placeholder="Brief details about emergency patient..."></textarea>
+        <textarea id="request-description" v-model.trim="form.description" class="form-control" :class="{ 'is-invalid': errors.description }" rows="4" placeholder="Brief details about emergency patient..." aria-label="Description"></textarea>
         <div v-if="errors.description" class="invalid-feedback d-block">{{ errors.description }}</div>
       </div>
 
       <div class="ll-form-group">
         <label for="request-contact">Representative Phone Number (Optional, defaults to 115)</label>
-        <input id="request-contact" v-model.trim="form.contactInfo" class="form-control" :class="{ 'is-invalid': errors.contactInfo }" type="text" placeholder="e.g. 0901234567">
+        <input id="request-contact" v-model.trim="form.contactInfo" class="form-control" :class="{ 'is-invalid': errors.contactInfo }" type="text" placeholder="e.g. 0901234567" aria-label="Representative Phone Number" autocomplete="tel">
         <div v-if="errors.contactInfo" class="invalid-feedback d-block">{{ errors.contactInfo }}</div>
       </div>
 
@@ -108,6 +108,7 @@
           v-model="form.createdAt" 
           class="form-control" 
           type="datetime-local"
+          aria-label="Publish Date and Time"
         >
       </div>
     </div>

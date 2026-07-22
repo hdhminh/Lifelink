@@ -22,12 +22,12 @@
           <div class="row g-3">
             <div class="col-md-6 ll-form-group">
               <label for="profile-name">Full Name</label>
-              <input id="profile-name" v-model.trim="form.displayName" class="form-control" :class="{ 'is-invalid': errors.displayName }" type="text">
+              <input id="profile-name" v-model.trim="form.displayName" class="form-control" :class="{ 'is-invalid': errors.displayName }" type="text" autocomplete="name">
               <div v-if="errors.displayName" class="invalid-feedback d-block">{{ errors.displayName }}</div>
             </div>
             <div class="col-md-6 ll-form-group">
               <label for="profile-blood-type">Blood Type</label>
-              <select id="profile-blood-type" v-model="form.bloodType" class="form-select" :class="{ 'is-invalid': errors.bloodType }">
+              <select id="profile-blood-type" v-model="form.bloodType" class="form-select" :class="{ 'is-invalid': errors.bloodType }" aria-label="Blood Type">
                 <option value="">Select type</option>
                 <option v-for="type in bloodTypes" :key="type" :value="type">{{ type }}</option>
               </select>
@@ -38,24 +38,24 @@
           <div class="row g-3">
             <div class="col-md-6 ll-form-group">
               <label for="profile-city">City</label>
-              <input id="profile-city" v-model.trim="form.city" class="form-control" :class="{ 'is-invalid': errors.city }" type="text">
+              <input id="profile-city" v-model.trim="form.city" class="form-control" :class="{ 'is-invalid': errors.city }" type="text" autocomplete="address-level2">
               <div v-if="errors.city" class="invalid-feedback d-block">{{ errors.city }}</div>
             </div>
             <div class="col-md-6 ll-form-group">
               <label for="profile-last-donation">Last Donation Date</label>
-              <input id="profile-last-donation" v-model="form.lastDonationDate" class="form-control" type="date">
+              <input id="profile-last-donation" v-model="form.lastDonationDate" class="form-control" type="date" aria-label="Last Donation Date">
             </div>
           </div>
 
           <div class="row g-3">
             <div class="col-md-6 ll-form-group">
               <label for="profile-phone">Phone Number</label>
-              <input id="profile-phone" v-model.trim="form.phoneNumber" class="form-control" :class="{ 'is-invalid': errors.phoneNumber }" type="tel" placeholder="e.g. 0901234567">
+              <input id="profile-phone" v-model.trim="form.phoneNumber" class="form-control" :class="{ 'is-invalid': errors.phoneNumber }" type="tel" placeholder="e.g. 0901234567" autocomplete="tel">
               <div v-if="errors.phoneNumber" class="invalid-feedback d-block">{{ errors.phoneNumber }}</div>
             </div>
             <div class="col-md-6 ll-form-group">
               <label for="profile-available">Availability</label>
-              <select id="profile-available" v-model="form.canDonateNow" class="form-select">
+              <select id="profile-available" v-model="form.canDonateNow" class="form-select" aria-label="Availability">
                 <option :value="true">Available to Donate</option>
                 <option :value="false">Not Currently Available</option>
               </select>

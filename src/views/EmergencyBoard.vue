@@ -41,7 +41,7 @@
           <label for="filter-city" class="ll-text-label mb-2 d-block">City Location</label>
           <div class="ll-search-wrapper">
             <i class="bi bi-search ll-search-icon"></i>
-            <input id="filter-city" v-model="filterCity" class="form-control" type="text" placeholder="Search by city...">
+            <input id="filter-city" v-model="filterCity" class="form-control" type="text" placeholder="Search by city..." aria-label="Search by city" autocomplete="address-level2">
           </div>
         </div>
 
@@ -260,6 +260,7 @@
                   type="text"
                   class="form-control"
                   placeholder="e.g. John Doe"
+                  autocomplete="name"
                   required
                 >
               </div>
@@ -272,6 +273,7 @@
                   type="tel"
                   class="form-control"
                   placeholder="e.g. +84 901234567"
+                  autocomplete="tel"
                 >
               </div>
 

@@ -18,7 +18,7 @@
         <label for="news-search">Search News</label>
         <div class="ll-search-wrapper">
           <i class="bi bi-search ll-search-icon" aria-hidden="true"></i>
-          <input id="news-search" v-model="searchQuery" class="form-control" type="search" placeholder="Search news date, title, content, or category">
+          <input id="news-search" v-model="searchQuery" class="form-control" type="search" placeholder="Search news date, title, content, or category" aria-label="Search news date, title, content, or category" autocomplete="off">
         </div>
       </div>
       <p class="ll-text-meta mb-0">Showing {{ paginatedNews.length }} of {{ filteredNews.length }} articles</p>

@@ -14,12 +14,12 @@
           <label for="event-search" class="ll-text-label mb-1">Search Events</label>
           <div class="ll-search-wrapper">
             <i class="bi bi-search ll-search-icon" aria-hidden="true"></i>
-            <input id="event-search" v-model="searchQuery" class="form-control" type="search" placeholder="Search title, location, or city">
+            <input id="event-search" v-model="searchQuery" class="form-control" type="search" placeholder="Search title, location, or city" aria-label="Search title, location, or city" autocomplete="off">
           </div>
         </div>
         <div class="col-12 col-md-4">
           <label for="event-category" class="ll-text-label mb-1">Category</label>
-          <select id="event-category" v-model="filterCategory" class="form-select">
+          <select id="event-category" v-model="filterCategory" class="form-select" aria-label="Filter events by category">
             <option value="">All Categories</option>
             <option value="Drive">Drive</option>
             <option value="Campaign">Campaign</option>

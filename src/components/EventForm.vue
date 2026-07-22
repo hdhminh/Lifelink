@@ -6,19 +6,19 @@
     <div class="ll-card__body">
       <div class="ll-form-group">
         <label for="event-title">Title</label>
-        <input id="event-title" v-model.trim="form.title" class="form-control" :class="{ 'is-invalid': errors.title }" type="text">
+        <input id="event-title" v-model.trim="form.title" class="form-control" :class="{ 'is-invalid': errors.title }" type="text" aria-label="Event Title" autocomplete="off">
         <div v-if="errors.title" class="invalid-feedback d-block">{{ errors.title }}</div>
       </div>
 
       <div class="row g-3">
         <div class="col-md-6 ll-form-group">
           <label for="event-date">Date</label>
-          <input id="event-date" v-model="form.date" class="form-control" :class="{ 'is-invalid': errors.date }" type="date">
+          <input id="event-date" v-model="form.date" class="form-control" :class="{ 'is-invalid': errors.date }" type="date" aria-label="Event Date">
           <div v-if="errors.date" class="invalid-feedback d-block">{{ errors.date }}</div>
         </div>
         <div class="col-md-6 ll-form-group">
           <label for="event-category">Category</label>
-          <select id="event-category" v-model="form.category" class="form-select" :class="{ 'is-invalid': errors.category }">
+          <select id="event-category" v-model="form.category" class="form-select" :class="{ 'is-invalid': errors.category }" aria-label="Event Category">
             <option value="">Select category</option>
             <option value="Drive">Drive</option>
             <option value="Campaign">Campaign</option>
@@ -31,12 +31,12 @@
       <div class="row g-3">
         <div class="col-md-6 ll-form-group">
           <label for="event-location">Location</label>
-          <input id="event-location" v-model.trim="form.location" class="form-control" :class="{ 'is-invalid': errors.location }" type="text">
+          <input id="event-location" v-model.trim="form.location" class="form-control" :class="{ 'is-invalid': errors.location }" type="text" aria-label="Event Location" autocomplete="off">
           <div v-if="errors.location" class="invalid-feedback d-block">{{ errors.location }}</div>
         </div>
         <div class="col-md-6 ll-form-group">
           <label for="event-city">City</label>
-          <input id="event-city" v-model.trim="form.city" class="form-control" :class="{ 'is-invalid': errors.city }" type="text">
+          <input id="event-city" v-model.trim="form.city" class="form-control" :class="{ 'is-invalid': errors.city }" type="text" aria-label="Event City" autocomplete="address-level2">
           <div v-if="errors.city" class="invalid-feedback d-block">{{ errors.city }}</div>
         </div>
       </div>

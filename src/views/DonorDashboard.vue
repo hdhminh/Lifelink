@@ -608,10 +608,13 @@
                     <div class="p-3 border-top bg-light">
                       <form @submit.prevent="sendAdminChatMessage" class="d-flex gap-2 align-items-stretch">
                         <input
+                          id="admin-chat-input"
                           type="text"
                           class="form-control form-control-sm"
                           placeholder="Type your reply..."
                           v-model="adminChatInputText"
+                          aria-label="Type your reply"
+                          autocomplete="off"
                           style="height: 38px;"
                         />
                         <button type="submit" class="btn btn-danger btn-sm px-4 d-flex align-items-center justify-content-center gap-1" style="height: 38px;"><i class="bi bi-send-fill"></i> Send</button>

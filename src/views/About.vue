@@ -21,6 +21,7 @@
               type="text"
               class="form-control"
               placeholder="e.g. Anh"
+              autocomplete="given-name"
             >
           </div>
           <div class="col-sm-6">
@@ -31,6 +32,7 @@
               type="text"
               class="form-control"
               placeholder="e.g. Nguyen"
+              autocomplete="family-name"
             >
           </div>
         </div>
@@ -43,6 +45,7 @@
                 id="role-donors"
                 v-model="selectedView"
                 type="radio"
+                aria-label="Donors Role"
                 name="roleSelector"
                 value="donors"
                 class="ll-radio-input"
@@ -64,6 +67,7 @@
                 id="role-hospital"
                 v-model="selectedView"
                 type="radio"
+                aria-label="Hospitals Role"
                 name="roleSelector"
                 value="hospital"
                 class="ll-radio-input"

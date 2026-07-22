@@ -580,10 +580,10 @@ function getAlertIcon(type) {
   --ll-cream:           #FFFDFB;
   --ll-espresso:        #2B2225;
   
-  --ll-slate-900:       #211A1C;
-  --ll-slate-700:       #4E4447;
-  --ll-slate-500:       #817377;
-  --ll-slate-400:       #A39498;
+  --ll-slate-900:       #1E1618;
+  --ll-slate-700:       #3D3336;
+  --ll-slate-500:       #4F4346;
+  --ll-slate-400:       #6B5B60;
   --ll-slate-300:       #CBD5E1;
   --ll-slate-200:       #EAE2DF;
   --ll-slate-100:       #F5EFEF;

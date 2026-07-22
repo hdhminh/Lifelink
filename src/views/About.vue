@@ -159,9 +159,11 @@ const welcomeMessage = computed(() => {
 })
 
 const selectedImage = computed(() => {
-  return selectedView.value === 'donors'
-    ? '/images/about-donors.jpg'
-    : '/images/about-hospital.jpg'
+  const base = import.meta.env.BASE_URL || './'
+  const path = selectedView.value === 'donors'
+    ? 'images/about-donors.jpg'
+    : 'images/about-hospital.jpg'
+  return base.endsWith('/') ? `${base}${path}` : `${base}/${path}`
 })
 
 onMounted(() => {

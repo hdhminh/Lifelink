@@ -105,13 +105,6 @@
             />
           </div>
         </div>
-
-        <!-- Pagination for Emergency Requests Grid -->
-        <PaginationControls
-          :current-page="currentPage"
-          :total-pages="totalPages"
-          @page-change="handlePageChange"
-        />
       </div>
 
       <!-- Right Column: Hotline directory sidebar -->
@@ -146,6 +139,13 @@
             </div>
           </div>
         </aside>
+
+        <!-- Pagination for Emergency Requests Grid placed under Hotlines card -->
+        <PaginationControls
+          :current-page="currentPage"
+          :total-pages="totalPages"
+          @page-change="handlePageChange"
+        />
       </div>
     </div>
 

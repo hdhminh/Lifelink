@@ -100,14 +100,15 @@
 
           <!-- Chat Input Footer (Visible to both guest & user) -->
           <div class="ll-chat-window-footer border-top p-2" style="flex-shrink: 0;">
-            <form @submit.prevent="sendChatMessage" class="d-flex gap-2">
+            <form @submit.prevent="sendChatMessage" class="d-flex gap-2 align-items-stretch">
               <input 
                 type="text" 
                 class="form-control form-control-sm" 
                 placeholder="Type your message..." 
                 v-model="chatInputText"
+                style="height: 36px;"
               />
-              <button type="submit" class="btn btn-sm btn-danger px-3"><i class="bi bi-send-fill"></i></button>
+              <button type="submit" class="btn btn-sm btn-danger px-3 d-flex align-items-center justify-content-center" style="height: 36px;"><i class="bi bi-send-fill"></i></button>
             </form>
           </div>
         </div>
@@ -227,6 +228,9 @@ async function sendChatMessage() {
     participantType = 'user'
   } else {
     chatId = getGuestSession().guestId
+    const code = chatId ? (chatId.split('_')[1]?.substring(0, 4).toUpperCase() || 'GUEST') : 'GUEST'
+    senderName = `Guest #${code}`
+    participantEmail = `Guest Session #${code}`
   }
 
   if (!chatId) return
@@ -274,6 +278,9 @@ async function sendFaqMessage(q) {
     participantType = 'user'
   } else {
     chatId = getGuestSession().guestId
+    const code = chatId ? (chatId.split('_')[1]?.substring(0, 4).toUpperCase() || 'GUEST') : 'GUEST'
+    senderName = `Guest #${code}`
+    participantEmail = `Guest Session #${code}`
   }
 
   if (!chatId) return
@@ -330,11 +337,12 @@ function resolveParticipantContext(threadId) {
       participantEmail: user.value.email || ''
     }
   }
+  const code = threadId ? (threadId.split('_')[1]?.substring(0, 4).toUpperCase() || 'GUEST') : 'GUEST'
   return {
     participantId: threadId,
     participantType: 'guest',
-    participantDisplayName: 'Guest User',
-    participantEmail: 'Guest Session'
+    participantDisplayName: `Guest #${code}`,
+    participantEmail: `Guest Session #${code}`
   }
 }
 

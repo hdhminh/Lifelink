@@ -146,13 +146,6 @@
             </div>
           </div>
         </aside>
-
-        <!-- Pagination controls below Emergency Hotlines card -->
-        <PaginationControls
-          :current-page="currentPage"
-          :total-pages="totalPages"
-          @page-change="handlePageChange"
-        />
       </div>
     </div>
 

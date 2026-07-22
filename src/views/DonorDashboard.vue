@@ -606,14 +606,15 @@
 
                     <!-- Chat Footer / Input -->
                     <div class="p-3 border-top bg-light">
-                      <form @submit.prevent="sendAdminChatMessage" class="d-flex gap-2">
+                      <form @submit.prevent="sendAdminChatMessage" class="d-flex gap-2 align-items-stretch">
                         <input
                           type="text"
                           class="form-control form-control-sm"
                           placeholder="Type your reply..."
                           v-model="adminChatInputText"
+                          style="height: 38px;"
                         />
-                        <button type="submit" class="btn btn-danger btn-sm px-4"><i class="bi bi-send-fill"></i> Send</button>
+                        <button type="submit" class="btn btn-danger btn-sm px-4 d-flex align-items-center justify-content-center gap-1" style="height: 38px;"><i class="bi bi-send-fill"></i> Send</button>
                       </form>
                     </div>
                   </div>
@@ -820,6 +821,10 @@ import { useEligibility } from '@/composables/useEligibility.js'
 const { userProfile, isAdmin, authLoading } = useAuth()
 const { isEligible, nextEligibleDate, daysUntilEligible } = useEligibility()
 const { showToast } = useToast()
+
+watch(isAdmin, (val) => {
+  document.title = val ? 'LifeLink - Admin Dashboard' : 'LifeLink - Donor Dashboard'
+}, { immediate: true })
 
 const eligibleInfo = computed(() => {
   const lastDate = userProfile.value?.lastDonationDate
@@ -1361,16 +1366,31 @@ let adminActiveThreadUnsubscribe = null
 
 const uniqueChats = computed(() => {
   return supportThreads.value
-    .map((thread) => ({
-      chatId: thread.id,
-      userDisplayName: thread.participantDisplayName || (thread.participantType === 'guest' ? 'Guest User' : 'Unknown User'),
-      userEmail: thread.participantEmail || (thread.participantType === 'guest' ? 'Guest Session' : 'N/A'),
-      lastMessageText: thread.lastMessage || '',
-      lastMessageTime: thread.lastMessageAt?.seconds || 0,
-      lastMessageSenderRole: thread.lastMessageSenderRole || 'participant',
-      adminLastReadAt: thread.adminLastReadAt?.seconds || 0,
-      participantType: thread.participantType || 'guest'
-    }))
+    .map((thread) => {
+      const code = thread.id ? (thread.id.split('_')[1]?.substring(0, 4).toUpperCase() || 'GUEST') : 'GUEST'
+      const defaultGuestName = `Guest #${code}`
+      const defaultGuestEmail = `Guest Session #${code}`
+      
+      let name = thread.participantDisplayName
+      if (!name || name === 'Guest User') {
+        name = thread.participantType === 'guest' ? defaultGuestName : 'Unknown User'
+      }
+      let email = thread.participantEmail
+      if (!email || email === 'Guest Session') {
+        email = thread.participantType === 'guest' ? defaultGuestEmail : 'N/A'
+      }
+
+      return {
+        chatId: thread.id,
+        userDisplayName: name,
+        userEmail: email,
+        lastMessageText: thread.lastMessage || '',
+        lastMessageTime: thread.lastMessageAt?.seconds || 0,
+        lastMessageSenderRole: thread.lastMessageSenderRole || 'participant',
+        adminLastReadAt: thread.adminLastReadAt?.seconds || 0,
+        participantType: thread.participantType || 'guest'
+      }
+    })
     .sort((a, b) => b.lastMessageTime - a.lastMessageTime)
 })
 

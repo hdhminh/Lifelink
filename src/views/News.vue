@@ -25,7 +25,7 @@
     </section>
 
     <section v-if="paginatedNews.length > 0" class="d-grid gap-3">
-      <article v-for="item in paginatedNews" :key="item.id" class="ll-card ll-news-card reveal-item">
+      <article v-for="item in paginatedNews" :key="item.id" class="ll-card ll-news-card">
         <div class="ll-news-meta">
           <span class="ll-news-date">{{ item.date }}</span>
           <span class="ll-badge ll-badge-category">{{ item.category }}</span>
@@ -52,7 +52,7 @@
       </article>
     </section>
 
-    <div v-else class="ll-empty-state reveal-item">
+    <div v-else class="ll-empty-state">
       <div class="ll-empty-state__icon"><i class="bi bi-newspaper"></i></div>
       <div class="ll-empty-state__title">No news articles match your search.</div>
       <p class="ll-empty-state__body">Try another keyword or clear the search field.</p>
@@ -61,7 +61,7 @@
     <PaginationControls
       :current-page="currentPage"
       :total-pages="totalPages"
-      @page-change="currentPage = $event"
+      @page-change="handlePageChange"
     />
   </div>
 </template>
@@ -240,6 +240,16 @@ const paginatedNews = computed(() => {
   return filteredNews.value.slice(start, start + ITEMS_PER_PAGE)
 })
 
+function handlePageChange(newPage) {
+  if (newPage >= 1 && newPage <= totalPages.value) {
+    currentPage.value = newPage
+    const target = document.querySelector('.ll-toolbar') || document.querySelector('.ll-page-header')
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+}
+
 function truncate(text) {
   return text.length > 180 ? `${text.slice(0, 180)}...` : text
 }
@@ -249,13 +259,6 @@ const { reveal } = useScrollReveal()
 
 watch(searchQuery, () => {
   currentPage.value = 1
-})
-
-watch(currentPage, () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-  setTimeout(() => {
-    reveal('.reveal-item', 60)
-  }, 50)
 })
 
 watch(user, () => {

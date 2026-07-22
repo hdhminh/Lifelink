@@ -181,10 +181,13 @@ async function fetchLiveNews() {
     }
 
     if (parsedNews.length > 0) {
-      // Sort live news by date descending
-      parsedNews.sort((a, b) => new Date(b.date) - new Date(a.date))
-      allNews.value = parsedNews
-      console.log(`[News] Live fetched and filtered ${parsedNews.length} blood donation articles.`)
+      // Merge RSS news with local verified news, avoiding duplicates by link
+      const existingLinks = new Set(sortedLocalNews.map(n => n.link))
+      const newItems = parsedNews.filter(n => !existingLinks.has(n.link))
+      const combined = [...newItems, ...sortedLocalNews]
+      combined.sort((a, b) => new Date(b.date) - new Date(a.date))
+      allNews.value = combined
+      console.log(`[News] Live fetched ${newItems.length} new blood donation articles. Total: ${combined.length}`)
     } else {
       console.log('[News] No live health articles matched blood donation filter. Using local fallback.')
     }
@@ -326,6 +329,13 @@ watch(searchQuery, () => {
   currentPage.value = 1
 })
 
+watch(currentPage, () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+  setTimeout(() => {
+    reveal('.reveal-item', 60)
+  }, 50)
+})
+
 watch(user, () => {
   dbUserLikes.value = new Set()
   setupLikesListener()
@@ -333,7 +343,9 @@ watch(user, () => {
 
 watch([loadingLive, paginatedNews], ([newLoading, newNews]) => {
   if (!newLoading && newNews.length > 0) {
-    reveal('.reveal-item', 60)
+    setTimeout(() => {
+      reveal('.reveal-item', 60)
+    }, 50)
   }
 }, { immediate: true })
 

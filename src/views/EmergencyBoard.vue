@@ -105,6 +105,13 @@
             />
           </div>
         </div>
+
+        <!-- Pagination for Emergency Requests Grid -->
+        <PaginationControls
+          :current-page="currentPage"
+          :total-pages="totalPages"
+          @page-change="handlePageChange"
+        />
       </div>
 
       <!-- Right Column: Hotline directory sidebar -->
@@ -140,11 +147,11 @@
           </div>
         </aside>
 
-        <!-- Pagination controls on the right column -->
+        <!-- Pagination controls below Emergency Hotlines card -->
         <PaginationControls
           :current-page="currentPage"
           :total-pages="totalPages"
-          @page-change="currentPage = $event"
+          @page-change="handlePageChange"
         />
       </div>
     </div>
@@ -432,6 +439,15 @@ const paginatedRequests = computed(() => {
   const start = (currentPage.value - 1) * ITEMS_PER_PAGE
   return filteredRequests.value.slice(start, start + ITEMS_PER_PAGE)
 })
+
+function handlePageChange(newPage) {
+  if (newPage >= 1 && newPage <= totalPages.value) {
+    currentPage.value = newPage
+    if (requestListContainer.value) {
+      requestListContainer.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+}
 
 const hasFilters = computed(() => filterBloodType.value || filterCity.value || filterUrgency.value || filterCompatibleOnly.value)
 

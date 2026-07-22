@@ -97,15 +97,15 @@
             <div class="ll-card h-100">
               <div class="ll-card__header d-flex justify-content-between align-items-center">
                 <h5 class="fw-bold mb-0 text-wine"><i class="bi bi-calendar-check-fill me-2"></i>Registered Events</h5>
-                <span class="badge bg-primary rounded-pill">{{ registeredEvents.length }}</span>
+                <span class="badge rounded-pill" style="background-color: var(--ll-wine-red); color: white;">{{ registeredEvents.length }}</span>
               </div>
               <div class="ll-card__body">
                 <div v-if="eventsLoading" class="text-center py-4">
-                  <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                  <div class="spinner-border spinner-border-sm text-danger" role="status"></div>
                 </div>
                 <div v-else-if="registeredEvents.length === 0" class="text-center py-4 text-slate-500">
                   <p class="mb-0">You haven't registered for any events yet.</p>
-                  <RouterLink to="/events" class="btn btn-sm btn-outline-primary mt-2">Browse Events</RouterLink>
+                  <RouterLink to="/events" class="btn btn-sm btn-outline-danger mt-2">Browse Events</RouterLink>
                 </div>
                 <div v-else class="list-group list-group-flush">
                   <div v-for="ev in registeredEvents" :key="ev.id" class="list-group-item px-0 py-3 border-bottom border-slate-100">

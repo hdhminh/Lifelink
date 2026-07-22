@@ -266,7 +266,12 @@ async function sendChatMessage() {
   }
 }
 
+const isSendingFaq = ref(false)
+
 async function sendFaqMessage(q) {
+  if (isSendingFaq.value) return
+  isSendingFaq.value = true
+
   let chatId = null
   let senderName = 'Guest User'
   let participantEmail = 'Guest Session'
@@ -283,7 +288,10 @@ async function sendFaqMessage(q) {
     participantEmail = `Guest Session #${code}`
   }
 
-  if (!chatId) return
+  if (!chatId) {
+    isSendingFaq.value = false
+    return
+  }
 
   try {
     await sendParticipantMessage({
@@ -325,6 +333,10 @@ async function sendFaqMessage(q) {
         createdAt: Date.now() / 1000
       })
     }, 400)
+  } finally {
+    setTimeout(() => {
+      isSendingFaq.value = false
+    }, 600)
   }
 }
 
@@ -628,6 +640,26 @@ function getAlertIcon(type) {
 
 * {
   box-sizing: border-box;
+}
+
+button,
+[type="button"],
+[type="reset"],
+[type="submit"],
+.btn,
+.ll-btn-primary,
+.ll-btn-secondary,
+.ll-chip,
+.ll-card-clickable,
+.list-group-item-action,
+.nav-link,
+.dropdown-item,
+label[for],
+.ll-chooser-card,
+.faq-questions-container button,
+.ll-role-label {
+  cursor: pointer !important;
+  user-select: none;
 }
 
 html {

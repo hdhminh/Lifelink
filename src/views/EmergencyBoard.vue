@@ -436,9 +436,7 @@ const paginatedRequests = computed(() => {
 function handlePageChange(newPage) {
   if (newPage >= 1 && newPage <= totalPages.value) {
     currentPage.value = newPage
-    if (requestListContainer.value) {
-      requestListContainer.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 }
 

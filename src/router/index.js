@@ -80,12 +80,13 @@ const router = createRouter({
   }
 })
 
-router.beforeEach(async (to, from, next) => {
+export async function navigationGuard(to, from, next) {
   document.title = to.meta?.title || 'LifeLink'
 
   const currentUser = await new Promise((resolve) => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      unsubscribe()
+    let unsubscribe = null
+    unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (typeof unsubscribe === 'function') unsubscribe()
       resolve(firebaseUser)
     })
   })
@@ -127,7 +128,9 @@ router.beforeEach(async (to, from, next) => {
   }
 
   next()
-})
+}
+
+router.beforeEach(navigationGuard)
 
 router.afterEach((to) => {
   if (!auth.currentUser && to.name && to.name !== 'Login' && to.name !== 'Register') {

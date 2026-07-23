@@ -15,6 +15,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:unit": "vitest run tests/unit tests/integration",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-lifelink \"vitest run tests/rules\"",
+    "test:all": "npm run test:unit && npm run test:rules",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },

@@ -84,7 +84,7 @@ export function useAuth() {
       uid,
       displayName,
       email,
-      role: (email.toLowerCase().trim() === 'admin@lifelink.org' || email.toLowerCase().trim() === 'admin@lifelink.vn') ? 'admin' : 'donor',
+      role: 'donor',
       bloodType,
       city,
       phoneNumber: phoneNumber || '',

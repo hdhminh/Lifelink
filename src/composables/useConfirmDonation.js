@@ -233,17 +233,28 @@ export function useConfirmDonation() {
     error.value = null
     success.value = false
     try {
-      const confirmationRef = doc(db, 'confirmations', confirmationId)
-      const confSnap = await getDoc(confirmationRef)
-      if (!confSnap.exists()) {
-        throw new Error('Confirmation record not found.')
+      const VALID_STATUSES = ['confirmed', 'arrived', 'donated', 'completed']
+      if (!VALID_STATUSES.includes(newStatus)) {
+        throw new Error('Invalid confirmation status.')
       }
-      const confData = confSnap.data()
-      const oldStatus = confData.status || 'confirmed'
-      const requestRef = doc(db, 'emergencyRequests', confData.requestId)
+
+      const confirmationRef = doc(db, 'confirmations', confirmationId)
       
       await runTransaction(db, async (transaction) => {
-        // 1. Perform reads first
+        // 1. Perform all reads first inside transaction
+        const confSnap = await transaction.get(confirmationRef)
+        if (!confSnap.exists()) {
+          throw new Error('Confirmation record not found.')
+        }
+
+        const confData = confSnap.data()
+        const oldStatus = confData.status || 'confirmed'
+
+        if (oldStatus === newStatus) {
+          return
+        }
+
+        const requestRef = doc(db, 'emergencyRequests', confData.requestId)
         const requestSnap = await transaction.get(requestRef)
 
         // 2. Perform writes second

@@ -34,6 +34,7 @@ export function useEmergencyRequests() {
    * @returns {void}
    */
   function startListening() {
+    stopListening()
     if (cachedRequests.value.length > 0) {
       requests.value = cachedRequests.value
       loading.value = false
@@ -107,7 +108,8 @@ export function useEmergencyRequests() {
   function filterRequests(bloodType, city, urgency) {
     return requests.value.filter(req => {
       const matchBloodType = !bloodType || req.bloodType === bloodType || req.bloodType === 'Any'
-      const matchCity = !city || req.city.toLowerCase().includes(city.toLowerCase())
+      const requestCity = req.city || ''
+      const matchCity = !city || requestCity.toLowerCase().includes(city.toLowerCase())
       const matchUrgency = !urgency || req.urgency === urgency
       return matchBloodType && matchCity && matchUrgency
     })

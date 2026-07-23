@@ -35,6 +35,7 @@ export function useDonationEvents() {
   }
 
   function startListening() {
+    stopListening()
     if (cachedEvents.value.length > 0) {
       events.value = cachedEvents.value
       loading.value = false

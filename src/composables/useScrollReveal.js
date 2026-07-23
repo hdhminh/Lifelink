@@ -19,8 +19,10 @@ export function useScrollReveal() {
     // Wait for Vue's DOM update cycle
     await nextTick()
     
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const prefersReducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false
     
+    if (typeof IntersectionObserver === 'undefined') return
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {

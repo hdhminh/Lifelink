@@ -2,10 +2,19 @@ import { nextTick } from 'vue'
 
 /**
  * useScrollReveal composable
- * Exposes a 'reveal' function that finds elements matching the selector
+ *
+ * Exposes a `reveal` function that finds elements matching the selector
  * and animates them as they enter the viewport using IntersectionObserver.
+ * Respects `prefers-reduced-motion` for accessibility compliance.
  */
 export function useScrollReveal() {
+  /**
+   * Initialises IntersectionObserver-based reveal animations on matched elements.
+   * Each element receives a staggered delay based on its DOM order.
+   * @param {string} selector - CSS selector to find elements to animate.
+   * @param {number} [delayMs=60] - Stagger delay between elements in milliseconds.
+   * @returns {Promise<void>} Resolves after observers are attached.
+   */
   const reveal = async (selector, delayMs = 60) => {
     // Wait for Vue's DOM update cycle
     await nextTick()

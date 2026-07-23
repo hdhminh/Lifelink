@@ -1,7 +1,18 @@
+/**
+ * useGuestSession.js
+ *
+ * Manages anonymous guest sessions via localStorage.
+ * Sessions auto-expire after 7 days (TTL_MS) to respect privacy.
+ * Stores filter preferences, last visited route, and interested events
+ * so returning guests get a seamless experience without login.
+ */
+
 import { ref } from 'vue'
 
+/** @constant {number} TTL_MS - Session time-to-live: 7 days in milliseconds. */
 const TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 
+/** @type {Object} Default session shape used when no stored session exists. */
 const defaultSession = {
   guestId: '',
   savedAt: 0,
@@ -12,7 +23,17 @@ const defaultSession = {
   preferredBloodType: ''
 }
 
+/**
+ * Composable providing guest session CRUD operations backed by localStorage.
+ * @returns {{ getGuestSession: () => Object, updateGuestSession: (updates: Object) => void, clearGuestSession: () => void }}
+ */
 export function useGuestSession() {
+  /**
+   * Retrieves the current guest session from localStorage.
+   * If the session has expired (older than TTL_MS), it is cleared and a fresh
+   * session is returned. If no guestId exists, one is auto-generated.
+   * @returns {Object} The current guest session merged with default values.
+   */
   function getGuestSession() {
     if (typeof window === 'undefined') return { ...defaultSession }
     try {
@@ -44,6 +65,11 @@ export function useGuestSession() {
     }
   }
 
+  /**
+   * Merges partial updates into the current guest session and persists to localStorage.
+   * Automatically updates the `savedAt` timestamp to extend TTL.
+   * @param {Object} updates - Partial session fields to merge.
+   */
   function updateGuestSession(updates) {
     if (typeof window === 'undefined') return
     try {
@@ -59,6 +85,10 @@ export function useGuestSession() {
     }
   }
 
+  /**
+   * Removes the guest session from localStorage entirely.
+   * Called when a guest registers or logs in.
+   */
   function clearGuestSession() {
     if (typeof window === 'undefined') return
     localStorage.removeItem('ll_guest_session')

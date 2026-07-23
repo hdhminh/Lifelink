@@ -1,3 +1,12 @@
+<script setup>
+/**
+ * AppFooter.vue
+ *
+ * Global application footer component containing quick navigation links,
+ * branding, copyright notice, and emergency network declaration.
+ */
+</script>
+
 <template>
   <footer class="ll-footer mt-auto">
     <div class="container-fluid px-4 px-lg-5" style="max-width: 1440px; margin: 0 auto;">

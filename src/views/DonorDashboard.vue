@@ -821,6 +821,9 @@ import { useConfirmDonation } from '@/composables/useConfirmDonation.js'
 import { useToast } from '@/composables/useToast.js'
 import { useEligibility } from '@/composables/useEligibility.js'
 
+// -----------------------------------------------------------------------------
+// SECTION 1: AUTH & ELIGIBILITY STATE
+// -----------------------------------------------------------------------------
 const { user, userProfile, isAdmin, authLoading } = useAuth()
 const { isEligible, nextEligibleDate, daysUntilEligible } = useEligibility()
 const { showToast } = useToast()
@@ -882,6 +885,9 @@ const {
   markAdminThreadRead
 } = useSupportChat()
 
+// -----------------------------------------------------------------------------
+// SECTION 2: ADMIN DASHBOARD STATS
+// -----------------------------------------------------------------------------
 const stats = reactive({
   usersCount: 0,
   activeRequestsCount: 0,
@@ -990,6 +996,9 @@ const usersLoading = ref(false)
 const adminEventsLoading = ref(false)
 const confirmationsLoadingState = ref(false)
 
+// -----------------------------------------------------------------------------
+// SECTION 3: USER MANAGEMENT & PERMISSIONS
+// -----------------------------------------------------------------------------
 async function fetchUsers(isSilent = false) {
   if (!isSilent) usersLoading.value = true
   try {
@@ -1082,6 +1091,9 @@ const requestStatusTabs = [
   { label: 'Cancelled', value: 'cancelled' }
 ]
 
+// -----------------------------------------------------------------------------
+// SECTION 4: EMERGENCY REQUEST MANAGEMENT
+// -----------------------------------------------------------------------------
 const filteredAdminRequests = computed(() => {
   if (selectedRequestStatus.value === 'all') return requestList.value
   return requestList.value.filter(req => req.status === selectedRequestStatus.value)
@@ -1228,6 +1240,9 @@ const editingEvent = ref(null)
 const showEventDeleteModal = ref(false)
 const eventToDelete = ref(null)
 
+// -----------------------------------------------------------------------------
+// SECTION 5: DONATION EVENT MANAGEMENT
+// -----------------------------------------------------------------------------
 function openCreateEventForm() {
   editingEvent.value = null
   showEventForm.value = true
@@ -1370,6 +1385,9 @@ const adminChatInputText = ref('')
 const adminChatScrollContainer = ref(null)
 let adminActiveThreadUnsubscribe = null
 
+// -----------------------------------------------------------------------------
+// SECTION 6: SUPPORT CHAT THREADS MANAGEMENT
+// -----------------------------------------------------------------------------
 const uniqueChats = computed(() => {
   return supportThreads.value
     .map((thread) => {

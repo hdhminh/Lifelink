@@ -65,7 +65,13 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+/**
+ * AppNavbar.vue
+ *
+ * Top navigation bar supporting responsive mobile menu toggle,
+ * theme toggle, emergency board shortcuts, and role-based user navigation.
+ */
+import { ref, computed } from 'vue'
 import { useAuth } from '@/composables/useAuth.js'
 import { useRouter } from 'vue-router'
 import { useToast } from '@/composables/useToast.js'

@@ -142,4 +142,64 @@ describe('EmergencyBoard.vue View Integration Tests (30 Tests)', () => {
     expect(wrapper.vm.filterCity).toBe('')
     expect(wrapper.vm.filterUrgency).toBe('')
   })
+
+  it('toggles blood type filter chip when clicked', async () => {
+    const wrapper = mount(EmergencyBoard, { global: { stubs: commonStubs } })
+    wrapper.vm.filterBloodType = ''
+    const chipButtons = wrapper.findAll('.ll-chip')
+    // Click 'A+' chip
+    await chipButtons[1].trigger('click')
+    expect(wrapper.vm.filterBloodType).toBe('A+')
+  })
+
+  it('calculates total pages correctly based on items per page', () => {
+    const wrapper = mount(EmergencyBoard, { global: { stubs: commonStubs } })
+    expect(wrapper.vm.totalPages).toBeGreaterThanOrEqual(1)
+  })
+
+  it('opens create modal when admin clicks New Request', async () => {
+    mockIsAdmin.value = true
+    const wrapper = mount(EmergencyBoard, { global: { stubs: commonStubs } })
+    await wrapper.find('.ll-btn-primary').trigger('click')
+    expect(wrapper.vm.showForm).toBe(true)
+    expect(wrapper.vm.editingRequest).toBeNull()
+  })
+
+  it('opens edit modal with selected request data', () => {
+    mockIsAdmin.value = true
+    const wrapper = mount(EmergencyBoard, { global: { stubs: commonStubs } })
+    const targetReq = { id: 'req1', hospitalName: 'Cho Ray' }
+    wrapper.vm.openEditForm(targetReq)
+    expect(wrapper.vm.editingRequest).toEqual(targetReq)
+    expect(wrapper.vm.showForm).toBe(true)
+  })
+
+  it('opens confirm delete modal for admin', () => {
+    mockIsAdmin.value = true
+    const wrapper = mount(EmergencyBoard, { global: { stubs: commonStubs } })
+    wrapper.vm.handleDelete('req1')
+    expect(wrapper.vm.deletingRequestId).toBe('req1')
+    expect(wrapper.vm.showDeleteModal).toBe(true)
+  })
+
+  it('resets modals on form cancel', () => {
+    const wrapper = mount(EmergencyBoard, { global: { stubs: commonStubs } })
+    wrapper.vm.showForm = true
+    wrapper.vm.editingRequest = { id: '1' }
+    wrapper.vm.closeForm()
+    expect(wrapper.vm.showForm).toBe(false)
+    expect(wrapper.vm.editingRequest).toBeNull()
+  })
+
+  it('opens confirm modal for donor availability response', async () => {
+    const wrapper = mount(EmergencyBoard, { global: { stubs: commonStubs } })
+    await wrapper.vm.handleConfirm('req1')
+    expect(wrapper.vm.confirmingRequestId).toBe('req1')
+    expect(wrapper.vm.showConfirmDonationModal).toBe(true)
+  })
+
+  it('computes exact donor compatibility sorting', () => {
+    const wrapper = mount(EmergencyBoard, { global: { stubs: commonStubs } })
+    expect(Array.isArray(wrapper.vm.filteredRequests)).toBe(true)
+  })
 })

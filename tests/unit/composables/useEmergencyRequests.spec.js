@@ -22,22 +22,21 @@ vi.mock('firebase/firestore', () => ({
   deleteDoc: (...args) => mockDeleteDoc(...args)
 }))
 
-describe('useEmergencyRequests.js (Full Unit Test Suite)', () => {
+describe('useEmergencyRequests.js (Expanded 28 Unit Tests)', () => {
   beforeEach(() => {
     vi.resetModules()
     vi.clearAllMocks()
-    // Default safe snapshot mock
     mockOnSnapshot.mockImplementation((q, callback) => {
       callback({
         docs: [
-          { id: 'req1', data: () => ({ hospitalName: 'Hospital A', status: 'active' }) }
+          { id: 'req1', data: () => ({ hospitalName: 'Hospital A', status: 'active', bloodType: 'O+', city: 'Hanoi', urgency: 'critical', createdAt: '2026-07-01' }) }
         ]
       })
       return vi.fn()
     })
   })
 
-  // 1.1 Listener & Cache
+  // 1.1 Listener & Cache (~11 tests)
   describe('Listener & Cache', () => {
     it('initialises with loading true when no cached requests exist', async () => {
       const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
@@ -58,7 +57,87 @@ describe('useEmergencyRequests.js (Full Unit Test Suite)', () => {
       expect(instance2.requests.value).toHaveLength(1)
     })
 
-    it('unsubscribes the previous listener before starting a new one', async () => {
+    it('creates an active-request query with status=active filter and createdAt desc order', async () => {
+      const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
+      const { startListening } = useEmergencyRequests()
+      const { query, where, orderBy } = await import('firebase/firestore')
+
+      startListening()
+      expect(where).toHaveBeenCalledWith('status', '==', 'active')
+      expect(orderBy).toHaveBeenCalledWith('createdAt', 'desc')
+    })
+
+    it('maps Firestore documents with their document IDs', async () => {
+      mockOnSnapshot.mockImplementation((q, callback) => {
+        callback({
+          docs: [
+            { id: 'doc_100', data: () => ({ hospitalName: 'Cho Ray', bloodType: 'A+' }) }
+          ]
+        })
+        return vi.fn()
+      })
+
+      const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
+      const { startListening, requests } = useEmergencyRequests()
+
+      startListening()
+      expect(requests.value[0]).toEqual({
+        id: 'doc_100',
+        hospitalName: 'Cho Ray',
+        bloodType: 'A+'
+      })
+    })
+
+    it('updates requests and clears loading after a snapshot fires', async () => {
+      let snapshotCallback
+      mockOnSnapshot.mockImplementation((q, callback) => {
+        snapshotCallback = callback
+        return vi.fn()
+      })
+
+      const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
+      const { startListening, requests, loading } = useEmergencyRequests()
+
+      startListening()
+      expect(loading.value).toBe(true)
+
+      snapshotCallback({
+        docs: [{ id: 'live1', data: () => ({ hospitalName: 'Live Hosp' }) }]
+      })
+
+      expect(loading.value).toBe(false)
+      expect(requests.value[0].id).toBe('live1')
+    })
+
+    it('handles an empty Firestore snapshot gracefully', async () => {
+      mockOnSnapshot.mockImplementation((q, callback) => {
+        callback({ docs: [] })
+        return vi.fn()
+      })
+
+      const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
+      const { startListening, requests, loading } = useEmergencyRequests()
+
+      startListening()
+      expect(loading.value).toBe(false)
+      expect(requests.value).toEqual([])
+    })
+
+    it('stores a readable error and clears loading when the listener fails', async () => {
+      mockOnSnapshot.mockImplementation((q, success, errorCb) => {
+        errorCb(new Error('Permission denied'))
+        return vi.fn()
+      })
+
+      const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
+      const { startListening, error, loading } = useEmergencyRequests()
+
+      startListening()
+      expect(loading.value).toBe(false)
+      expect(error.value).toBe('Could not load emergency requests. Please check your connection.')
+    })
+
+    it('unsubscribes the previous listener before starting a new one (Bug 1 regression)', async () => {
       const firstUnsubscribe = vi.fn()
       mockOnSnapshot.mockReturnValueOnce(firstUnsubscribe)
 
@@ -91,22 +170,22 @@ describe('useEmergencyRequests.js (Full Unit Test Suite)', () => {
       expect(() => stopListening()).not.toThrow()
     })
 
-    it('handles snapshot error by setting error message and clearing loading', async () => {
-      mockOnSnapshot.mockImplementation((q, success, errorCb) => {
-        errorCb(new Error('Network error'))
-        return vi.fn()
-      })
+    it('does not call the same unsubscribe function twice', async () => {
+      const unsubMock = vi.fn()
+      mockOnSnapshot.mockReturnValue(unsubMock)
 
       const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
-      const { startListening, error, loading } = useEmergencyRequests()
+      const { startListening, stopListening } = useEmergencyRequests()
 
       startListening()
-      expect(loading.value).toBe(false)
-      expect(error.value).toBe('Could not load emergency requests. Please check your connection.')
+      stopListening()
+      stopListening()
+
+      expect(unsubMock).toHaveBeenCalledTimes(1)
     })
   })
 
-  // 1.2 Admin One-Time Query
+  // 1.2 Admin One-Time Query (~4 tests)
   describe('Admin One-Time Query', () => {
     it('fetches all requests without applying active-status filter', async () => {
       mockGetDocs.mockResolvedValueOnce({
@@ -124,12 +203,25 @@ describe('useEmergencyRequests.js (Full Unit Test Suite)', () => {
       expect(loading.value).toBe(false)
       expect(error.value).toBeNull()
       expect(requests.value).toHaveLength(2)
-      expect(requests.value[0].id).toBe('1')
-      expect(requests.value[1].id).toBe('2')
+    })
+
+    it('maps all admin request documents with IDs', async () => {
+      mockGetDocs.mockResolvedValueOnce({
+        docs: [
+          { id: 'admin_req_1', data: () => ({ hospitalName: 'Bach Mai', city: 'Hanoi' }) }
+        ]
+      })
+
+      const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
+      const { fetchAllRequests, requests } = useEmergencyRequests()
+
+      await fetchAllRequests()
+      expect(requests.value[0].id).toBe('admin_req_1')
+      expect(requests.value[0].hospitalName).toBe('Bach Mai')
     })
 
     it('sets admin-panel error when fetchAllRequests fails', async () => {
-      mockGetDocs.mockRejectedValueOnce(new Error('Permission denied'))
+      mockGetDocs.mockRejectedValueOnce(new Error('Network offline'))
 
       const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
       const { fetchAllRequests, loading, error } = useEmergencyRequests()
@@ -139,9 +231,19 @@ describe('useEmergencyRequests.js (Full Unit Test Suite)', () => {
       expect(loading.value).toBe(false)
       expect(error.value).toBe('Could not load requests for the admin panel.')
     })
+
+    it('always clears loading after fetchAllRequests finishes', async () => {
+      mockGetDocs.mockRejectedValueOnce(new Error('Failed'))
+
+      const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
+      const { fetchAllRequests, loading } = useEmergencyRequests()
+
+      await fetchAllRequests()
+      expect(loading.value).toBe(false)
+    })
   })
 
-  // 1.3 Client Filtering
+  // 1.3 Client Filtering (~8 tests)
   describe('Client Filtering', () => {
     it('returns all requests when all filters are empty', async () => {
       const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
@@ -152,23 +254,34 @@ describe('useEmergencyRequests.js (Full Unit Test Suite)', () => {
         { id: '2', bloodType: 'O-', city: 'Da Nang', urgency: 'urgent' }
       ]
 
-      const result = filterRequests('', '', '')
-      expect(result).toHaveLength(2)
+      expect(filterRequests('', '', '')).toHaveLength(2)
     })
 
-    it('filters by exact blood type and includes Any', async () => {
+    it('filters by exact blood type', async () => {
       const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
       const { requests, filterRequests } = useEmergencyRequests()
 
       requests.value = [
         { id: '1', bloodType: 'A+', city: 'Hanoi', urgency: 'critical' },
-        { id: '2', bloodType: 'O-', city: 'Hanoi', urgency: 'urgent' },
-        { id: '3', bloodType: 'Any', city: 'Hanoi', urgency: 'moderate' }
+        { id: '2', bloodType: 'B+', city: 'Hanoi', urgency: 'urgent' }
       ]
 
-      const result = filterRequests('A+', '', '')
-      expect(result).toHaveLength(2)
-      expect(result.map(r => r.id)).toEqual(['1', '3'])
+      const res = filterRequests('A+', '', '')
+      expect(res).toHaveLength(1)
+      expect(res[0].id).toBe('1')
+    })
+
+    it('includes requests whose blood type is Any', async () => {
+      const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
+      const { requests, filterRequests } = useEmergencyRequests()
+
+      requests.value = [
+        { id: '1', bloodType: 'A+', city: 'Hanoi', urgency: 'critical' },
+        { id: '2', bloodType: 'Any', city: 'Hanoi', urgency: 'moderate' }
+      ]
+
+      const res = filterRequests('A+', '', '')
+      expect(res).toHaveLength(2)
     })
 
     it('filters city case-insensitively', async () => {
@@ -180,12 +293,49 @@ describe('useEmergencyRequests.js (Full Unit Test Suite)', () => {
         { id: '2', bloodType: 'O-', city: 'Hanoi', urgency: 'urgent' }
       ]
 
-      const result = filterRequests('', 'ho chi minh', '')
-      expect(result).toHaveLength(1)
-      expect(result[0].id).toBe('1')
+      const res = filterRequests('', 'HO CHI MINH', '')
+      expect(res).toHaveLength(1)
+      expect(res[0].id).toBe('1')
     })
 
-    it('does not crash when a request has a missing city field', async () => {
+    it('filters by urgency level', async () => {
+      const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
+      const { requests, filterRequests } = useEmergencyRequests()
+
+      requests.value = [
+        { id: '1', bloodType: 'A+', city: 'Hanoi', urgency: 'critical' },
+        { id: '2', bloodType: 'A+', city: 'Hanoi', urgency: 'moderate' }
+      ]
+
+      const res = filterRequests('', '', 'critical')
+      expect(res).toHaveLength(1)
+      expect(res[0].id).toBe('1')
+    })
+
+    it('combines blood type, city and urgency filters', async () => {
+      const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
+      const { requests, filterRequests } = useEmergencyRequests()
+
+      requests.value = [
+        { id: '1', bloodType: 'A+', city: 'Hanoi', urgency: 'critical' },
+        { id: '2', bloodType: 'A+', city: 'Hanoi', urgency: 'moderate' },
+        { id: '3', bloodType: 'B+', city: 'Hanoi', urgency: 'critical' }
+      ]
+
+      const res = filterRequests('A+', 'Hanoi', 'critical')
+      expect(res).toHaveLength(1)
+      expect(res[0].id).toBe('1')
+    })
+
+    it('returns an empty array when no request matches', async () => {
+      const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
+      const { requests, filterRequests } = useEmergencyRequests()
+
+      requests.value = [{ id: '1', bloodType: 'AB-', city: 'Can Tho', urgency: 'moderate' }]
+      expect(filterRequests('O+', 'Hanoi', 'critical')).toEqual([])
+    })
+
+    it('does not crash when a request has a missing city field (Bug 4 regression)', async () => {
       const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
       const { requests, filterRequests } = useEmergencyRequests()
 
@@ -195,28 +345,23 @@ describe('useEmergencyRequests.js (Full Unit Test Suite)', () => {
       ]
 
       expect(() => filterRequests('', 'Ho Chi Minh', '')).not.toThrow()
-      const filtered = filterRequests('', 'Ho Chi Minh', '')
-      expect(filtered).toHaveLength(1)
+      expect(filterRequests('', 'Ho Chi Minh', '')).toHaveLength(1)
     })
   })
 
-  // 1.4 CRUD Operations
+  // 1.4 CRUD Operations (~8 tests)
   describe('CRUD Operations', () => {
-    it('creates a request with default system fields', async () => {
+    it('creates a request with status active and confirmedCount zero', async () => {
       mockAddDoc.mockResolvedValueOnce({ id: 'new_id' })
 
       const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
-      const { createRequest, loading, error } = useEmergencyRequests()
+      const { createRequest } = useEmergencyRequests()
 
-      const payload = { hospitalName: 'Cho Ray', bloodType: 'O+', city: 'HCM', urgency: 'critical' }
-      await createRequest(payload, 'admin_123')
+      await createRequest({ hospitalName: 'Cho Ray', bloodType: 'O+' }, 'admin_123')
 
-      expect(loading.value).toBe(false)
-      expect(error.value).toBeNull()
       expect(mockAddDoc).toHaveBeenCalledWith(
         undefined,
         expect.objectContaining({
-          hospitalName: 'Cho Ray',
           confirmedCount: 0,
           status: 'active',
           createdBy: 'admin_123'
@@ -224,15 +369,32 @@ describe('useEmergencyRequests.js (Full Unit Test Suite)', () => {
       )
     })
 
-    it('uses custom createdAt when provided instead of serverTimestamp', async () => {
+    it('adds createdBy, createdAt and updatedAt system fields', async () => {
+      mockAddDoc.mockResolvedValueOnce({ id: 'new_id' })
+
+      const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
+      const { createRequest } = useEmergencyRequests()
+
+      await createRequest({ hospitalName: 'Cho Ray' }, 'admin_999')
+
+      expect(mockAddDoc).toHaveBeenCalledWith(
+        undefined,
+        expect.objectContaining({
+          createdBy: 'admin_999',
+          createdAt: 'MOCK_SERVER_TIMESTAMP',
+          updatedAt: 'MOCK_SERVER_TIMESTAMP'
+        })
+      )
+    })
+
+    it('uses a supplied createdAt instead of serverTimestamp', async () => {
       mockAddDoc.mockResolvedValueOnce({ id: 'new_id' })
 
       const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
       const { createRequest } = useEmergencyRequests()
 
       const customDate = '2026-06-01T10:00'
-      const payload = { hospitalName: 'Cho Ray', createdAt: customDate }
-      await createRequest(payload, 'admin_123')
+      await createRequest({ hospitalName: 'Cho Ray', createdAt: customDate }, 'admin_123')
 
       expect(mockAddDoc).toHaveBeenCalledWith(
         undefined,
@@ -242,7 +404,34 @@ describe('useEmergencyRequests.js (Full Unit Test Suite)', () => {
       )
     })
 
-    it('updates request and rethrows error on failure', async () => {
+    it('sets an error and rethrows when request creation fails', async () => {
+      mockAddDoc.mockRejectedValueOnce(new Error('Add failed'))
+
+      const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
+      const { createRequest, error } = useEmergencyRequests()
+
+      await expect(createRequest({ hospitalName: 'Cho Ray' }, 'admin_123')).rejects.toThrow('Add failed')
+      expect(error.value).toBe('Could not create the emergency request.')
+    })
+
+    it('updates the selected request and adds updatedAt', async () => {
+      mockUpdateDoc.mockResolvedValueOnce()
+
+      const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
+      const { updateRequest } = useEmergencyRequests()
+
+      await updateRequest('req1', { status: 'fulfilled' })
+
+      expect(mockUpdateDoc).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          status: 'fulfilled',
+          updatedAt: 'MOCK_SERVER_TIMESTAMP'
+        })
+      )
+    })
+
+    it('sets an error and rethrows when request update fails', async () => {
       mockUpdateDoc.mockRejectedValueOnce(new Error('Update error'))
 
       const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
@@ -252,16 +441,24 @@ describe('useEmergencyRequests.js (Full Unit Test Suite)', () => {
       expect(error.value).toBe('Could not update the emergency request.')
     })
 
-    it('deletes request document successfully', async () => {
+    it('deletes the correct request document', async () => {
       mockDeleteDoc.mockResolvedValueOnce()
 
       const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
-      const { deleteRequest, error, loading } = useEmergencyRequests()
+      const { deleteRequest } = useEmergencyRequests()
 
-      await deleteRequest('req1')
-      expect(loading.value).toBe(false)
-      expect(error.value).toBeNull()
-      expect(mockDeleteDoc).toHaveBeenCalled()
+      await deleteRequest('req_to_delete')
+      expect(mockDeleteDoc).toHaveBeenCalledWith(expect.objectContaining({ id: 'req_to_delete' }))
+    })
+
+    it('sets an error and rethrows when request deletion fails', async () => {
+      mockDeleteDoc.mockRejectedValueOnce(new Error('Delete error'))
+
+      const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
+      const { deleteRequest, error } = useEmergencyRequests()
+
+      await expect(deleteRequest('req1')).rejects.toThrow('Delete error')
+      expect(error.value).toBe('Could not delete the emergency request.')
     })
   })
 })

@@ -78,18 +78,9 @@ const isLoading = ref(true)
 const progress = ref(0)
 
 onMounted(() => {
-  // Check if session already loaded to prevent blocking repeat visits or Lighthouse audits
-  if (typeof window !== 'undefined' && window.sessionStorage) {
-    if (sessionStorage.getItem('lifelink_visited')) {
-      isLoading.value = false
-      return
-    }
-    sessionStorage.setItem('lifelink_visited', 'true')
-  }
-
-  // Fast initial SVG Path animation (650ms)
-  const duration = 650
-  const intervalTime = 15
+  // Smooth 1.0s SVG Path animation playback on every page load
+  const duration = 1000
+  const intervalTime = 16
   const step = (100 / (duration / intervalTime))
 
   const timer = setInterval(() => {
@@ -99,7 +90,7 @@ onMounted(() => {
       clearInterval(timer)
       setTimeout(() => {
         isLoading.value = false
-      }, 150)
+      }, 200)
     }
   }, intervalTime)
 })

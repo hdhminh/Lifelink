@@ -310,87 +310,41 @@ const runAnimations = () => {
     ease: 'sine.inOut'
   })
 
-  // 3. GSAP Animated Counter Numbers for Stats
-  const statsObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        const dummyDonor = { val: 0 }
-        gsap.to(dummyDonor, {
-          val: 12486,
-          duration: 1.6,
-          ease: 'power2.out',
-          onUpdate: () => { donorCount.value = Math.floor(dummyDonor.val) }
-        })
-
-        const dummyPartner = { val: 0 }
-        gsap.to(dummyPartner, {
-          val: 48,
-          duration: 1.4,
-          ease: 'power2.out',
-          onUpdate: () => { partnerCount.value = Math.floor(dummyPartner.val) }
-        })
-
-        const dummyResolve = { val: 0 }
-        gsap.to(dummyResolve, {
-          val: 98.4,
-          duration: 1.5,
-          ease: 'power2.out',
-          onUpdate: () => { resolveRate.value = Number(dummyResolve.val.toFixed(1)) }
-        })
-
-        statsObserver.unobserve(entry.target)
-      }
-    })
-  }, { threshold: 0.1 })
-  
+  // 4. GSAP Counter Numbers for Stats (IntersectionObserver)
   if (statsContainer.value) {
+    const statsObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const dummyDonor = { val: 0 }
+          gsap.to(dummyDonor, {
+            val: 12486,
+            duration: 1.6,
+            ease: 'power2.out',
+            onUpdate: () => { donorCount.value = Math.floor(dummyDonor.val) }
+          })
+
+          const dummyPartner = { val: 0 }
+          gsap.to(dummyPartner, {
+            val: 48,
+            duration: 1.4,
+            ease: 'power2.out',
+            onUpdate: () => { partnerCount.value = Math.floor(dummyPartner.val) }
+          })
+
+          const dummyResolve = { val: 0 }
+          gsap.to(dummyResolve, {
+            val: 98.4,
+            duration: 1.5,
+            ease: 'power2.out',
+            onUpdate: () => { resolveRate.value = Number(dummyResolve.val.toFixed(1)) }
+          })
+
+          statsObserver.unobserve(entry.target)
+        }
+      })
+    }, { threshold: 0.1 })
+    
     statsObserver.observe(statsContainer.value)
-  }
-
-  // 4. GSAP Stagger Entrance for Timeline Steps
-  const timelineObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        const stepItems = entry.target.querySelectorAll('.ll-vertical-step-item')
-        if (stepItems.length) {
-          gsap.from(stepItems, {
-            opacity: 0,
-            x: -20,
-            duration: 0.6,
-            stagger: 0.12,
-            ease: 'power2.out'
-          })
-        }
-        timelineObserver.unobserve(entry.target)
-      }
-    })
-  }, { threshold: 0.1 })
-
-  if (timelineContainer.value) {
-    timelineObserver.observe(timelineContainer.value)
-  }
-
-  // 5. GSAP Stagger Entrance for Features Grid
-  const featuresObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        const featureCards = entry.target.querySelectorAll('.ll-feature-card')
-        if (featureCards.length) {
-          gsap.from(featureCards, {
-            opacity: 0,
-            y: 24,
-            duration: 0.6,
-            stagger: 0.1,
-            ease: 'power2.out'
-          })
-        }
-        featuresObserver.unobserve(entry.target)
-      }
-    })
-  }, { threshold: 0.1 })
-
-  if (featuresContainer.value) {
-    featuresObserver.observe(featuresContainer.value)
   }
 }
 </script>

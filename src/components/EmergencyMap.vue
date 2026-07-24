@@ -4,10 +4,10 @@
     <div class="ll-map-toolbar d-flex flex-wrap justify-content-between align-items-center gap-2 p-2 px-3 rounded-top-lg border border-bottom-0" style="background-color: #ffffff; border-color: #EAE2DF;">
       <div class="d-flex align-items-center gap-2">
         <span class="ll-live-dot ll-live-dot--pulse" style="background-color: #8E2435;"></span>
-        <h5 class="m-0 font-weight-700 d-inline-flex align-items-center" style="font-size: 1.0rem; line-height: 1; color: #8E2435 !important;">
+        <h5 class="m-0 font-weight-700" style="font-size: 1.0rem; color: #8E2435 !important;">
           <i class="bi bi-geo-alt-fill me-1" style="color: #8E2435;"></i> Live Response Map
         </h5>
-        <span class="badge rounded-pill ms-1 d-inline-flex align-items-center" style="font-size: 0.72rem; padding: 0.35rem 0.65rem; line-height: 1; background-color: #8E2435; color: #ffffff;">
+        <span class="badge rounded-pill ms-1" style="font-size: 0.7rem; background-color: #8E2435; color: #ffffff;">
           {{ activeResponses.length }} Active Responder{{ activeResponses.length !== 1 ? 's' : '' }}
         </span>
       </div>
@@ -16,7 +16,7 @@
         <select
           v-model="selectedRequestId"
           class="form-select form-select-sm"
-          style="min-width: 170px; max-width: 220px; height: 36px; font-size: 0.78rem; background-color: #FAF5EF; color: #2B2225; border-color: #EAE2DF;"
+          style="min-width: 170px; max-width: 220px; font-size: 0.78rem; background-color: #FAF5EF; color: #2B2225; border-color: #EAE2DF;"
           aria-label="Select emergency request focus"
         >
           <option value="" style="background-color: #ffffff; color: #2B2225;">All Active Hospitals ({{ activeRequests.length }})</option>
@@ -43,7 +43,6 @@
       </div>
     </div>
 
-
     <!-- Main Grid: Left Map Surface, Right Live Activity Panel -->
     <div class="row g-0 ll-map-body-grid border border-top-0 rounded-bottom-lg overflow-hidden bg-white shadow-sm">
       <!-- Map View Surface -->
@@ -54,16 +53,8 @@
           <span class="small text-slate-600 font-weight-500">Initializing Live Response Map...</span>
         </div>
 
-        <div v-else-if="mapError" class="ll-map-error-overlay p-4 text-center">
-          <i class="bi bi-exclamation-triangle-fill fs-2 mb-2 d-block" style="color: #8E2435;"></i>
-          <h6 class="fw-bold text-slate-800">{{ mapError }}</h6>
-          <button type="button" class="btn btn-sm mt-2 text-white font-weight-600" style="background-color: #8E2435;" @click="initLeafletMap">
-            Switch to OpenStreetMap
-          </button>
-        </div>
-
         <!-- Map Container Div (Guaranteed height: 540px) -->
-        <div id="emergency-map-surface" ref="mapElement" style="width: 100%; height: 540px; min-height: 540px; position: relative; z-index: 1;"></div>
+        <div id="emergency-map-surface" ref="mapElement" style="width: 100%; height: 540px; min-height: 540px; position: relative; z-index: 1; background-color: #f8f9fa;"></div>
 
         <!-- Floating Map Legend Overlay (Z-Index 1000 with EXACT SVG Map Pin Icons) -->
         <div class="ll-map-legend p-2 px-3 bg-white border rounded shadow-sm position-absolute bottom-0 start-0 m-3" style="z-index: 1000;">
@@ -173,7 +164,7 @@
 <script setup>
 /**
  * EmergencyMap.vue
- * Core real-time response map component built with Google Maps & CartoDB Voyager Leaflet fallback.
+ * Core real-time response map component built with CartoDB Voyager Leaflet Map Engine.
  * Uses LifeLink brand Wine Red palette (#8E2435).
  */
 
@@ -199,13 +190,9 @@ const { responses: activeResponses, startListening, stopListening } = useActiveR
 
 const mapElement = ref(null)
 const mapLoading = ref(true)
-const mapError = ref(null)
 const selectedRequestId = ref('')
 const activityLogs = ref([])
-const isUsingLeaflet = ref(false)
 
-let googleMap = null
-let googleInstance = null
 let leafletMap = null
 
 // Dictionaries to manage map instances
@@ -213,7 +200,6 @@ const hospitalMarkers = new Map()
 const hospitalCircles = new Map()
 const donorMarkers = new Map()
 const donorPolylines = new Map()
-const infoWindows = new Map()
 
 const activeRequests = computed(() => {
   return props.emergencyRequests.filter(r => r.status === 'active')
@@ -240,99 +226,11 @@ function truncateText(text, maxLen = 18) {
   return text.substring(0, maxLen - 3) + '...'
 }
 
-function loadGoogleMapsScript(apiKey) {
-  return new Promise((resolve, reject) => {
-    if (typeof window !== 'undefined' && window.google && window.google.maps) {
-      resolve(window.google)
-      return
-    }
-    const existing = document.getElementById('google-maps-script-tag')
-    if (existing) {
-      if (window.google && window.google.maps) {
-        resolve(window.google)
-      } else {
-        existing.addEventListener('load', () => resolve(window.google))
-        existing.addEventListener('error', (e) => reject(e))
-      }
-      return
-    }
-    const script = document.createElement('script')
-    script.id = 'google-maps-script-tag'
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
-    script.async = true
-    script.defer = true
-    script.onload = () => resolve(window.google)
-    script.onerror = (err) => reject(err)
-    document.head.appendChild(script)
-  })
-}
-
 /**
- * Initializes Google Maps Engine with automatic Leaflet fallback.
+ * Initializes High-Performance CartoDB Voyager Leaflet Map Engine.
  */
-async function initGoogleMap() {
+function initMapEngine() {
   mapLoading.value = true
-  mapError.value = null
-  isUsingLeaflet.value = false
-
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
-
-  if (typeof window !== 'undefined') {
-    window.gm_authFailure = () => {
-      console.warn('[EmergencyMap] Google Maps gm_authFailure triggered. Switching to Leaflet engine...')
-      initLeafletMap()
-    }
-  }
-
-  if (!apiKey) {
-    initLeafletMap()
-    return
-  }
-
-  try {
-    googleInstance = await loadGoogleMapsScript(apiKey)
-
-    const center = { lat: 10.7548, lng: 106.6601 }
-
-    if (mapElement.value) {
-      mapElement.value.innerHTML = ''
-    }
-
-    googleMap = new googleInstance.maps.Map(mapElement.value, {
-
-      center,
-      zoom: 12,
-      mapTypeId: 'roadmap',
-      disableDefaultUI: false,
-      zoomControl: true,
-      streetViewControl: false,
-      mapTypeControl: false,
-      styles: [
-        {
-          featureType: 'poi.medical',
-          elementType: 'geometry',
-          stylers: [{ color: '#fde8e8' }]
-        }
-      ]
-    })
-
-    mapLoading.value = false
-    logActivity('Google Maps Engine initialized.')
-    renderHospitalMarkers()
-    renderDonorMarkers()
-  } catch (err) {
-    console.warn('[EmergencyMap] Google Maps load warning, falling back to Leaflet:', err)
-    initLeafletMap()
-  }
-}
-
-/**
- * Fallback Leaflet Map Engine (CartoDB Voyager Tiles).
- */
-function initLeafletMap() {
-  isUsingLeaflet.value = true
-  mapError.value = null
-  mapLoading.value = false
 
   if (leafletMap) {
     try {
@@ -345,10 +243,14 @@ function initLeafletMap() {
 
   if (!mapElement.value) return
 
-  // CLEAR ALL PREVIOUS DOM CHILDREN (Google Maps error containers, old canvas nodes)
+  // CLEAR PREVIOUS DOM NODES
   mapElement.value.innerHTML = ''
 
-  leafletMap = L.map(mapElement.value).setView([10.7548, 106.6601], 12)
+  leafletMap = L.map(mapElement.value, {
+    center: [10.7548, 106.6601],
+    zoom: 12,
+    zoomControl: true
+  })
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
@@ -356,9 +258,10 @@ function initLeafletMap() {
     maxZoom: 19
   }).addTo(leafletMap)
 
+  mapLoading.value = false
   logActivity('Live Response Map Engine active.')
-  renderLeafletHospitalMarkers()
-  renderLeafletDonorMarkers()
+  renderHospitalMarkers()
+  renderDonorMarkers()
 
   setTimeout(() => {
     if (leafletMap) {
@@ -375,7 +278,7 @@ function initLeafletMap() {
 /**
  * Renders Hospital Markers & Radar Circles in Leaflet.
  */
-function renderLeafletHospitalMarkers() {
+function renderHospitalMarkers() {
   if (!leafletMap) return
 
   hospitalMarkers.forEach(m => leafletMap.removeLayer(m))
@@ -449,7 +352,7 @@ function renderLeafletHospitalMarkers() {
 /**
  * Renders Donor Markers in Leaflet.
  */
-function renderLeafletDonorMarkers() {
+function renderDonorMarkers() {
   if (!leafletMap) return
 
   const currentKeys = new Set(filteredResponders.value.map(r => r.trackingKey))
@@ -516,192 +419,6 @@ function renderLeafletDonorMarkers() {
   })
 }
 
-/**
- * Renders Hospital Markers & Radar Circles in Google Maps.
- */
-function renderHospitalMarkers() {
-  if (isUsingLeaflet.value) {
-    renderLeafletHospitalMarkers()
-    return
-  }
-  if (!googleMap || !googleInstance) return
-
-  hospitalMarkers.forEach(m => m.setMap(null))
-  hospitalCircles.forEach(cArray => cArray.forEach(c => c.setMap(null)))
-  hospitalMarkers.clear()
-  hospitalCircles.clear()
-
-  const bounds = new googleInstance.maps.LatLngBounds()
-  let hasValidCoords = false
-
-  activeRequests.value.forEach((req) => {
-    const coords = (req.latitude && req.longitude)
-      ? { lat: req.latitude, lng: req.longitude }
-      : getHospitalCoordinates(req.hospitalName, req.city)
-
-    const pos = { lat: coords.lat, lng: coords.lng }
-    bounds.extend(pos)
-    hasValidCoords = true
-
-    const urgencyColor = req.urgency === 'critical' ? '#8E2435' : (req.urgency === 'urgent' ? '#B45309' : '#D99B26')
-
-    const marker = new googleInstance.maps.Marker({
-      position: pos,
-      map: googleMap,
-      title: req.hospitalName,
-      icon: {
-        path: googleInstance.maps.SymbolPath.CIRCLE,
-        scale: 12,
-        fillColor: urgencyColor,
-        fillOpacity: 1,
-        strokeWeight: 3,
-        strokeColor: '#ffffff'
-      }
-    })
-
-    const infoWindow = new googleInstance.maps.InfoWindow({
-      content: `
-        <div style="padding: 6px; font-family: system-ui, sans-serif; max-width: 220px;">
-          <strong style="color: #8E2435; font-size: 0.9rem;">🏥 ${req.hospitalName}</strong>
-          <div style="font-size: 0.75rem; color: #555; margin-top: 4px;">
-            Blood Needed: <strong style="color: #8E2435;">${req.bloodType}</strong><br>
-            Urgency: <span style="text-transform: uppercase; font-weight: bold; color: ${urgencyColor};">${req.urgency}</span><br>
-            Confirmed: <strong>${req.confirmedCount || 0} / ${req.unitsNeeded}</strong> units
-          </div>
-        </div>
-      `
-    })
-
-    marker.addListener('click', () => {
-      infoWindows.forEach(iw => iw.close())
-      infoWindow.open(googleMap, marker)
-      selectedRequestId.value = req.id
-    })
-
-    hospitalMarkers.set(req.id, marker)
-    infoWindows.set(req.id, infoWindow)
-
-    const innerCircle = new googleInstance.maps.Circle({
-      strokeColor: urgencyColor,
-      strokeOpacity: 0.8,
-      strokeWeight: 2,
-      fillColor: urgencyColor,
-      fillOpacity: 0.15,
-      map: googleMap,
-      center: pos,
-      radius: 3000
-    })
-
-    const outerCircle = new googleInstance.maps.Circle({
-      strokeColor: urgencyColor,
-      strokeOpacity: 0.4,
-      strokeWeight: 1,
-      fillColor: urgencyColor,
-      fillOpacity: 0.05,
-      map: googleMap,
-      center: pos,
-      radius: 10000
-    })
-
-    hospitalCircles.set(req.id, [innerCircle, outerCircle])
-  })
-
-  if (hasValidCoords && activeRequests.value.length > 0) {
-    googleMap.fitBounds(bounds)
-    if (activeRequests.value.length === 1) {
-      googleMap.setZoom(13)
-    }
-  }
-}
-
-/**
- * Renders Donor Markers in Google Maps.
- */
-function renderDonorMarkers() {
-  if (isUsingLeaflet.value) {
-    renderLeafletDonorMarkers()
-    return
-  }
-  if (!googleMap || !googleInstance) return
-
-  const currentKeys = new Set(filteredResponders.value.map(r => r.trackingKey))
-
-  donorMarkers.forEach((marker, key) => {
-    if (!currentKeys.has(key)) {
-      marker.setMap(null)
-      donorMarkers.delete(key)
-      logActivity(`Responder marker removed (${key.substring(0, 6)})`)
-    }
-  })
-
-  donorPolylines.forEach((line, key) => {
-    if (!currentKeys.has(key)) {
-      line.setMap(null)
-      donorPolylines.delete(key)
-    }
-  })
-
-  filteredResponders.value.forEach((resp) => {
-    const donorPos = { lat: resp.latitude, lng: resp.longitude }
-    const key = resp.trackingKey
-
-    if (donorMarkers.has(key)) {
-      const existingMarker = donorMarkers.get(key)
-      existingMarker.setPosition(donorPos)
-
-      if (donorPolylines.has(key) && resp.hospitalLat && resp.hospitalLng) {
-        const line = donorPolylines.get(key)
-        line.setPath([donorPos, { lat: resp.hospitalLat, lng: resp.hospitalLng }])
-      }
-    } else {
-      logActivity(`🚗 Donor ${resp.donorName} (${resp.bloodType}) joined route`)
-
-      const marker = new googleInstance.maps.Marker({
-        position: donorPos,
-        map: googleMap,
-        title: `${resp.donorName} (${resp.bloodType})`,
-        icon: {
-          path: googleInstance.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-          scale: 6,
-          fillColor: '#0d6efd',
-          fillOpacity: 1,
-          strokeWeight: 2,
-          strokeColor: '#ffffff'
-        }
-      })
-
-      const infoWindow = new googleInstance.maps.InfoWindow({
-        content: `
-          <div style="padding: 4px; font-size: 0.78rem;">
-            <strong>🚗 ${resp.donorName}</strong> (${resp.bloodType})<br>
-            Status: <span style="color: #0d6efd; font-weight: bold;">${resp.status}</span><br>
-            Distance: <strong>${formatDistance(resp.distanceMeters)}</strong><br>
-            ETA: <strong>~${resp.etaMins || 1} min</strong>
-          </div>
-        `
-      })
-
-      marker.addListener('click', () => {
-        infoWindow.open(googleMap, marker)
-      })
-
-      donorMarkers.set(key, marker)
-
-      if (resp.hospitalLat && resp.hospitalLng) {
-        const polyline = new googleInstance.maps.Polyline({
-          path: [donorPos, { lat: resp.hospitalLat, lng: resp.hospitalLng }],
-          geodesic: true,
-          strokeColor: '#0d6efd',
-          strokeOpacity: 0.7,
-          strokeWeight: 3,
-          map: googleMap
-        })
-        donorPolylines.set(key, polyline)
-      }
-    }
-  })
-}
-
 function centerMapOnSelected() {
   if (selectedRequestId.value) {
     const req = activeRequests.value.find(r => r.id === selectedRequestId.value)
@@ -710,16 +427,30 @@ function centerMapOnSelected() {
         ? { lat: req.latitude, lng: req.longitude }
         : getHospitalCoordinates(req.hospitalName, req.city)
 
-      if (isUsingLeaflet.value && leafletMap) {
+      if (leafletMap) {
         leafletMap.setView([coords.lat, coords.lng], 14)
-      } else if (googleMap) {
-        googleMap.setCenter(coords)
-        googleMap.setZoom(14)
       }
     }
   } else {
     renderHospitalMarkers()
   }
+}
+
+function refreshMapSize() {
+  nextTick(() => {
+    setTimeout(() => {
+      if (leafletMap) {
+        leafletMap.invalidateSize(true)
+        renderHospitalMarkers()
+        renderDonorMarkers()
+      }
+    }, 50)
+    setTimeout(() => {
+      if (leafletMap) {
+        leafletMap.invalidateSize(true)
+      }
+    }, 250)
+  })
 }
 
 watch(activeRequests, () => {
@@ -734,49 +465,25 @@ watch(selectedRequestId, () => {
   centerMapOnSelected()
 })
 
-function refreshMapSize() {
-  nextTick(() => {
-    setTimeout(() => {
-      if (isUsingLeaflet.value && leafletMap) {
-        leafletMap.invalidateSize(true)
-        renderLeafletHospitalMarkers()
-        renderLeafletDonorMarkers()
-      } else if (googleMap && googleInstance) {
-        googleInstance.maps.event.trigger(googleMap, 'resize')
-        renderHospitalMarkers()
-        renderDonorMarkers()
-      }
-    }, 50)
-    setTimeout(() => {
-      if (isUsingLeaflet.value && leafletMap) {
-        leafletMap.invalidateSize(true)
-      }
-    }, 250)
-  })
-}
-
 watch(() => props.isVisible, (visible) => {
   if (visible) {
     refreshMapSize()
   }
 }, { immediate: true })
 
-
 onMounted(() => {
   startListening()
-  initGoogleMap()
+  initMapEngine()
 })
 
 onUnmounted(() => {
   stopListening()
-  if (googleMap) {
-    hospitalMarkers.forEach(m => m.setMap && m.setMap(null))
-    hospitalCircles.forEach(cArr => cArr.forEach(c => c.setMap && c.setMap(null)))
-    donorMarkers.forEach(m => m.setMap && m.setMap(null))
-    donorPolylines.forEach(l => l.setMap && l.setMap(null))
-  }
   if (leafletMap) {
-    leafletMap.remove()
+    try {
+      leafletMap.remove()
+    } catch (e) {
+      // ignore
+    }
     leafletMap = null
   }
 })
@@ -837,7 +544,7 @@ onUnmounted(() => {
   height: 14px;
   border-radius: 50%;
   background: rgba(142, 36, 53, 0.08);
-  border: 1.5px dashed #8E2435;
+  border: 1px dashed #8E2435;
 }
 
 .hover-lift {

@@ -9,8 +9,28 @@
         </span>
         <span class="ll-text-meta">{{ filteredRequests.length }} active requests</span>
       </div>
-      <button v-if="isAdmin" class="ll-btn-primary" type="button" @click="openCreateForm"><i class="bi bi-plus-lg me-1"></i> New Request</button>
+
+      <div class="d-flex align-items-center gap-2">
+        <div class="btn-group btn-group-sm" role="group" aria-label="View mode switch">
+          <button
+            type="button"
+            :class="['btn', viewMode === 'board' ? 'btn-danger fw-bold' : 'btn-outline-danger']"
+            @click="viewMode = 'board'"
+          >
+            <i class="bi bi-grid-fill me-1"></i> Board View
+          </button>
+          <button
+            type="button"
+            :class="['btn', viewMode === 'map' ? 'btn-danger fw-bold' : 'btn-outline-danger']"
+            @click="viewMode = 'map'"
+          >
+            <i class="bi bi-geo-alt-fill me-1"></i> Live Map
+          </button>
+        </div>
+        <button v-if="isAdmin" class="ll-btn-primary" type="button" @click="openCreateForm"><i class="bi bi-plus-lg me-1"></i> New Request</button>
+      </div>
     </div>
+
 
     <div aria-live="polite" aria-atomic="true" class="visually-hidden">
       {{ requests.length }} active emergency requests loaded.
@@ -84,6 +104,12 @@
     <LoadingSpinner v-if="loading" message="Loading emergency requests..." />
     <AlertMessage v-else-if="error" type="danger" :message="error" :dismissible="false" />
     
+    <!-- Live Response Map View -->
+    <div v-else-if="viewMode === 'map'" class="mb-5">
+      <EmergencyMap :emergency-requests="requests" />
+    </div>
+
+    <!-- Board Grid View -->
     <div v-else class="row g-4">
       <!-- Left Column: Live requests grid -->
       <div class="col-lg-8 col-12">
@@ -98,6 +124,7 @@
               :request="request"
               :is-admin="isAdmin"
               :confirming="confirmLoading"
+              :en-route-count="getEnRouteCountForRequest(request.id)"
               @confirm="handleConfirm(request.id)"
               @edit="openEditForm(request)"
               @delete="handleDelete(request.id)"
@@ -106,6 +133,7 @@
           </div>
         </div>
       </div>
+
 
       <!-- Right Column: Hotline directory sidebar -->
       <div class="col-lg-4 col-12">
@@ -306,15 +334,21 @@ import { useRouter } from 'vue-router'
 import { animate, stagger } from 'motion'
 import RequestCard from '@/components/RequestCard.vue'
 import RequestForm from '@/components/RequestForm.vue'
+import EmergencyMap from '@/components/EmergencyMap.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import AlertMessage from '@/components/AlertMessage.vue'
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import PaginationControls from '@/components/PaginationControls.vue'
 import { useToast } from '@/composables/useToast.js'
 import { canDonateTo } from '@/utils/bloodCompatibility.js'
+import { useActiveResponses } from '@/composables/useActiveResponses.js'
 
 const { user, userProfile, isAdmin } = useAuth()
 const router = useRouter()
+const { getEnRouteCountForRequest } = useActiveResponses()
+
+const viewMode = ref(isAdmin.value ? 'map' : 'board')
+
 const {
   requests,
   loading,

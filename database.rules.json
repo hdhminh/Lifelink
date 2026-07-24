@@ -1,0 +1,11 @@
+{
+  "rules": {
+    "liveTracking": {
+      ".read": true,
+      ".write": true,
+      "$trackingId": {
+        ".validate": "newData.hasChildren(['donorId', 'requestId', 'latitude', 'longitude', 'status'])"
+      }
+    }
+  }
+}

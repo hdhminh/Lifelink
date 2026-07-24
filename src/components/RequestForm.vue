@@ -244,6 +244,8 @@ function formatDateTimeLocal(value) {
   return `${yyyy}-${MM}-${dd}T${hh}:${mm}`
 }
 
+import { getHospitalCoordinates } from '@/data/hospitalCoordinates.js'
+
 function populateForm() {
   Object.assign(form, {
     hospitalName: props.initialData?.hospitalName || '',
@@ -285,8 +287,15 @@ function handleSubmit() {
   } else {
     delete data.createdAt
   }
+
+  // Calculate hospital latitude and longitude coordinates
+  const coords = getHospitalCoordinates(data.hospitalName, data.city)
+  data.latitude = coords.lat
+  data.longitude = coords.lng
+
   emit('submit', data)
 }
+
 
 watch(() => props.initialData, populateForm, { immediate: true })
 </script>

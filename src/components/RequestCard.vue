@@ -10,7 +10,10 @@
         <span class="ll-badge-blood-compact"><i class="bi bi-droplet-fill me-1 text-white"></i> {{ request.bloodType }}</span>
         <span class="ll-badge" v-highlight-urgency="request.urgency">● {{ request.urgency }}</span>
       </div>
-      <div v-if="(!isAdmin && isCompatibleDonor) || isExpired || timeAgoText" class="d-flex flex-wrap align-items-center gap-2 mt-1">
+      <div v-if="(!isAdmin && isCompatibleDonor) || isExpired || timeAgoText || enRouteCount > 0" class="d-flex flex-wrap align-items-center gap-2 mt-1">
+        <span v-if="enRouteCount > 0" class="badge bg-primary text-white px-2 py-1" style="font-size: 0.68rem; border-radius: 12px; font-weight: 700; letter-spacing: 0.02em; display: inline-flex; align-items: center;">
+          <i class="bi bi-geo-alt-fill me-1"></i>{{ enRouteCount }} responder{{ enRouteCount > 1 ? 's' : '' }} en route
+        </span>
         <span v-if="!isAdmin && isCompatibleDonor" class="badge bg-success text-white px-2 py-1" style="font-size: 0.68rem; border-radius: 12px; font-weight: 700; letter-spacing: 0.02em; display: inline-flex; align-items: center;">
           <i class="bi bi-heart-pulse-fill me-1"></i>Compatible
         </span>
@@ -21,6 +24,7 @@
           <i class="bi bi-clock me-1"></i>{{ timeAgoText }}
         </span>
       </div>
+
     </header>
 
     <div class="ll-card__body">
@@ -126,8 +130,10 @@ const isCompatibleDonor = computed(() => {
 const props = defineProps({
   request: { type: Object, required: true },
   isAdmin: { type: Boolean, default: false },
-  confirming: { type: Boolean, default: false }
+  confirming: { type: Boolean, default: false },
+  enRouteCount: { type: Number, default: 0 }
 })
+
 
 const emit = defineEmits(['confirm', 'edit', 'delete', 'status-change'])
 

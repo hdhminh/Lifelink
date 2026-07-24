@@ -8,6 +8,8 @@
 
 import { collection, getDocs, writeBatch, doc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/firebase.js'
+import { getHospitalCoordinates } from '@/data/hospitalCoordinates.js'
+
 
 export async function seedDatabaseIfEmpty() {
   try {
@@ -116,11 +118,17 @@ export async function seedDatabaseIfEmpty() {
       ]
 
       seedRequests.forEach(req => {
+        const coords = getHospitalCoordinates(req.hospitalName, req.city)
         const newDocRef = doc(collection(db, 'emergencyRequests'))
-        batch.set(newDocRef, req)
+        batch.set(newDocRef, {
+          ...req,
+          latitude: coords.lat,
+          longitude: coords.lng
+        })
       })
       await batch.commit()
       console.log('[Seeder] Successfully seeded emergency requests.')
+
     }
 
     // 2. Seed Donation Events if empty

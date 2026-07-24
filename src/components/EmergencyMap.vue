@@ -294,7 +294,12 @@ async function initGoogleMap() {
 
     const center = { lat: 10.7548, lng: 106.6601 }
 
+    if (mapElement.value) {
+      mapElement.value.innerHTML = ''
+    }
+
     googleMap = new googleInstance.maps.Map(mapElement.value, {
+
       center,
       zoom: 12,
       mapTypeId: 'roadmap',
@@ -330,11 +335,18 @@ function initLeafletMap() {
   mapLoading.value = false
 
   if (leafletMap) {
-    leafletMap.remove()
+    try {
+      leafletMap.remove()
+    } catch (e) {
+      // ignore
+    }
     leafletMap = null
   }
 
   if (!mapElement.value) return
+
+  // CLEAR ALL PREVIOUS DOM CHILDREN (Google Maps error containers, old canvas nodes)
+  mapElement.value.innerHTML = ''
 
   leafletMap = L.map(mapElement.value).setView([10.7548, 106.6601], 12)
 
@@ -350,9 +362,14 @@ function initLeafletMap() {
 
   setTimeout(() => {
     if (leafletMap) {
-      leafletMap.invalidateSize()
+      leafletMap.invalidateSize(true)
     }
-  }, 200)
+  }, 100)
+  setTimeout(() => {
+    if (leafletMap) {
+      leafletMap.invalidateSize(true)
+    }
+  }, 350)
 }
 
 /**

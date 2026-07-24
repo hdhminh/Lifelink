@@ -15,17 +15,18 @@
           <button
             type="button"
             :class="['btn btn-sm rounded-pill px-3 py-1 font-weight-700 border-0', viewMode === 'board' ? 'll-btn-wine-active' : 'text-slate-600']"
-            @click="viewMode = 'board'"
+            @click="setMode('board')"
           >
             <i class="bi bi-grid-fill me-1"></i> Board View
           </button>
           <button
             type="button"
             :class="['btn btn-sm rounded-pill px-3 py-1 font-weight-700 border-0', viewMode === 'map' ? 'll-btn-wine-active' : 'text-slate-600']"
-            @click="viewMode = 'map'"
+            @click="setMode('map')"
           >
             <i class="bi bi-geo-alt-fill me-1"></i> Live Map
           </button>
+
         </div>
         <button v-if="isAdmin" class="ll-btn-primary" type="button" @click="openCreateForm"><i class="bi bi-plus-lg me-1"></i> New Request</button>
       </div>
@@ -389,7 +390,18 @@ function handleOpenMaps() {
   closeMapsConfirmModal()
 }
 
+function setMode(mode) {
+  viewMode.value = mode
+  if (mode === 'map') {
+    nextTick(() => {
+      window.dispatchEvent(new Event('resize'))
+    })
+  }
+}
+
 const confirmedRequestIds = ref([])
+
+
 let unsubscribeConfirmations = null
 
 watch(user, (newUser) => {

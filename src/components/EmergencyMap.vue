@@ -495,7 +495,7 @@ function renderHospitalMarkers() {
       iconAnchor: [16, 38]
     })
 
-    const marker = L.marker(pos, { icon }).addTo(leafletMap)
+    const marker = L.marker(pos, { icon, zIndexOffset: 1000 }).addTo(leafletMap)
     marker.bindPopup(`
       <div style="font-family: system-ui, sans-serif; padding: 4px; max-width: 220px;">
         <strong style="color: #8E2435; font-size: 0.9rem;">${req.hospitalName}</strong><br>
@@ -564,7 +564,7 @@ function renderEventMarkers() {
       iconAnchor: [15, 36]
     })
 
-    const marker = L.marker(pos, { icon }).addTo(leafletMap)
+    const marker = L.marker(pos, { icon, zIndexOffset: 100 }).addTo(leafletMap)
     marker.bindPopup(`
       <div style="font-family: system-ui, sans-serif; padding: 4px; max-width: 220px;">
         <strong style="color: #0D6EFD; font-size: 0.88rem;">${cleanEventTitle(ev.title)}</strong><br>

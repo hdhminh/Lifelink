@@ -16,7 +16,7 @@
         <select
           v-model="selectedRequestId"
           class="form-select form-select-sm"
-          style="width: 220px; min-width: 160px; max-width: 240px; height: 32px; font-size: 0.76rem; background-color: #FAF5EF; color: #2B2225; border-color: #EAE2DF;"
+          style="min-width: 170px; max-width: 220px; font-size: 0.78rem; background-color: #FAF5EF; color: #2B2225; border-color: #EAE2DF;"
           aria-label="Select emergency request focus"
         >
           <option value="" style="background-color: #ffffff; color: #2B2225;">All Active Hospitals ({{ activeRequests.length }})</option>
@@ -27,14 +27,14 @@
             style="background-color: #ffffff; color: #2B2225;"
             :title="`[${req.bloodType}] ${req.hospitalName} (${req.urgency})`"
           >
-            [{{ req.bloodType }}] {{ truncateText(req.hospitalName, 20) }}
+            [{{ req.bloodType }}] {{ truncateText(req.hospitalName, 18) }}
           </option>
         </select>
 
         <button
           type="button"
           class="btn btn-sm d-flex align-items-center gap-1 font-weight-600"
-          style="height: 32px; padding: 0.2rem 0.75rem; font-size: 0.76rem; background-color: #FAF5EF; color: #8E2435; border: 1px solid #EAE2DF;"
+          style="padding: 0.25rem 0.75rem; font-size: 0.78rem; background-color: #FAF5EF; color: #8E2435; border: 1px solid #EAE2DF;"
           title="Recenter map"
           @click="centerMapOnSelected"
         >
@@ -64,23 +64,36 @@
         <!-- Map Container Div (Guaranteed height: 540px) -->
         <div id="emergency-map-surface" ref="mapElement" style="width: 100%; height: 540px; min-height: 540px; position: relative; z-index: 1;"></div>
 
-        <!-- Floating Map Legend Overlay (Z-Index 1000 for guaranteed visibility) -->
+        <!-- Floating Map Legend Overlay (Z-Index 1000 with EXACT SVG Map Pin Icons) -->
         <div class="ll-map-legend p-2 px-3 bg-white border rounded shadow-sm position-absolute bottom-0 start-0 m-3" style="z-index: 1000;">
           <div class="small fw-bold text-slate-800 mb-1" style="font-size: 0.72rem;">
             <i class="bi bi-info-circle-fill me-1" style="color: #8E2435;"></i> RADAR LEGEND
           </div>
-          <div class="d-flex flex-column gap-1" style="font-size: 0.7rem;">
+          <div class="d-flex flex-column gap-1" style="font-size: 0.72rem;">
             <div class="d-flex align-items-center gap-2">
-              <span class="badge rounded-circle p-1" style="background-color: #8E2435; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 9px;">🏥</span> Hospital & Priority Radar
+              <svg width="18" height="22" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+                <path d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z" fill="#8E2435"/>
+                <circle cx="16" cy="15" r="10" fill="#ffffff"/>
+                <rect x="14" y="9" width="4" height="12" rx="1" fill="#8E2435"/>
+                <rect x="10" y="13" width="12" height="4" rx="1" fill="#8E2435"/>
+              </svg>
+              <span>Hospital Location & Priority Radar</span>
             </div>
             <div class="d-flex align-items-center gap-2">
-              <span class="badge rounded-circle p-1 bg-primary" style="width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 9px;">🚗</span> En-Route Donor Marker
+              <svg width="18" height="22" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+                <path d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z" fill="#0D6EFD"/>
+                <circle cx="16" cy="15" r="9" fill="#ffffff"/>
+                <path d="M11 17.5C10.5 17.5 10.1 17.1 10.1 16.6V15.3C10.1 14.8 10.4 14.3 10.8 14.1L13 13C13.5 12.7 14.2 12.5 14.8 12.5H17.2C17.8 12.5 18.5 12.7 19 13L21.2 14.1C21.6 14.3 21.9 14.8 21.9 15.3V16.6C21.9 17.1 21.5 17.5 21 17.5H11Z" fill="#0D6EFD"/>
+              </svg>
+              <span>En-Route Donor Marker (Live Location)</span>
             </div>
             <div class="d-flex align-items-center gap-2">
-              <span class="ll-legend-circle ll-legend-circle--3k"></span> Inner Radar (3km)
+              <span class="ll-legend-circle ll-legend-circle--3k"></span>
+              <span>Inner Radar (3km — Priority Zone)</span>
             </div>
             <div class="d-flex align-items-center gap-2">
-              <span class="ll-legend-circle ll-legend-circle--10k"></span> Outer Radar (10km)
+              <span class="ll-legend-circle ll-legend-circle--10k"></span>
+              <span>Outer Radar (10km — Extended Zone)</span>
             </div>
           </div>
         </div>
@@ -135,31 +148,6 @@
               <span class="font-weight-700" style="color: #8E2435;">
                 <i class="bi bi-clock-history me-1"></i> ETA: <strong>~{{ resp.etaMins || 1 }} min</strong>
               </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Always Visible Legend Box in Right Panel -->
-        <div class="mt-3 pt-3 border-top border-slate-200">
-          <div class="small font-weight-700 text-slate-800 mb-2" style="font-size: 0.75rem;">
-            <i class="bi bi-info-circle-fill me-1" style="color: #8E2435;"></i> RADAR & MARKER LEGEND
-          </div>
-          <div class="d-flex flex-column gap-1 bg-white p-2 rounded border border-slate-200" style="font-size: 0.7rem;">
-            <div class="d-flex align-items-center gap-2">
-              <span class="badge rounded-circle p-1" style="background-color: #8E2435; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 9px;">🏥</span>
-              <span class="text-slate-700 font-weight-500">Hospital Location & Priority Radar</span>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-              <span class="badge rounded-circle p-1 bg-primary" style="width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 9px;">🚗</span>
-              <span class="text-slate-700 font-weight-500">En-Route Donor Marker (Live Location)</span>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-              <span class="ll-legend-circle ll-legend-circle--3k"></span>
-              <span class="text-slate-600">Inner Radar (3km — Priority Zone)</span>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-              <span class="ll-legend-circle ll-legend-circle--10k"></span>
-              <span class="text-slate-600">Outer Radar (10km — Extended Zone)</span>
             </div>
           </div>
         </div>
@@ -245,7 +233,7 @@ function logActivity(text) {
   if (activityLogs.value.length > 5) activityLogs.value.pop()
 }
 
-function truncateText(text, maxLen = 20) {
+function truncateText(text, maxLen = 18) {
   if (!text) return ''
   if (text.length <= maxLen) return text
   return text.substring(0, maxLen - 3) + '...'
@@ -806,8 +794,8 @@ onUnmounted(() => {
 
 .ll-legend-circle--3k {
   display: inline-block;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: rgba(142, 36, 53, 0.2);
   border: 1.5px solid #8E2435;
@@ -815,11 +803,11 @@ onUnmounted(() => {
 
 .ll-legend-circle--10k {
   display: inline-block;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: rgba(142, 36, 53, 0.08);
-  border: 1px dashed #8E2435;
+  border: 1.5px dashed #8E2435;
 }
 
 .hover-lift {

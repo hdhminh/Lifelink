@@ -1,13 +1,13 @@
 <template>
   <div class="ll-emergency-map-container">
     <!-- Map Header Status Toolbar -->
-    <div class="ll-map-toolbar d-flex flex-wrap justify-content-between align-items-center gap-3 p-3 bg-slate-900 text-white rounded-top-lg">
+    <div class="ll-map-toolbar d-flex flex-wrap justify-content-between align-items-center gap-3 p-3 rounded-top-lg" style="background-color: #0f172a; color: #ffffff;">
       <div class="d-flex align-items-center gap-2">
         <span class="ll-live-dot ll-live-dot--pulse"></span>
-        <h5 class="m-0 font-weight-700 text-white" style="font-size: 1.05rem;">
+        <h5 class="m-0 font-weight-700" style="font-size: 1.05rem; color: #ffffff !important;">
           <i class="bi bi-geo-alt-fill text-danger me-1"></i> Live Emergency Response Map
         </h5>
-        <span class="badge bg-danger rounded-pill ms-2" style="font-size: 0.7rem;">
+        <span class="badge bg-danger rounded-pill ms-2" style="font-size: 0.72rem; color: #ffffff;">
           {{ activeResponses.length }} Active Responder{{ activeResponses.length !== 1 ? 's' : '' }}
         </span>
       </div>
@@ -15,26 +15,28 @@
       <div class="d-flex align-items-center gap-2">
         <select
           v-model="selectedRequestId"
-          class="form-select form-select-sm bg-slate-800 text-white border-slate-700"
-          style="min-width: 200px;"
+          class="form-select form-select-sm"
+          style="min-width: 200px; background-color: #1e293b; color: #ffffff; border-color: #334155;"
           aria-label="Select emergency request focus"
         >
-          <option value="">All Active Hospitals ({{ activeRequests.length }})</option>
-          <option v-for="req in activeRequests" :key="req.id" :value="req.id">
+          <option value="" style="background-color: #1e293b; color: #ffffff;">All Active Hospitals ({{ activeRequests.length }})</option>
+          <option v-for="req in activeRequests" :key="req.id" :value="req.id" style="background-color: #1e293b; color: #ffffff;">
             [{{ req.bloodType }}] {{ req.hospitalName }} ({{ req.urgency }})
           </option>
         </select>
 
         <button
           type="button"
-          class="btn btn-sm btn-outline-light d-flex align-items-center gap-1"
+          class="btn btn-sm d-flex align-items-center gap-1"
+          style="background-color: #334155; color: #ffffff; border-color: #475569;"
           title="Recenter map"
           @click="centerMapOnSelected"
         >
-          <i class="bi bi-crosshair"></i> Recenter
+          <i class="bi bi-crosshair me-1"></i> Recenter
         </button>
       </div>
     </div>
+
 
     <!-- Main Grid: Left Map Surface, Right Live Activity Panel -->
     <div class="row g-0 ll-map-body-grid border border-top-0 rounded-bottom-lg overflow-hidden bg-white shadow-sm">
@@ -154,10 +156,36 @@
  */
 
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { Loader } from '@googlemaps/js-api-loader'
 import { useActiveResponses } from '@/composables/useActiveResponses.js'
 import { getHospitalCoordinates } from '@/data/hospitalCoordinates.js'
 import { formatDistance } from '@/utils/haversine.js'
+
+function loadGoogleMapsScript(apiKey) {
+  return new Promise((resolve, reject) => {
+    if (typeof window !== 'undefined' && window.google && window.google.maps) {
+      resolve(window.google)
+      return
+    }
+    const existing = document.getElementById('google-maps-script-tag')
+    if (existing) {
+      if (window.google && window.google.maps) {
+        resolve(window.google)
+      } else {
+        existing.addEventListener('load', () => resolve(window.google))
+        existing.addEventListener('error', (e) => reject(e))
+      }
+      return
+    }
+    const script = document.createElement('script')
+    script.id = 'google-maps-script-tag'
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
+    script.async = true
+    script.defer = true
+    script.onload = () => resolve(window.google)
+    script.onerror = (err) => reject(err)
+    document.head.appendChild(script)
+  })
+}
 
 const props = defineProps({
   emergencyRequests: {
@@ -218,18 +246,12 @@ async function initGoogleMap() {
   }
 
   try {
-    setOptions({
-      key: apiKey,
-      v: 'weekly'
-    })
-
-    const { Map } = await importLibrary('maps')
-    googleInstance = window.google
+    googleInstance = await loadGoogleMapsScript(apiKey)
 
     // Default map center (Vietnam)
     const center = { lat: 10.7548, lng: 106.6601 } // HCMC default
 
-    googleMap = new Map(mapElement.value, {
+    googleMap = new googleInstance.maps.Map(mapElement.value, {
       center,
       zoom: 12,
       mapTypeId: 'roadmap',
@@ -256,6 +278,7 @@ async function initGoogleMap() {
     mapLoading.value = false
   }
 }
+
 
 /**
  * Renders Hospital Markers & Radar Proximity Circles.

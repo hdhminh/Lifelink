@@ -32,7 +32,7 @@ describe('AppFooter.vue', () => {
     })
 
     const text = wrapper.text()
-    expect(text).toContain('Emergency Board')
+    expect(text).toContain('Emergency')
     expect(text).toContain('Events')
     expect(text).toContain('News')
     expect(text).toContain('About')

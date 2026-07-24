@@ -31,6 +31,19 @@ export function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
 }
 
 /**
+ * Calculates estimated driving road distance accounting for urban road network geometry (~1.32x factor).
+ * @param {number} lat1 
+ * @param {number} lon1 
+ * @param {number} lat2 
+ * @param {number} lon2 
+ * @returns {number} Distance in meters over road network.
+ */
+export function calculateRoadDistance(lat1, lon1, lat2, lon2) {
+  const straightMeters = calculateHaversineDistance(lat1, lon1, lat2, lon2)
+  return Math.round(straightMeters * 1.32)
+}
+
+/**
  * Formats distance into human-readable text (meters or kilometers).
  * @param {number} meters 
  * @returns {string} E.g., "450 m" or "4.2 km"

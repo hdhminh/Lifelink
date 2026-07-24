@@ -670,17 +670,20 @@ watch(loading, (newLoading) => {
   }
 })
 
-watch([filterBloodType, filterCity, filterUrgency, filterCompatibleOnly, currentPage], () => {
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    animateCards()
-  } else {
-    nextTick(() => {
-      document.querySelectorAll('.emergency-grid-item').forEach(el => {
-        el.style.opacity = '1'
+watch([filterBloodType, filterCity, filterUrgency, filterCompatibleOnly, currentPage, viewMode], () => {
+  if (viewMode.value === 'board') {
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      animateCards()
+    } else {
+      nextTick(() => {
+        document.querySelectorAll('.emergency-grid-item').forEach(el => {
+          el.style.opacity = '1'
+        })
       })
-    })
+    }
   }
 })
+
 
 onMounted(() => {
   startListening()
@@ -793,7 +796,7 @@ onUnmounted(() => {
 }
 
 .emergency-grid-item {
-
-  opacity: 0;
+  opacity: 1;
 }
+
 </style>

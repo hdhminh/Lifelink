@@ -345,10 +345,20 @@ function renderLeafletHospitalMarkers() {
 
     const icon = L.divIcon({
       className: 'll-hospital-leaflet-icon',
-      html: `<div style="background-color: ${urgencyColor}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px;">🏥</div>`,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12]
+      html: `
+        <div style="position: relative; width: 32px; height: 38px; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3)); cursor: pointer;">
+          <svg width="32" height="38" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z" fill="${urgencyColor}"/>
+            <circle cx="16" cy="15" r="10" fill="#ffffff"/>
+            <rect x="14" y="9" width="4" height="12" rx="1" fill="${urgencyColor}"/>
+            <rect x="10" y="13" width="12" height="4" rx="1" fill="${urgencyColor}"/>
+          </svg>
+        </div>
+      `,
+      iconSize: [32, 38],
+      iconAnchor: [16, 38]
     })
+
 
     const marker = L.marker(pos, { icon }).addTo(leafletMap)
     marker.bindPopup(`
@@ -418,10 +428,19 @@ function renderLeafletDonorMarkers() {
     } else {
       const icon = L.divIcon({
         className: 'll-donor-leaflet-icon',
-        html: `<div style="background-color: #0d6efd; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px;">🚗</div>`,
-        iconSize: [22, 22],
-        iconAnchor: [11, 11]
+        html: `
+          <div style="position: relative; width: 30px; height: 36px; filter: drop-shadow(0 3px 6px rgba(13,110,253,0.35)); cursor: pointer;">
+            <svg width="30" height="36" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z" fill="#0D6EFD"/>
+              <circle cx="16" cy="15" r="9" fill="#ffffff"/>
+              <path d="M11 17.5C10.5 17.5 10.1 17.1 10.1 16.6V15.3C10.1 14.8 10.4 14.3 10.8 14.1L13 13C13.5 12.7 14.2 12.5 14.8 12.5H17.2C17.8 12.5 18.5 12.7 19 13L21.2 14.1C21.6 14.3 21.9 14.8 21.9 15.3V16.6C21.9 17.1 21.5 17.5 21 17.5H11Z" fill="#0D6EFD"/>
+            </svg>
+          </div>
+        `,
+        iconSize: [30, 36],
+        iconAnchor: [15, 36]
       })
+
 
       const m = L.marker(pos, { icon }).addTo(leafletMap)
       m.bindPopup(`

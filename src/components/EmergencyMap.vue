@@ -1,13 +1,13 @@
 <template>
-  <div class="ll-emergency-map-container">
+  <div class="ll-emergency-map-container" style="position: relative; z-index: 1;">
     <!-- Map Header Status Toolbar (LifeLink Brand Wine Red Surface) -->
-    <div class="ll-map-toolbar d-flex flex-wrap justify-content-between align-items-center gap-2 p-2 px-3 rounded-top-lg border border-bottom-0" style="background-color: #ffffff; border-color: #EAE2DF;">
+    <div class="ll-map-toolbar d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 rounded-top-lg border border-bottom-0" style="background-color: #ffffff; border-color: #EAE2DF; position: relative; z-index: 1050;">
       <div class="d-flex align-items-center gap-2">
         <span class="ll-live-dot ll-live-dot--pulse" style="background-color: #8E2435;"></span>
-        <h5 class="m-0 font-weight-700 d-inline-flex align-items-center" style="font-size: 1.0rem; line-height: 1; color: #8E2435 !important;">
+        <h5 class="m-0 font-weight-700 d-inline-flex align-items-center" style="font-size: 1.05rem; line-height: 1.2; color: #8E2435 !important;">
           <i class="bi bi-geo-alt-fill me-1" style="color: #8E2435;"></i> {{ titleText }}
         </h5>
-        <span class="badge rounded-pill ms-1 d-inline-flex align-items-center" style="font-size: 0.72rem; padding: 0.35rem 0.65rem; line-height: 1; background-color: #8E2435; color: #ffffff;">
+        <span class="badge rounded-pill ms-1 d-inline-flex align-items-center" style="font-size: 0.75rem; padding: 0.4rem 0.75rem; line-height: 1; background-color: #8E2435; color: #ffffff;">
           {{ filteredResponders.length }} Active Responder{{ filteredResponders.length !== 1 ? 's' : '' }}
         </span>
       </div>
@@ -16,24 +16,24 @@
         <!-- Layer Filter Switch -->
         <select
           v-model="activeLayerFilter"
-          class="form-select form-select-sm"
-          style="min-width: 140px; max-width: 180px; height: 36px; font-size: 0.78rem; background-color: #FAF5EF; color: #2B2225; border-color: #EAE2DF;"
+          class="form-select form-select-sm shadow-xs"
+          style="min-width: 140px; max-width: 180px; min-height: 38px; font-size: 0.82rem; line-height: 1.5; background-color: #FAF5EF; color: #2B2225; border: 1px solid #EAE2DF; border-radius: 6px; padding: 0.375rem 2rem 0.375rem 0.75rem;"
           aria-label="Filter map layers"
         >
           <option value="all">All Locations</option>
-          <option value="hospitals">🏥 Hospitals ({{ activeRequests.length }})</option>
-          <option value="events">📅 Events ({{ activeEvents.length }})</option>
+          <option value="hospitals">Hospitals ({{ activeRequests.length }})</option>
+          <option value="events">Events ({{ activeEvents.length }})</option>
         </select>
 
         <!-- Focus Selector -->
         <select
           v-model="selectedRequestId"
-          class="form-select form-select-sm"
-          style="min-width: 170px; max-width: 220px; height: 36px; font-size: 0.78rem; background-color: #FAF5EF; color: #2B2225; border-color: #EAE2DF;"
+          class="form-select form-select-sm shadow-xs"
+          style="min-width: 170px; max-width: 240px; min-height: 38px; font-size: 0.82rem; line-height: 1.5; background-color: #FAF5EF; color: #2B2225; border: 1px solid #EAE2DF; border-radius: 6px; padding: 0.375rem 2rem 0.375rem 0.75rem;"
           aria-label="Select request or event focus"
         >
           <option value="" style="background-color: #ffffff; color: #2B2225;">Select Location Focus</option>
-          <optgroup label="🏥 Emergency Hospitals">
+          <optgroup label="Emergency Hospitals">
             <option
               v-for="req in activeRequests"
               :key="req.id"
@@ -41,10 +41,10 @@
               style="background-color: #ffffff; color: #2B2225;"
               :title="`[${req.bloodType}] ${req.hospitalName} (${req.urgency})`"
             >
-              [{{ req.bloodType }}] {{ truncateText(req.hospitalName, 18) }}
+              [{{ req.bloodType }}] {{ truncateText(req.hospitalName, 22) }}
             </option>
           </optgroup>
-          <optgroup label="📅 Donation Events">
+          <optgroup label="Donation Events">
             <option
               v-for="ev in activeEvents"
               :key="'ev_' + ev.id"
@@ -52,15 +52,15 @@
               style="background-color: #ffffff; color: #2B2225;"
               :title="`${ev.title} (${ev.city || ev.location})`"
             >
-              📅 {{ truncateText(ev.title, 18) }}
+              {{ truncateText(ev.title, 22) }}
             </option>
           </optgroup>
         </select>
 
         <button
           type="button"
-          class="btn btn-sm d-inline-flex align-items-center gap-1 font-weight-600"
-          style="height: 36px; padding: 0 0.85rem; font-size: 0.78rem; background-color: #FAF5EF; color: #8E2435; border: 1px solid #EAE2DF;"
+          class="btn btn-sm d-inline-flex align-items-center gap-1 font-weight-600 shadow-xs"
+          style="min-height: 38px; padding: 0 0.9rem; font-size: 0.82rem; background-color: #FAF5EF; color: #8E2435; border: 1px solid #EAE2DF; border-radius: 6px;"
           title="Recenter map"
           @click="centerMapOnSelected"
         >
@@ -69,20 +69,20 @@
       </div>
     </div>
 
-    <!-- Main Grid: Left Map Surface, Right Live Activity Panel -->
-    <div class="row g-0 ll-map-body-grid border border-top-0 rounded-bottom-lg overflow-hidden bg-white shadow-sm">
-      <!-- Map View Surface -->
-      <div class="col-lg-8 col-12 position-relative" style="height: 540px; min-height: 540px;">
+    <!-- Main Grid: Left Map Surface, Right Live Activity Panel (Tall 660px canvas) -->
+    <div class="row g-0 ll-map-body-grid border border-top-0 rounded-bottom-lg overflow-hidden bg-white shadow-sm" style="position: relative; z-index: 1;">
+      <!-- Map View Surface (Tall 660px) -->
+      <div class="col-lg-8 col-12 position-relative" style="height: 660px; min-height: 660px;">
         <!-- Loading overlay -->
         <div v-if="mapLoading" class="ll-map-loader-overlay d-flex flex-column justify-content-center align-items-center">
           <div class="spinner-border mb-2" style="color: #8E2435;" role="status"></div>
           <span class="small text-slate-600 font-weight-500">Initializing Live Response Map...</span>
         </div>
 
-        <!-- Map Container Div (Guaranteed height: 540px) -->
-        <div id="emergency-map-surface" ref="mapElement" style="width: 100%; height: 540px; min-height: 540px; position: relative; z-index: 1; background-color: #f8f9fa;"></div>
+        <!-- Map Container Div (Height: 660px) -->
+        <div id="emergency-map-surface" ref="mapElement" style="width: 100%; height: 660px; min-height: 660px; position: relative; z-index: 1; background-color: #f8f9fa;"></div>
 
-        <!-- Floating Map Legend Overlay (Z-Index 1000 with EXACT SVG Map Pin Icons in English) -->
+        <!-- Floating Map Legend Overlay -->
         <div class="ll-map-legend p-2 px-3 bg-white border rounded shadow-sm position-absolute bottom-0 start-0 m-3" style="z-index: 1000;">
           <div class="small fw-bold text-slate-800 mb-1" style="font-size: 0.72rem;">
             <i class="bi bi-info-circle-fill me-1" style="color: #8E2435;"></i> RADAR LEGEND
@@ -125,8 +125,8 @@
         </div>
       </div>
 
-      <!-- Right Side Live Activity Stream Panel -->
-      <div class="col-lg-4 col-12 border-start border-slate-200 p-3 bg-slate-50 d-flex flex-column" style="height: 540px; overflow-y: auto;">
+      <!-- Right Side Live Activity Stream Panel (Tall 660px) -->
+      <div class="col-lg-4 col-12 border-start border-slate-200 p-3 bg-slate-50 d-flex flex-column" style="height: 660px; overflow-y: auto;">
         <h6 class="fw-bold mb-3 d-flex justify-content-between align-items-center" style="font-size: 0.9rem; color: #8E2435;">
           <span><i class="bi bi-radar me-1"></i> RESPONSE STATUS</span>
           <span class="badge bg-slate-200 text-slate-700" style="font-size: 0.68rem;">
@@ -160,7 +160,7 @@
                 :class="resp.status === 'approaching' ? 'badge bg-success' : 'badge bg-primary'"
                 style="font-size: 0.65rem; text-transform: uppercase;"
               >
-                {{ resp.status === 'approaching' ? '⚡ Approaching' : '🚗 En Route' }}
+                {{ resp.status === 'approaching' ? 'Approaching' : 'En Route' }}
               </span>
             </div>
 
@@ -205,7 +205,7 @@
 /**
  * EmergencyMap.vue (Unified Live Network Map)
  * Single reusable map component rendering Hospital Emergency Requests, Donation Events, and Live Responders.
- * All UI labels, tooltips, popups, and legends are strictly in English.
+ * All UI labels, tooltips, popups, and legends are strictly in English without emoji icons in dropdowns.
  */
 
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
@@ -276,14 +276,14 @@ function logActivity(text) {
   if (activityLogs.value.length > 5) activityLogs.value.pop()
 }
 
-function truncateText(text, maxLen = 18) {
+function truncateText(text, maxLen = 22) {
   if (!text) return ''
   if (text.length <= maxLen) return text
   return text.substring(0, maxLen - 3) + '...'
 }
 
 /**
- * Initializes High-Performance CartoDB Voyager Leaflet Map Engine.
+ * Initializes Leaflet Map Engine without attribution bar (attributionControl: false).
  */
 function initMapEngine() {
   mapLoading.value = true
@@ -304,11 +304,11 @@ function initMapEngine() {
   leafletMap = L.map(mapElement.value, {
     center: [10.7548, 106.6601],
     zoom: 12,
-    zoomControl: true
+    zoomControl: true,
+    attributionControl: false
   })
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19
   }).addTo(leafletMap)
 
@@ -336,7 +336,6 @@ function initMapEngine() {
   setTimeout(() => {
     if (leafletMap) leafletMap.invalidateSize(true)
   }, 600)
-
 }
 
 /**
@@ -385,7 +384,7 @@ function renderHospitalMarkers() {
     const marker = L.marker(pos, { icon }).addTo(leafletMap)
     marker.bindPopup(`
       <div style="font-family: system-ui, sans-serif; padding: 4px; max-width: 220px;">
-        <strong style="color: #8E2435; font-size: 0.9rem;">🏥 ${req.hospitalName}</strong><br>
+        <strong style="color: #8E2435; font-size: 0.9rem;">${req.hospitalName}</strong><br>
         <span style="font-size: 0.78rem;">Blood Required: <strong style="color: #8E2435;">${req.bloodType}</strong> (${req.urgency})</span><br>
         <span style="font-size: 0.75rem;">Confirmed: <strong>${req.confirmedCount || 0}/${req.unitsNeeded} units</strong></span><br>
         <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100" style="background-color: #8E2435; font-size: 0.72rem; border-radius: 6px;" onclick="window.handleHospitalPopupRespond('${req.id}')">
@@ -454,7 +453,7 @@ function renderEventMarkers() {
     const marker = L.marker(pos, { icon }).addTo(leafletMap)
     marker.bindPopup(`
       <div style="font-family: system-ui, sans-serif; padding: 4px; max-width: 220px;">
-        <strong style="color: #0D6EFD; font-size: 0.88rem;">📅 ${ev.title}</strong><br>
+        <strong style="color: #0D6EFD; font-size: 0.88rem;">${ev.title}</strong><br>
         <span style="font-size: 0.76rem; color: #555;">Category: <strong>${ev.category || 'Drive'}</strong></span><br>
         <span style="font-size: 0.75rem; color: #555;">Location: ${ev.location || ev.city}</span><br>
         <span style="font-size: 0.75rem; color: #0D6EFD; font-weight: bold;">Date: ${ev.date || 'Upcoming'}</span>
@@ -516,7 +515,7 @@ function renderDonorMarkers() {
       const m = L.marker(pos, { icon }).addTo(leafletMap)
       m.bindPopup(`
         <div style="font-size: 0.78rem;">
-          <strong>🚗 ${resp.donorName}</strong> (${resp.bloodType})<br>
+          <strong>${resp.donorName}</strong> (${resp.bloodType})<br>
           Status: <strong>${resp.status}</strong><br>
           ETA: <strong>~${resp.etaMins || 1} min</strong>
         </div>

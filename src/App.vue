@@ -138,6 +138,7 @@
  * App.vue
  * Root component. Renders global navbar, router view, and global footer.
  */
+import AppLoader from '@/components/AppLoader.vue'
 import { ref, watch, onUnmounted, nextTick, onMounted, computed } from 'vue'
 import { useAuth } from '@/composables/useAuth.js'
 import { useGeolocation } from '@/composables/useGeolocation.js'

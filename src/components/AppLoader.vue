@@ -39,7 +39,7 @@
               <!-- Gradient Defs -->
               <defs>
                 <linearGradient id="heartGrad" x1="10" y1="10" x2="90" y2="90" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stop-color="#FF4D6D" />
+                  <stop offset="0%" stop-color="#D32F2F" />
                   <stop offset="100%" stop-color="#8E2435" />
                 </linearGradient>
               </defs>
@@ -79,7 +79,7 @@ const progress = ref(0)
 
 onMounted(() => {
   // Simulate initial SVG Path Drawing progress from 0% to 100%
-  const duration = 1400 // 1.4s
+  const duration = 2200 // 2.2s
   const intervalTime = 20
   const step = (100 / (duration / intervalTime))
 
@@ -90,7 +90,7 @@ onMounted(() => {
       clearInterval(timer)
       setTimeout(() => {
         isLoading.value = false
-      }, 300)
+      }, 400)
     }
   }, intervalTime)
 })
@@ -116,7 +116,7 @@ onMounted(() => {
 
 .ll-loader-content {
   display: flex;
-  flex-column: column;
+  flex-direction: column;
   align-items: center;
   text-align: center;
   padding: 2rem;
@@ -175,7 +175,7 @@ onMounted(() => {
 }
 
 .ll-letter--accent {
-  color: #FF4D6D;
+  color: #D32F2F;
 }
 
 @keyframes letterPop {
@@ -203,10 +203,10 @@ onMounted(() => {
 
 .ll-loader-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #8E2435, #FF4D6D);
+  background: linear-gradient(90deg, #8E2435, #D32F2F);
   border-radius: 4px;
   transition: width 0.05s linear;
-  box-shadow: 0 0 10px rgba(255, 77, 109, 0.8);
+  box-shadow: 0 0 10px rgba(211, 47, 47, 0.8);
 }
 
 /* Curtain Lift Transition */

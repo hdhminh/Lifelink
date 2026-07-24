@@ -7,7 +7,7 @@
           <div class="col-lg-9 col-12">
             <span ref="heroBadge" class="ll-badge-hero mb-3 text-uppercase font-weight-700" style="opacity: 0">Connecting Lives Vietnam</span>
             <h1 ref="heroTitle" class="display-3 fw-bold mb-3 ll-hero-title d-flex flex-wrap" style="opacity: 0">
-              <span v-for="(char, idx) in 'LifeLink'.split('')" :key="idx" class="ll-gsap-char" :style="char === 'L' && idx > 0 ? 'color: #FF4D6D;' : ''">{{ char }}</span>
+              <span v-for="(char, idx) in 'LifeLink'.split('')" :key="idx" class="ll-gsap-char">{{ char }}</span>
             </h1>
             <p ref="heroText" class="lead mb-4 text-white-80" style="max-width: 620px; opacity: 0">
               Connecting voluntary blood donors with hospitals in real-time. Every donation saves a life when seconds count.

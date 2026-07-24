@@ -3,15 +3,12 @@
   <div class="ll-emergency-map-container overflow-hidden rounded-16 border shadow-sm" style="position: relative; z-index: 1; border-color: #EAE2DF !important; border-radius: 16px !important; box-shadow: 0 10px 30px rgba(142, 36, 53, 0.06) !important;">
     <!-- Map Header Status Toolbar (LifeLink Brand Wine Red Surface with Rounded 16px Top Corners) -->
     <div class="ll-map-toolbar d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 px-4 border-bottom bg-white" style="border-color: #EAE2DF; position: relative; z-index: 1050; border-top-left-radius: 16px; border-top-right-radius: 16px;">
-      <div class="d-flex align-items-center gap-3">
-        <!-- Title & Icon -->
-        <h5 class="m-0 font-weight-700 d-inline-flex align-items-center" style="font-size: 1.05rem; line-height: 1.2; color: #8E2435 !important;">
-          <i class="bi bi-radar me-2" style="color: #8E2435; font-size: 1.15rem;"></i> Live Response Radar
-        </h5>
-
-        <!-- Sleek LIVE-style Wine Red Pill Badge -->
-        <span class="badge rounded-pill d-inline-flex align-items-center gap-2 shadow-xs" style="font-size: 0.75rem; padding: 0.45rem 0.85rem; line-height: 1; background-color: #8E2435; color: #ffffff; font-weight: 700; letter-spacing: 0.4px;">
+      <div class="d-flex align-items-center">
+        <!-- Unified Sleek Wine-Red LIVE Pill Badge -->
+        <span class="badge rounded-pill d-inline-flex align-items-center gap-2 shadow-xs" style="font-size: 0.76rem; padding: 0.48rem 0.95rem; line-height: 1; background-color: #8E2435; color: #ffffff; font-weight: 700; letter-spacing: 0.5px;">
           <span class="ll-white-dot-pulse"></span>
+          <span>LIVE</span>
+          <span style="opacity: 0.4; font-weight: 300;">|</span>
           <span>{{ filteredResponders.length }} ACTIVE RESPONDERS</span>
         </span>
       </div>

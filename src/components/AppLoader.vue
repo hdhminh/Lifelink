@@ -78,9 +78,18 @@ const isLoading = ref(true)
 const progress = ref(0)
 
 onMounted(() => {
-  // Simulate initial SVG Path Drawing progress from 0% to 100%
-  const duration = 2200 // 2.2s
-  const intervalTime = 20
+  // Check if session already loaded to prevent blocking repeat visits or Lighthouse audits
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    if (sessionStorage.getItem('lifelink_visited')) {
+      isLoading.value = false
+      return
+    }
+    sessionStorage.setItem('lifelink_visited', 'true')
+  }
+
+  // Fast initial SVG Path animation (650ms)
+  const duration = 650
+  const intervalTime = 15
   const step = (100 / (duration / intervalTime))
 
   const timer = setInterval(() => {
@@ -90,7 +99,7 @@ onMounted(() => {
       clearInterval(timer)
       setTimeout(() => {
         isLoading.value = false
-      }, 400)
+      }, 150)
     }
   }, intervalTime)
 })

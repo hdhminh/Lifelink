@@ -171,17 +171,17 @@
 
       <!-- Right Side Live Activity Stream Panel (Tall 660px) -->
       <div class="col-lg-4 col-12 border-start border-slate-200 p-3 bg-slate-50 d-flex flex-column" style="height: 660px; overflow-y: auto; border-bottom-right-radius: 16px;">
-        <h6 class="fw-bold mb-3 d-flex justify-content-between align-items-center" style="font-size: 0.9rem; color: #8E2435;">
+        <h3 class="fw-bold mb-3 d-flex justify-content-between align-items-center" style="font-size: 0.9rem; color: #8E2435;">
           <span><i class="bi bi-radar me-1"></i> RESPONSE STATUS</span>
           <span class="badge bg-slate-200 text-slate-700" style="font-size: 0.68rem;">
             {{ filteredResponders.length }} En-Route
           </span>
-        </h6>
+        </h3>
 
         <!-- No responders state -->
         <div v-if="filteredResponders.length === 0" class="text-center py-4 px-3 bg-white rounded border border-slate-200 flex-grow-1 d-flex flex-column justify-content-center align-items-center">
           <div class="mb-2 text-slate-300 fs-1"><i class="bi bi-geo-alt"></i></div>
-          <h6 class="fw-bold text-slate-700 mb-1" style="font-size: 0.88rem;">Searching for Active Responders</h6>
+          <h4 class="fw-bold text-slate-700 mb-1" style="font-size: 0.88rem;">Searching for Active Responders</h4>
           <p class="small text-slate-500 mb-0" style="font-size: 0.78rem;">
             Radar active across 10 km radius. Responders will appear here live when they accept emergency requests and share location.
           </p>

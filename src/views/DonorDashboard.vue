@@ -71,12 +71,12 @@
                   <div v-for="conf in confirmations" :key="conf.id" class="list-group-item px-0 py-3 border-bottom border-slate-100">
                     <div class="d-flex justify-content-between align-items-start gap-2">
                       <div>
-                        <h6 class="fw-bold mb-1 text-slate-900">
+                        <h3 class="fw-bold mb-1 text-slate-900 fs-6">
                           {{ conf.hospitalName || 'Emergency Request' }}
                           <span :class="['badge ms-2', getStatusBadgeClass(conf.status)]" style="font-size: 0.65rem; padding: 0.25em 0.5em; border-radius: 4px; font-weight: 700;">
                             {{ conf.status ? conf.status.toUpperCase() : 'CONFIRMED' }}
                           </span>
-                        </h6>
+                        </h3>
                         <p class="small text-slate-500 mb-0">
                           <i class="bi bi-geo-alt-fill text-wine me-1"></i>{{ conf.city }} | Blood: <strong>{{ conf.bloodType }}</strong>
                         </p>
@@ -111,7 +111,7 @@
                   <div v-for="ev in registeredEvents" :key="ev.id" class="list-group-item px-0 py-3 border-bottom border-slate-100">
                     <div class="d-flex justify-content-between align-items-start gap-2">
                       <div>
-                        <h6 class="fw-bold mb-1 text-slate-900">{{ ev.title }}</h6>
+                        <h3 class="fw-bold mb-1 text-slate-900 fs-6">{{ ev.title }}</h3>
                         <p class="small text-slate-500 mb-0">
                           <i class="bi bi-geo-alt-fill text-wine me-1"></i>{{ ev.location }}, {{ ev.city }}
                         </p>

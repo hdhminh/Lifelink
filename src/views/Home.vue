@@ -79,6 +79,10 @@
                 src="/images/home-donation-event.jpg"
                 alt="Volunteer registration event"
                 class="img-fluid rounded-lg shadow-sm"
+                width="600"
+                height="350"
+                loading="lazy"
+                decoding="async"
                 style="height: 350px; object-fit: cover; width: 100%;"
               >
             </div>
@@ -118,7 +122,7 @@
                       <i class="bi bi-person-plus-fill"></i>
                     </div>
                     <div>
-                      <h6 class="fw-bold mb-1 text-slate-900" style="font-size: 1.02rem; margin-bottom: 0.15rem;">1. Join Network</h6>
+                      <h3 class="fw-bold mb-1 text-slate-900" style="font-size: 1.02rem; margin-bottom: 0.15rem;">1. Join Network</h3>
                       <p class="text-slate-500 mb-0" style="font-size: 0.86rem; line-height: 1.4;">Create your secure donor profile with blood type.</p>
                     </div>
                   </div>
@@ -132,7 +136,7 @@
                       <i class="bi bi-activity"></i>
                     </div>
                     <div>
-                      <h6 class="fw-bold mb-1 text-slate-900" style="font-size: 1.02rem; margin-bottom: 0.15rem;">2. Track Live Board</h6>
+                      <h3 class="fw-bold mb-1 text-slate-900" style="font-size: 1.02rem; margin-bottom: 0.15rem;">2. Track Live Board</h3>
                       <p class="text-slate-500 mb-0" style="font-size: 0.86rem; line-height: 1.4;">Monitor the live board for urgent requests.</p>
                     </div>
                   </div>
@@ -146,7 +150,7 @@
                       <i class="bi bi-heart-fill"></i>
                     </div>
                     <div>
-                      <h6 class="fw-bold mb-1 text-slate-900" style="font-size: 1.02rem; margin-bottom: 0.15rem;">3. Save a Life</h6>
+                      <h3 class="fw-bold mb-1 text-slate-900" style="font-size: 1.02rem; margin-bottom: 0.15rem;">3. Save a Life</h3>
                       <p class="text-slate-500 mb-0" style="font-size: 0.86rem; line-height: 1.4;">Confirm availability and donate at hospital.</p>
                     </div>
                   </div>

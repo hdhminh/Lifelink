@@ -1,8 +1,8 @@
 /**
  * hospitalCoordinates.js
  *
- * Real geographic coordinates (latitude, longitude) for partner clinics and hospitals
- * across major cities in Vietnam. Shared between RequestForm autocomplete and EmergencyMap.
+ * Real geographic coordinates (latitude, longitude) for partner clinics, hospitals,
+ * and regional centers across Vietnam.
  */
 
 export const HOSPITAL_DATABASE = [
@@ -22,6 +22,9 @@ export const HOSPITAL_DATABASE = [
   { name: 'Vietnam National Children\'s Hospital', city: 'Ha Noi', lat: 21.0239, lng: 105.8117 },
   { name: 'Hanoi French Hospital', city: 'Ha Noi', lat: 20.9997, lng: 105.8406 },
   { name: 'National Institute of Hematology and Blood Transfusion', city: 'Ha Noi', lat: 21.0208, lng: 105.7911 },
+
+  // Binh Duong
+  { name: 'Binh Duong General Hospital', city: 'Binh Duong', lat: 10.9805, lng: 106.6519 },
 
   // Da Nang
   { name: 'Da Nang General Hospital', city: 'Da Nang', lat: 16.0716, lng: 108.2200 },
@@ -44,6 +47,35 @@ export const HOSPITAL_DATABASE = [
   { name: 'Vinmec Nha Trang Hospital', city: 'Nha Trang', lat: 12.2153, lng: 109.2081 }
 ]
 
+const CITY_FALLBACKS = {
+  'ho chi minh city': { lat: 10.7548, lng: 106.6601 },
+  'hcmc': { lat: 10.7548, lng: 106.6601 },
+  'hcm': { lat: 10.7548, lng: 106.6601 },
+  'ho chi minh': { lat: 10.7548, lng: 106.6601 },
+  'ha noi': { lat: 21.0285, lng: 105.8542 },
+  'hanoi': { lat: 21.0285, lng: 105.8542 },
+  'lang son': { lat: 21.8528, lng: 106.7618 },
+  'binh duong': { lat: 10.9805, lng: 106.6519 },
+  'da nang': { lat: 16.0716, lng: 108.2200 },
+  'hue': { lat: 16.4637, lng: 107.5909 },
+  'can tho': { lat: 10.0341, lng: 105.7557 },
+  'hai phong': { lat: 20.8544, lng: 106.6778 },
+  'nha trang': { lat: 12.2472, lng: 109.1917 },
+  'khanh hoa': { lat: 12.2472, lng: 109.1917 },
+  'quang ninh': { lat: 20.9599, lng: 107.0434 },
+  'ha long': { lat: 20.9599, lng: 107.0434 },
+  'lam dong': { lat: 11.9404, lng: 108.4583 },
+  'da lat': { lat: 11.9404, lng: 108.4583 },
+  'vung tau': { lat: 10.3460, lng: 107.0843 },
+  'ba ria - vung tau': { lat: 10.3460, lng: 107.0843 },
+  'nghe an': { lat: 18.6734, lng: 105.6813 },
+  'vinh': { lat: 18.6734, lng: 105.6813 },
+  'thanh hoa': { lat: 19.8067, lng: 105.7853 },
+  'phu tho': { lat: 21.3227, lng: 105.4019 },
+  'dong nai': { lat: 10.9458, lng: 106.8247 },
+  'bien hoa': { lat: 10.9458, lng: 106.8247 }
+}
+
 /**
  * Finds hospital coordinates by name or returns city center defaults.
  * @param {string} hospitalName 
@@ -51,26 +83,27 @@ export const HOSPITAL_DATABASE = [
  * @returns {{ lat: number, lng: number }}
  */
 export function getHospitalCoordinates(hospitalName, cityName) {
+  const nameLower = (hospitalName || '').toLowerCase()
+  const cityLower = (cityName || '').toLowerCase()
+
   const match = HOSPITAL_DATABASE.find(
-    h => h.name.toLowerCase() === (hospitalName || '').toLowerCase()
+    h => h.name.toLowerCase() === nameLower
   )
   if (match) {
     return { lat: match.lat, lng: match.lng }
   }
 
-  // Fallbacks by city center if exact hospital name isn't matched
-  const CITY_FALLBACKS = {
-    'ho chi minh city': { lat: 10.7548, lng: 106.6601 },
-    'ha noi': { lat: 21.0000, lng: 105.8426 },
-    'da nang': { lat: 16.0716, lng: 108.2200 },
-    'hue': { lat: 16.4637, lng: 107.5909 },
-    'can tho': { lat: 10.0341, lng: 105.7557 },
-    'hai phong': { lat: 20.8544, lng: 106.6778 },
-    'nha trang': { lat: 12.2472, lng: 109.1917 }
+  // Check city fallback by explicit cityName
+  if (cityLower && CITY_FALLBACKS[cityLower]) {
+    return CITY_FALLBACKS[cityLower]
   }
 
-  const cityMatch = CITY_FALLBACKS[(cityName || '').toLowerCase()]
-  if (cityMatch) return cityMatch
+  // Check if hospitalName/location contains any known city keyword
+  for (const [key, coords] of Object.entries(CITY_FALLBACKS)) {
+    if (nameLower.includes(key)) {
+      return coords
+    }
+  }
 
   // Default fallback (Cho Ray Hospital, HCMC)
   return { lat: 10.7548, lng: 106.6601 }

@@ -13,49 +13,92 @@
       </div>
 
       <div class="d-flex align-items-center gap-2 ms-auto">
-        <!-- Layer Filter Switch -->
-        <select
-          v-model="activeLayerFilter"
-          class="form-select form-select-sm shadow-xs"
-          style="min-width: 140px; max-width: 180px; min-height: 38px; font-size: 0.82rem; line-height: 1.5; background-color: #FAF5EF; color: #2B2225; border: 1px solid #EAE2DF; border-radius: 6px; padding: 0.375rem 2rem 0.375rem 0.75rem;"
-          aria-label="Filter map layers"
-        >
-          <option value="all">All Locations</option>
-          <option value="hospitals">Hospitals ({{ activeRequests.length }})</option>
-          <option value="events">Events ({{ activeEvents.length }})</option>
-        </select>
+        <!-- Custom Layer Filter Dropdown -->
+        <div class="dropdown position-relative">
+          <button
+            class="btn btn-sm d-inline-flex align-items-center justify-content-between gap-2 shadow-xs"
+            style="min-width: 140px; min-height: 38px; font-size: 0.82rem; background-color: #FAF5EF; color: #2B2225; border: 1px solid #EAE2DF; border-radius: 6px;"
+            type="button"
+            @click.stop="toggleLayerDropdown"
+          >
+            <span class="d-inline-flex align-items-center text-truncate">
+              <i v-if="activeLayerFilter === 'all'" class="bi bi-layers-fill text-slate-600 me-2"></i>
+              <i v-else-if="activeLayerFilter === 'hospitals'" class="bi bi-hospital me-2" style="color: #8E2435;"></i>
+              <i v-else class="bi bi-calendar-event me-2" style="color: #0D6EFD;"></i>
+              {{ activeLayerFilterLabel }}
+            </span>
+            <i class="bi bi-chevron-down text-slate-400 ms-1" style="font-size: 0.72rem; flex-shrink: 0;"></i>
+          </button>
+          <ul v-if="showLayerDropdown" class="dropdown-menu show shadow-md p-1 mt-1 position-absolute end-0" style="min-width: 165px; z-index: 2000;">
+            <li>
+              <button type="button" class="dropdown-item small d-flex align-items-center py-2" @click="setLayerFilter('all')">
+                <i class="bi bi-layers-fill text-slate-600 me-2"></i> All Locations
+              </button>
+            </li>
+            <li>
+              <button type="button" class="dropdown-item small d-flex align-items-center py-2" @click="setLayerFilter('hospitals')">
+                <i class="bi bi-hospital me-2" style="color: #8E2435;"></i> Hospitals ({{ activeRequests.length }})
+              </button>
+            </li>
+            <li>
+              <button type="button" class="dropdown-item small d-flex align-items-center py-2" @click="setLayerFilter('events')">
+                <i class="bi bi-calendar-event me-2" style="color: #0D6EFD;"></i> Events ({{ activeEvents.length }})
+              </button>
+            </li>
+          </ul>
+        </div>
 
-        <!-- Focus Selector -->
-        <select
-          v-model="selectedRequestId"
-          class="form-select form-select-sm shadow-xs"
-          style="min-width: 170px; max-width: 240px; min-height: 38px; font-size: 0.82rem; line-height: 1.5; background-color: #FAF5EF; color: #2B2225; border: 1px solid #EAE2DF; border-radius: 6px; padding: 0.375rem 2rem 0.375rem 0.75rem;"
-          aria-label="Select request or event focus"
-        >
-          <option value="" style="background-color: #ffffff; color: #2B2225;">Select Location Focus</option>
-          <optgroup label="Emergency Hospitals">
-            <option
+        <!-- Custom Location Focus Dropdown -->
+        <div class="dropdown position-relative">
+          <button
+            class="btn btn-sm d-inline-flex align-items-center justify-content-between gap-2 shadow-xs"
+            style="min-width: 170px; max-width: 220px; min-height: 38px; font-size: 0.82rem; background-color: #FAF5EF; color: #2B2225; border: 1px solid #EAE2DF; border-radius: 6px;"
+            type="button"
+            @click.stop="toggleFocusDropdown"
+          >
+            <span class="d-inline-flex align-items-center text-truncate" style="max-width: 170px;">
+              <i v-if="selectedFocusType === 'hospital'" class="bi bi-hospital me-2" style="color: #8E2435; flex-shrink: 0;"></i>
+              <i v-else-if="selectedFocusType === 'event'" class="bi bi-calendar-event me-2" style="color: #0D6EFD; flex-shrink: 0;"></i>
+              <i v-else class="bi bi-geo-alt me-2 text-slate-400" style="flex-shrink: 0;"></i>
+              <span class="text-truncate">{{ selectedFocusText }}</span>
+            </span>
+            <i class="bi bi-chevron-down text-slate-400 ms-1" style="font-size: 0.72rem; flex-shrink: 0;"></i>
+          </button>
+          
+          <div v-if="showFocusDropdown" class="dropdown-menu show shadow-md p-1 mt-1 position-absolute end-0" style="min-width: 260px; max-height: 340px; overflow-y: auto; z-index: 2000;">
+            <button type="button" class="dropdown-item small py-2 text-slate-600 border-bottom" @click="selectFocus('')">
+              <i class="bi bi-geo-alt me-2"></i> All Locations (Default View)
+            </button>
+
+            <div class="dropdown-header text-uppercase font-weight-700 mt-1 mb-1" style="font-size: 0.68rem; color: #8E2435;">
+              <i class="bi bi-hospital me-1"></i> EMERGENCY HOSPITALS
+            </div>
+            <button
               v-for="req in activeRequests"
               :key="req.id"
-              :value="req.id"
-              style="background-color: #ffffff; color: #2B2225;"
-              :title="`[${req.bloodType}] ${req.hospitalName} (${req.urgency})`"
+              type="button"
+              class="dropdown-item small py-1 px-2 d-flex align-items-center"
+              @click="selectFocus(req.id)"
             >
-              [{{ req.bloodType }}] {{ truncateText(req.hospitalName, 22) }}
-            </option>
-          </optgroup>
-          <optgroup label="Donation Events">
-            <option
+              <i class="bi bi-hospital me-2" style="color: #8E2435; flex-shrink: 0;"></i>
+              <span class="text-truncate">[{{ req.bloodType }}] {{ req.hospitalName }}</span>
+            </button>
+
+            <div class="dropdown-header text-uppercase font-weight-700 mt-2 mb-1" style="font-size: 0.68rem; color: #0D6EFD;">
+              <i class="bi bi-calendar-event me-1"></i> DONATION EVENTS
+            </div>
+            <button
               v-for="ev in activeEvents"
               :key="'ev_' + ev.id"
-              :value="'ev_' + ev.id"
-              style="background-color: #ffffff; color: #2B2225;"
-              :title="`${ev.title} (${ev.city || ev.location})`"
+              type="button"
+              class="dropdown-item small py-1 px-2 d-flex align-items-center"
+              @click="selectFocus('ev_' + ev.id)"
             >
-              {{ truncateText(ev.title, 22) }}
-            </option>
-          </optgroup>
-        </select>
+              <i class="bi bi-calendar-event me-2" style="color: #0D6EFD; flex-shrink: 0;"></i>
+              <span class="text-truncate">{{ cleanEventTitle(ev.title) }}</span>
+            </button>
+          </div>
+        </div>
 
         <button
           type="button"
@@ -205,7 +248,7 @@
 /**
  * EmergencyMap.vue (Unified Live Network Map)
  * Single reusable map component rendering Hospital Emergency Requests, Donation Events, and Live Responders.
- * All UI labels, tooltips, popups, and legends are strictly in English without emoji icons in dropdowns.
+ * All UI labels, tooltips, popups, and legends use real Bootstrap Icons and clean titles.
  */
 
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
@@ -234,7 +277,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['respond'])
+const emit = defineEmits(['respond', 'register-event'])
 
 const { responses: activeResponses, startListening, stopListening } = useActiveResponses()
 
@@ -244,6 +287,9 @@ const selectedRequestId = ref('')
 const activeLayerFilter = ref('all') // 'all' | 'hospitals' | 'events'
 const activityLogs = ref([])
 
+const showLayerDropdown = ref(false)
+const showFocusDropdown = ref(false)
+
 let leafletMap = null
 
 // Dictionaries to manage map instances
@@ -252,6 +298,11 @@ const hospitalCircles = new Map()
 const eventMarkers = new Map()
 const donorMarkers = new Map()
 const donorPolylines = new Map()
+
+function cleanEventTitle(title) {
+  if (!title) return ''
+  return title.split(' — ')[0].trim()
+}
 
 const activeRequests = computed(() => {
   return props.emergencyRequests.filter(r => r.status === 'active')
@@ -263,8 +314,60 @@ const activeEvents = computed(() => {
 
 const filteredResponders = computed(() => {
   if (!selectedRequestId.value) return activeResponses.value
-  return activeResponses.value.filter(r => r.requestId === selectedRequestId.value)
+  return activeResponses.value.filter(r => String(r.requestId) === String(selectedRequestId.value))
 })
+
+const activeLayerFilterLabel = computed(() => {
+  if (activeLayerFilter.value === 'hospitals') return `Hospitals (${activeRequests.value.length})`
+  if (activeLayerFilter.value === 'events') return `Events (${activeEvents.value.length})`
+  return 'All Locations'
+})
+
+const selectedFocusType = computed(() => {
+  if (!selectedRequestId.value) return 'none'
+  return selectedRequestId.value.startsWith('ev_') ? 'event' : 'hospital'
+})
+
+const selectedFocusText = computed(() => {
+  if (!selectedRequestId.value) return 'Select Location Focus'
+  if (selectedRequestId.value.startsWith('ev_')) {
+    const rawId = selectedRequestId.value.replace('ev_', '')
+    const ev = activeEvents.value.find(e => String(e.id) === String(rawId))
+    return ev ? cleanEventTitle(ev.title) : 'Selected Event'
+  }
+  const req = activeRequests.value.find(r => String(r.id) === String(selectedRequestId.value))
+  return req ? `[${req.bloodType}] ${req.hospitalName}` : 'Selected Hospital'
+})
+
+function toggleLayerDropdown() {
+  showLayerDropdown.value = !showLayerDropdown.value
+  showFocusDropdown.value = false
+}
+
+function toggleFocusDropdown() {
+  showFocusDropdown.value = !showFocusDropdown.value
+  showLayerDropdown.value = false
+}
+
+function setLayerFilter(val) {
+  activeLayerFilter.value = val
+  showLayerDropdown.value = false
+  renderHospitalMarkers()
+  renderEventMarkers()
+}
+
+function selectFocus(val) {
+  selectedRequestId.value = val
+  showFocusDropdown.value = false
+  centerMapOnSelected()
+}
+
+function closeDropdownsOnClickOutside(e) {
+  if (!e.target.closest('.dropdown')) {
+    showLayerDropdown.value = false
+    showFocusDropdown.value = false
+  }
+}
 
 function formatMeters(meters) {
   return formatDistance(meters)
@@ -276,7 +379,7 @@ function logActivity(text) {
   if (activityLogs.value.length > 5) activityLogs.value.pop()
 }
 
-function truncateText(text, maxLen = 22) {
+function truncateText(text, maxLen = 20) {
   if (!text) return ''
   if (text.length <= maxLen) return text
   return text.substring(0, maxLen - 3) + '...'
@@ -315,6 +418,9 @@ function initMapEngine() {
   if (typeof window !== 'undefined') {
     window.handleHospitalPopupRespond = (reqId) => {
       emit('respond', reqId)
+    }
+    window.handleEventPopupRegister = (eventId) => {
+      emit('register-event', eventId)
     }
   }
 
@@ -356,7 +462,7 @@ function renderHospitalMarkers() {
 
   activeRequests.value.forEach((req) => {
     const coords = (req.latitude && req.longitude)
-      ? { lat: req.latitude, lng: req.longitude }
+      ? { lat: Number(req.latitude), lng: Number(req.longitude) }
       : getHospitalCoordinates(req.hospitalName, req.city)
 
     const pos = [coords.lat, coords.lng]
@@ -408,8 +514,8 @@ function renderHospitalMarkers() {
       radius: 10000
     }).addTo(leafletMap)
 
-    hospitalMarkers.set(req.id, marker)
-    hospitalCircles.set(req.id, [innerCircle, outerCircle])
+    hospitalMarkers.set(String(req.id), marker)
+    hospitalCircles.set(String(req.id), [innerCircle, outerCircle])
   })
 
   if (count > 0 && !selectedRequestId.value) {
@@ -418,7 +524,7 @@ function renderHospitalMarkers() {
 }
 
 /**
- * Renders Donation Event Markers in Leaflet.
+ * Renders Donation Event Markers in Leaflet with Register Interest button in popup.
  */
 function renderEventMarkers() {
   if (!leafletMap) return
@@ -430,7 +536,7 @@ function renderEventMarkers() {
 
   activeEvents.value.forEach((ev) => {
     const coords = (ev.latitude && ev.longitude)
-      ? { lat: ev.latitude, lng: ev.longitude }
+      ? { lat: Number(ev.latitude), lng: Number(ev.longitude) }
       : getHospitalCoordinates(ev.location || ev.title, ev.city)
 
     const pos = [coords.lat, coords.lng]
@@ -453,14 +559,17 @@ function renderEventMarkers() {
     const marker = L.marker(pos, { icon }).addTo(leafletMap)
     marker.bindPopup(`
       <div style="font-family: system-ui, sans-serif; padding: 4px; max-width: 220px;">
-        <strong style="color: #0D6EFD; font-size: 0.88rem;">${ev.title}</strong><br>
+        <strong style="color: #0D6EFD; font-size: 0.88rem;">${cleanEventTitle(ev.title)}</strong><br>
         <span style="font-size: 0.76rem; color: #555;">Category: <strong>${ev.category || 'Drive'}</strong></span><br>
         <span style="font-size: 0.75rem; color: #555;">Location: ${ev.location || ev.city}</span><br>
-        <span style="font-size: 0.75rem; color: #0D6EFD; font-weight: bold;">Date: ${ev.date || 'Upcoming'}</span>
+        <span style="font-size: 0.75rem; color: #0D6EFD; font-weight: bold;">Date: ${ev.date || 'Upcoming'}</span><br>
+        <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100" style="background-color: #0D6EFD; font-size: 0.72rem; border-radius: 6px;" onclick="window.handleEventPopupRegister('${ev.id}')">
+          ❤️ Register Interest
+        </button>
       </div>
     `)
 
-    eventMarkers.set('ev_' + ev.id, marker)
+    eventMarkers.set('ev_' + String(ev.id), marker)
   })
 }
 
@@ -535,26 +644,31 @@ function renderDonorMarkers() {
 }
 
 function centerMapOnSelected() {
+  if (!leafletMap) return
+
   if (selectedRequestId.value) {
     if (selectedRequestId.value.startsWith('ev_')) {
-      const ev = activeEvents.value.find(e => 'ev_' + e.id === selectedRequestId.value)
-      if (ev && leafletMap) {
+      const rawId = selectedRequestId.value.replace('ev_', '')
+      const ev = activeEvents.value.find(e => String(e.id) === String(rawId))
+      if (ev) {
         const coords = (ev.latitude && ev.longitude)
-          ? { lat: ev.latitude, lng: ev.longitude }
+          ? { lat: Number(ev.latitude), lng: Number(ev.longitude) }
           : getHospitalCoordinates(ev.location || ev.title, ev.city)
-        leafletMap.setView([coords.lat, coords.lng], 14)
+        leafletMap.setView([coords.lat, coords.lng], 15, { animate: true })
         const m = eventMarkers.get(selectedRequestId.value)
         if (m) m.openPopup()
+        logActivity(`Focused on event: ${cleanEventTitle(ev.title)}`)
       }
     } else {
-      const req = activeRequests.value.find(r => r.id === selectedRequestId.value)
-      if (req && leafletMap) {
+      const req = activeRequests.value.find(r => String(r.id) === String(selectedRequestId.value))
+      if (req) {
         const coords = (req.latitude && req.longitude)
-          ? { lat: req.latitude, lng: req.longitude }
+          ? { lat: Number(req.latitude), lng: Number(req.longitude) }
           : getHospitalCoordinates(req.hospitalName, req.city)
-        leafletMap.setView([coords.lat, coords.lng], 14)
-        const marker = hospitalMarkers.get(selectedRequestId.value)
+        leafletMap.setView([coords.lat, coords.lng], 15, { animate: true })
+        const marker = hospitalMarkers.get(String(req.id))
         if (marker) marker.openPopup()
+        logActivity(`Focused on hospital: ${req.hospitalName}`)
       }
     }
   } else {
@@ -564,7 +678,7 @@ function centerMapOnSelected() {
 }
 
 function focusRequest(requestId) {
-  selectedRequestId.value = requestId
+  selectedRequestId.value = String(requestId)
   centerMapOnSelected()
 }
 
@@ -624,10 +738,16 @@ watch(() => props.isVisible, (visible) => {
 onMounted(() => {
   startListening()
   initMapEngine()
+  if (typeof window !== 'undefined') {
+    window.addEventListener('click', closeDropdownsOnClickOutside)
+  }
 })
 
 onUnmounted(() => {
   stopListening()
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('click', closeDropdownsOnClickOutside)
+  }
   if (leafletMap) {
     try {
       leafletMap.remove()

@@ -61,26 +61,12 @@ const props = defineProps({
 const emit = defineEmits(['toggle-interested', 'edit', 'delete'])
 
 const displayTitle = computed(() => {
-  const title = props.event.title
+  const title = props.event?.title
   if (!title) return ''
-  const parts = title.split(' — ')
-  if (parts.length > 1) {
-    const lastPart = parts[parts.length - 1].trim()
-    const lowerLast = lastPart.toLowerCase()
-    const isEventTopic = lowerLast.includes('drive') || 
-                         lowerLast.includes('festival') || 
-                         lowerLast.includes('campaign') || 
-                         lowerLast.includes('blood') || 
-                         lowerLast.includes('ceremony') || 
-                         lowerLast.includes('workshop') ||
-                         lowerLast.includes('meeting') ||
-                         lowerLast.includes('opening')
-    if (!isEventTopic) {
-      return parts.slice(0, -1).join(' — ').trim()
-    }
-  }
-  return title
+  return title.split(' — ')[0].trim()
 })
+
+
 
 const formattedDate = computed(() => {
   if (!props.event.date) return 'Date TBC'

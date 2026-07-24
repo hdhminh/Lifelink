@@ -25,70 +25,82 @@ describe('EventCard.vue', () => {
     interestedCount: 5
   }
 
+  const routerLinkStub = { template: '<a><slot /></a>' }
+
   it('renders event details correctly', () => {
     const wrapper = mount(EventCard, {
-      props: { event: sampleEvent }
+      props: { event: sampleEvent },
+      global: {
+        stubs: {
+          RouterLink: routerLinkStub
+        }
+      }
     })
 
-    expect(wrapper.text()).toContain('Hanoi Blood Donation — Campaign')
+    expect(wrapper.text()).toContain('Hanoi Blood Donation')
     expect(wrapper.text()).toContain('Campaign')
     expect(wrapper.text()).toContain('Hanoi')
     expect(wrapper.text()).toContain('Hoan Kiem Lake')
     expect(wrapper.text()).toContain('15 people interested')
   })
 
+
   it('strips non-topic location suffix correctly via displayTitle computed prop', () => {
     const wrapper = mount(EventCard, {
-      props: { event: sampleEventWithLocationSuffix }
+      props: { event: sampleEventWithLocationSuffix },
+      global: { stubs: { RouterLink: routerLinkStub } }
     })
-    // Suffix '— HCMC Hospital' is not a topic, so it should be stripped
     expect(wrapper.find('.ll-event-title').text()).toBe('HCMC Donation Drive')
   })
 
   it('renders dates formatted with locale en-AU', () => {
     const wrapper = mount(EventCard, {
-      props: { event: sampleEvent }
+      props: { event: sampleEvent },
+      global: { stubs: { RouterLink: routerLinkStub } }
     })
     expect(wrapper.find('.ll-date-badge').text()).toBe('15 Aug 2026')
   })
 
   it('displays admin actions when isAdmin is true', async () => {
     const wrapper = mount(EventCard, {
-      props: { event: sampleEvent, isAdmin: true }
+      props: { event: sampleEvent, isAdmin: true },
+      global: { stubs: { RouterLink: routerLinkStub } }
     })
 
     const buttons = wrapper.findAll('button')
-    const editBtn = buttons.find(b => b.text().includes('Edit'))
-    const deleteBtn = buttons.find(b => b.text().includes('Delete'))
+    expect(buttons.length).toBe(2)
+    expect(buttons[0].text()).toContain('Edit')
+    expect(buttons[1].text()).toContain('Delete')
 
-    expect(editBtn.exists()).toBe(true)
-    expect(deleteBtn.exists()).toBe(true)
-
-    await editBtn.trigger('click')
+    await buttons[0].trigger('click')
     expect(wrapper.emitted('edit')).toBeTruthy()
 
-    await deleteBtn.trigger('click')
+    await buttons[1].trigger('click')
     expect(wrapper.emitted('delete')).toBeTruthy()
   })
 
   it('shows toggle interest option for standard users', async () => {
     const wrapper = mount(EventCard, {
-      props: { event: sampleEvent, isLoggedIn: true, isInterested: false }
+      props: { event: sampleEvent, isLoggedIn: true, isInterested: false },
+      global: { stubs: { RouterLink: routerLinkStub } }
     })
 
-    const interestBtn = wrapper.find('.ll-btn-block')
-    expect(interestBtn.text()).toBe('Interested')
+    const button = wrapper.find('button')
+    expect(button.exists()).toBe(true)
+    expect(button.text()).toBe('Interested')
 
-    await interestBtn.trigger('click')
+    await button.trigger('click')
     expect(wrapper.emitted('toggle-interested')).toBeTruthy()
   })
 
   it('displays registered state when isInterested is true', () => {
     const wrapper = mount(EventCard, {
-      props: { event: sampleEvent, isLoggedIn: true, isInterested: true }
+      props: { event: sampleEvent, isLoggedIn: true, isInterested: true },
+      global: { stubs: { RouterLink: routerLinkStub } }
     })
-    const interestBtn = wrapper.find('.ll-btn-block')
-    expect(interestBtn.text()).toContain('Interested (Registered)')
-    expect(interestBtn.classes()).toContain('ll-btn-primary')
+
+    const button = wrapper.find('button')
+    expect(button.text()).toContain('Interested (Registered)')
+    expect(button.classes()).toContain('ll-btn-primary')
   })
 })

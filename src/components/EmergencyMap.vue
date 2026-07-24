@@ -501,8 +501,8 @@ function renderHospitalMarkers() {
         <strong style="color: #8E2435; font-size: 0.9rem;">${req.hospitalName}</strong><br>
         <span style="font-size: 0.78rem;">Blood Required: <strong style="color: #8E2435;">${req.bloodType}</strong> (${req.urgency})</span><br>
         <span style="font-size: 0.75rem;">Confirmed: <strong>${req.confirmedCount || 0}/${req.unitsNeeded} units</strong></span><br>
-        <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100" style="background-color: #8E2435; font-size: 0.72rem; border-radius: 6px;" onclick="window.handleHospitalPopupRespond('${req.id}')">
-          🩸 Confirm Availability
+        <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1" style="background-color: #8E2435; font-size: 0.72rem; border-radius: 6px;" onclick="window.handleHospitalPopupRespond('${req.id}')">
+          <i class="bi bi-droplet-fill me-1"></i> Confirm Availability
         </button>
       </div>
     `)
@@ -571,8 +571,8 @@ function renderEventMarkers() {
         <span style="font-size: 0.76rem; color: #555;">Category: <strong>${ev.category || 'Drive'}</strong></span><br>
         <span style="font-size: 0.75rem; color: #555;">Location: ${ev.location || ev.city}</span><br>
         <span style="font-size: 0.75rem; color: #0D6EFD; font-weight: bold;">Date: ${ev.date || 'Upcoming'}</span><br>
-        <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100" style="background-color: #0D6EFD; font-size: 0.72rem; border-radius: 6px;" onclick="window.handleEventPopupRegister('${ev.id}')">
-          ❤️ Register Interest
+        <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1" style="background-color: #0D6EFD; font-size: 0.72rem; border-radius: 6px;" onclick="window.handleEventPopupRegister('${ev.id}')">
+          <i class="bi bi-heart-fill me-1"></i> Register Interest
         </button>
       </div>
     `)
@@ -659,21 +659,31 @@ function centerMapOnSelected() {
       const rawId = selectedRequestId.value.replace('ev_', '')
       const ev = activeEvents.value.find(e => String(e.id) === String(rawId))
       if (ev) {
+        if (activeLayerFilter.value === 'hospitals') {
+          activeLayerFilter.value = 'all'
+          renderHospitalMarkers()
+          renderEventMarkers()
+        }
         const coords = (ev.latitude && ev.longitude)
           ? { lat: Number(ev.latitude), lng: Number(ev.longitude) }
           : getHospitalCoordinates(ev.location || ev.title, ev.city)
-        leafletMap.setView([coords.lat, coords.lng], 15, { animate: true })
-        const m = eventMarkers.get(selectedRequestId.value)
+        leafletMap.setView([coords.lat, coords.lng], 14, { animate: true })
+        const m = eventMarkers.get('ev_' + String(ev.id))
         if (m) m.openPopup()
         logActivity(`Focused on event: ${cleanEventTitle(ev.title)}`)
       }
     } else {
       const req = activeRequests.value.find(r => String(r.id) === String(selectedRequestId.value))
       if (req) {
+        if (activeLayerFilter.value === 'events') {
+          activeLayerFilter.value = 'all'
+          renderHospitalMarkers()
+          renderEventMarkers()
+        }
         const coords = (req.latitude && req.longitude)
           ? { lat: Number(req.latitude), lng: Number(req.longitude) }
           : getHospitalCoordinates(req.hospitalName, req.city)
-        leafletMap.setView([coords.lat, coords.lng], 15, { animate: true })
+        leafletMap.setView([coords.lat, coords.lng], 14, { animate: true })
         const marker = hospitalMarkers.get(String(req.id))
         if (marker) marker.openPopup()
         logActivity(`Focused on hospital: ${req.hospitalName}`)

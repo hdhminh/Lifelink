@@ -272,8 +272,13 @@ export async function seedDatabaseIfEmpty() {
       ]
 
       seedEvents.forEach(evt => {
+        const coords = getHospitalCoordinates(evt.location || evt.title, evt.city)
         const newDocRef = doc(collection(db, 'events'))
-        batch.set(newDocRef, evt)
+        batch.set(newDocRef, {
+          ...evt,
+          latitude: coords.lat,
+          longitude: coords.lng
+        })
       })
       await batch.commit()
       console.log('[Seeder] Successfully seeded events.')

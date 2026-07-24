@@ -2,7 +2,7 @@
  * hospitalCoordinates.js
  *
  * Real geographic coordinates (latitude, longitude) for partner clinics, hospitals,
- * and regional centers across Vietnam.
+ * event venues, and regional centers across Vietnam.
  */
 
 export const HOSPITAL_DATABASE = [
@@ -11,6 +11,7 @@ export const HOSPITAL_DATABASE = [
   { name: 'FV Hospital', city: 'Ho Chi Minh City', lat: 10.7296, lng: 106.7222 },
   { name: 'Vinmec Central Park Hospital', city: 'Ho Chi Minh City', lat: 10.7937, lng: 106.7188 },
   { name: 'Gia Dinh People\'s Hospital', city: 'Ho Chi Minh City', lat: 10.8013, lng: 106.6912 },
+  { name: 'Gia Dinh People Hospital', city: 'Ho Chi Minh City', lat: 10.8013, lng: 106.6912 },
   { name: 'Blood Transfusion Hematology Hospital', city: 'Ho Chi Minh City', lat: 10.7561, lng: 106.6644 },
   { name: 'University Medical Center HCMC', city: 'Ho Chi Minh City', lat: 10.7556, lng: 106.6619 },
   { name: 'HCMC People\'s Hospital 115', city: 'Ho Chi Minh City', lat: 10.7744, lng: 106.6653 },
@@ -47,6 +48,20 @@ export const HOSPITAL_DATABASE = [
   { name: 'Vinmec Nha Trang Hospital', city: 'Nha Trang', lat: 12.2153, lng: 109.2081 }
 ]
 
+export const EVENT_VENUES_DATABASE = [
+  { name: 'Youth Cultural Center HCMC', city: 'Ho Chi Minh City', lat: 10.7828, lng: 106.6983 },
+  { name: 'Dak Lak Provincial Cultural Center', city: 'Buon Ma Thuot', lat: 12.6667, lng: 108.0500 },
+  { name: 'Phu Tho Provincial Sports Stadium', city: 'Viet Tri', lat: 21.3227, lng: 105.4019 },
+  { name: 'Hoa Binh Provincial Cultural Palace', city: 'Hoa Binh', lat: 20.8174, lng: 105.3382 },
+  { name: 'Lang Son Provincial Convention Center', city: 'Lang Son', lat: 21.8528, lng: 106.7618 },
+  { name: 'Luu Huu Phuoc Park Can Tho', city: 'Can Tho', lat: 10.0341, lng: 105.7811 },
+  { name: 'Binh Duong Youth Center', city: 'Binh Duong', lat: 10.9805, lng: 106.6519 },
+  { name: 'Dong Nai Children House', city: 'Bien Hoa', lat: 10.9458, lng: 106.8247 },
+  { name: 'Nha Trang Youth Center', city: 'Nha Trang', lat: 12.2472, lng: 109.1917 },
+  { name: 'Hanoi Medical University', city: 'Ha Noi', lat: 21.0031, lng: 105.8294 },
+  { name: 'Hai Phong Sports Stadium', city: 'Hai Phong', lat: 20.8544, lng: 106.6778 }
+]
+
 const CITY_FALLBACKS = {
   'ho chi minh city': { lat: 10.7548, lng: 106.6601 },
   'hcmc': { lat: 10.7548, lng: 106.6601 },
@@ -72,12 +87,15 @@ const CITY_FALLBACKS = {
   'vinh': { lat: 18.6734, lng: 105.6813 },
   'thanh hoa': { lat: 19.8067, lng: 105.7853 },
   'phu tho': { lat: 21.3227, lng: 105.4019 },
+  'hoa binh': { lat: 20.8174, lng: 105.3382 },
+  'dak lak': { lat: 12.6667, lng: 108.0500 },
+  'buon ma thuot': { lat: 12.6667, lng: 108.0500 },
   'dong nai': { lat: 10.9458, lng: 106.8247 },
   'bien hoa': { lat: 10.9458, lng: 106.8247 }
 }
 
 /**
- * Finds hospital coordinates by name or returns city center defaults.
+ * Finds hospital or event venue coordinates by name or returns city center defaults.
  * @param {string} hospitalName 
  * @param {string} [cityName] 
  * @returns {{ lat: number, lng: number }}
@@ -86,19 +104,28 @@ export function getHospitalCoordinates(hospitalName, cityName) {
   const nameLower = (hospitalName || '').toLowerCase()
   const cityLower = (cityName || '').toLowerCase()
 
-  const match = HOSPITAL_DATABASE.find(
+  // 1. Exact hospital match
+  const hospMatch = HOSPITAL_DATABASE.find(
     h => h.name.toLowerCase() === nameLower
   )
-  if (match) {
-    return { lat: match.lat, lng: match.lng }
+  if (hospMatch) {
+    return { lat: hospMatch.lat, lng: hospMatch.lng }
   }
 
-  // Check city fallback by explicit cityName
+  // 2. Exact event venue match
+  const venueMatch = EVENT_VENUES_DATABASE.find(
+    v => v.name.toLowerCase() === nameLower || nameLower.includes(v.name.toLowerCase())
+  )
+  if (venueMatch) {
+    return { lat: venueMatch.lat, lng: venueMatch.lng }
+  }
+
+  // 3. City fallback by explicit cityName
   if (cityLower && CITY_FALLBACKS[cityLower]) {
     return CITY_FALLBACKS[cityLower]
   }
 
-  // Check if hospitalName/location contains any known city keyword
+  // 4. Check if hospitalName/location text contains any known city keyword
   for (const [key, coords] of Object.entries(CITY_FALLBACKS)) {
     if (nameLower.includes(key)) {
       return coords

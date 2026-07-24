@@ -24,5 +24,14 @@ const app = initializeApp(firebaseConfig)
 
 export const auth = getAuth(app)
 export const db = getFirestore(app)
-export const rtdb = getDatabase(app)
 
+const rtdbUrl = import.meta.env.VITE_FIREBASE_DATABASE_URL
+
+let rtdbInstance = null
+try {
+  rtdbInstance = getDatabase(app, rtdbUrl)
+} catch (e) {
+  rtdbInstance = {}
+}
+
+export const rtdb = rtdbInstance

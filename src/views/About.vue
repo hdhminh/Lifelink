@@ -9,7 +9,7 @@
 
         <!-- Dynamic Welcome Block -->
         <div v-if="welcomeMessage" class="ll-welcome-banner p-3 rounded-lg mb-4">
-          <h5 class="m-0 text-wine"><i class="bi bi-balloon-heart-fill me-2"></i>{{ welcomeMessage }}</h5>
+          <h2 class="m-0 text-wine" style="font-size: 1.1rem;"><i class="bi bi-balloon-heart-fill me-2"></i>{{ welcomeMessage }}</h2>
         </div>
 
         <div class="row g-3 mb-4">
@@ -37,7 +37,7 @@
           </div>
         </div>
         <!-- Premium Choosing Cards Layout (Implemented as Radio Buttons for Rubric Compliance) -->
-        <h5 class="fw-bold mb-3">Explore Roles</h5>
+        <h2 class="fw-bold mb-3" style="font-size: 1.15rem;">Explore Roles</h2>
         <div class="row g-3 mb-4">
           <div class="col-6">
             <label for="role-donors" class="ll-role-label">

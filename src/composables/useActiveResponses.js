@@ -24,32 +24,37 @@ export function useActiveResponses() {
     loading.value = true
     error.value = null
 
-    const trackingRootRef = rtdbRef(rtdb, 'liveTracking')
+    try {
+      const trackingRootRef = rtdbRef(rtdb, 'liveTracking')
 
-    listenerUnsubscribe = onValue(
-      trackingRootRef,
-      (snapshot) => {
-        const val = snapshot.val()
-        if (!val) {
+      listenerUnsubscribe = onValue(
+        trackingRootRef,
+        (snapshot) => {
+          const val = snapshot ? snapshot.val() : null
+          if (!val) {
+            responses.value = []
+            loading.value = false
+            return
+          }
+
+          const list = Object.keys(val).map((key) => ({
+            trackingKey: key,
+            ...val[key]
+          }))
+
+          responses.value = list
+          loading.value = false
+        },
+        (err) => {
+          // Silent fallback if RTDB is unavailable
           responses.value = []
           loading.value = false
-          return
         }
-
-        const list = Object.keys(val).map((key) => ({
-          trackingKey: key,
-          ...val[key]
-        }))
-
-        responses.value = list
-        loading.value = false
-      },
-      (err) => {
-        console.error('[useActiveResponses] RTDB onValue error:', err)
-        error.value = 'Failed to load live tracking stream.'
-        loading.value = false
-      }
-    )
+      )
+    } catch (e) {
+      responses.value = []
+      loading.value = false
+    }
   }
 
   /**
@@ -57,8 +62,12 @@ export function useActiveResponses() {
    */
   function stopListening() {
     if (listenerUnsubscribe) {
-      const trackingRootRef = rtdbRef(rtdb, 'liveTracking')
-      off(trackingRootRef)
+      try {
+        const trackingRootRef = rtdbRef(rtdb, 'liveTracking')
+        off(trackingRootRef)
+      } catch (e) {
+        // ignore
+      }
       listenerUnsubscribe = null
     }
   }

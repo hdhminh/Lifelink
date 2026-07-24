@@ -24,7 +24,7 @@
     </div>
 
     <section class="ll-toolbar p-4 bg-white border rounded-lg shadow-sm mb-4">
-      <h5 class="fw-bold mb-3 text-slate-800" style="font-size: 1.05rem;"><i class="bi bi-funnel-fill text-wine me-2"></i>Filter Requests</h5>
+      <h2 class="fw-bold mb-3 text-slate-800" style="font-size: 1.05rem;"><i class="bi bi-funnel-fill text-wine me-2"></i>Filter Requests</h2>
       
       <div class="row g-4">
         <!-- Blood Type Chips -->
@@ -35,6 +35,7 @@
               v-for="bt in ['Any', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']"
               :key="bt"
               type="button"
+              :aria-label="`Filter by blood type ${bt}`"
               :class="['ll-chip', { 'll-chip--active': (bt === 'Any' && !filterBloodType) || (filterBloodType === bt) }]"
               @click="filterBloodType = (bt === 'Any' ? '' : bt)"
             >
@@ -59,6 +60,7 @@
               v-for="level in ['All', 'Critical', 'Urgent', 'Moderate']"
               :key="level"
               type="button"
+              :aria-label="`Filter by urgency level ${level}`"
               :class="['ll-chip', { 'll-chip--active': (level === 'All' && !filterUrgency) || (filterUrgency === level.toLowerCase()) }]"
               @click="filterUrgency = (level === 'All' ? '' : level.toLowerCase())"
             >

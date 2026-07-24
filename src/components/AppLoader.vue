@@ -90,6 +90,9 @@ onMounted(() => {
       clearInterval(timer)
       setTimeout(() => {
         isLoading.value = false
+        if (typeof window !== 'undefined') {
+          window.scrollTo(0, 0)
+        }
       }, 200)
     }
   }, intervalTime)

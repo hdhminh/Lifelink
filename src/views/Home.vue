@@ -347,6 +347,20 @@ const runAnimations = () => {
     statsObserver.observe(statsContainer.value)
   }
 }
+
+onMounted(() => {
+  if (typeof window !== 'undefined') {
+    window.scrollTo(0, 0)
+  }
+  runAnimations()
+})
+
+onActivated(() => {
+  if (typeof window !== 'undefined') {
+    window.scrollTo(0, 0)
+  }
+  runAnimations()
+})
 </script>
 
 <style scoped>

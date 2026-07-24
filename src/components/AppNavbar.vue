@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar navbar-dark navbar-expand-lg ll-navbar sticky-top">
     <div class="container-fluid px-4 px-lg-5" style="max-width: 1440px; margin: 0 auto;">
-      <RouterLink to="/" class="navbar-brand ll-navbar-brand">
+      <RouterLink to="/" class="navbar-brand ll-navbar-brand" aria-label="LifeLink Homepage">
         <i class="bi bi-droplet-fill text-danger me-1"></i> LifeLink
       </RouterLink>
 

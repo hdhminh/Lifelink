@@ -20,6 +20,7 @@
             class="btn btn-sm d-inline-flex align-items-center justify-content-between gap-2 shadow-xs"
             style="min-width: 140px; min-height: 38px; font-size: 0.82rem; background-color: #FAF5EF; color: #2B2225; border: 1px solid #EAE2DF; border-radius: 8px;"
             type="button"
+            aria-label="Filter map layers by hospitals or events"
             @click.stop="toggleLayerDropdown"
           >
             <span class="d-inline-flex align-items-center text-truncate">
@@ -32,17 +33,17 @@
           </button>
           <ul v-if="showLayerDropdown" class="dropdown-menu show shadow-md p-1 mt-1 position-absolute end-0" style="min-width: 165px; z-index: 2000;">
             <li>
-              <button type="button" class="dropdown-item small d-flex align-items-center py-2" @click="setLayerFilter('all')">
+              <button type="button" class="dropdown-item small d-flex align-items-center py-2" aria-label="Show all location layers" @click="setLayerFilter('all')">
                 <i class="bi bi-layers-fill text-slate-600 me-2"></i> All Locations
               </button>
             </li>
             <li>
-              <button type="button" class="dropdown-item small d-flex align-items-center py-2" @click="setLayerFilter('hospitals')">
+              <button type="button" class="dropdown-item small d-flex align-items-center py-2" aria-label="Filter by emergency hospitals" @click="setLayerFilter('hospitals')">
                 <i class="bi bi-hospital me-2" style="color: #8E2435;"></i> Hospitals ({{ activeRequests.length }})
               </button>
             </li>
             <li>
-              <button type="button" class="dropdown-item small d-flex align-items-center py-2" @click="setLayerFilter('events')">
+              <button type="button" class="dropdown-item small d-flex align-items-center py-2" aria-label="Filter by donation events" @click="setLayerFilter('events')">
                 <i class="bi bi-calendar-event me-2" style="color: #0D6EFD;"></i> Events ({{ activeEvents.length }})
               </button>
             </li>
@@ -55,6 +56,7 @@
             class="btn btn-sm d-inline-flex align-items-center justify-content-between gap-2 shadow-xs"
             style="min-width: 170px; max-width: 220px; min-height: 38px; font-size: 0.82rem; background-color: #FAF5EF; color: #2B2225; border: 1px solid #EAE2DF; border-radius: 8px;"
             type="button"
+            aria-label="Select focus location on map"
             @click.stop="toggleFocusDropdown"
           >
             <span class="d-inline-flex align-items-center text-truncate" style="max-width: 170px;">
@@ -67,7 +69,7 @@
           </button>
           
           <div v-if="showFocusDropdown" class="dropdown-menu show shadow-md p-1 mt-1 position-absolute end-0" style="min-width: 260px; max-height: 340px; overflow-y: auto; z-index: 2000;">
-            <button type="button" class="dropdown-item small py-2 text-slate-600 border-bottom" @click="selectFocus('')">
+            <button type="button" class="dropdown-item small py-2 text-slate-600 border-bottom" aria-label="Show all locations" @click="selectFocus('')">
               <i class="bi bi-geo-alt me-2"></i> All Locations (Default View)
             </button>
 
@@ -79,6 +81,7 @@
               :key="req.id"
               type="button"
               class="dropdown-item small py-1 px-2 d-flex align-items-center"
+              :aria-label="`Focus on hospital ${req.hospitalName}`"
               @click="selectFocus(req.id)"
             >
               <i class="bi bi-hospital me-2" style="color: #8E2435; flex-shrink: 0;"></i>
@@ -93,6 +96,7 @@
               :key="'ev_' + ev.id"
               type="button"
               class="dropdown-item small py-1 px-2 d-flex align-items-center"
+              :aria-label="`Focus on event ${cleanEventTitle(ev.title)}`"
               @click="selectFocus('ev_' + ev.id)"
             >
               <i class="bi bi-calendar-event me-2" style="color: #0D6EFD; flex-shrink: 0;"></i>
@@ -106,6 +110,7 @@
           class="btn btn-sm d-inline-flex align-items-center gap-1 font-weight-600 shadow-xs"
           style="min-height: 38px; padding: 0 0.9rem; font-size: 0.82rem; background-color: #FAF5EF; color: #8E2435; border: 1px solid #EAE2DF; border-radius: 8px;"
           title="Recenter map"
+          aria-label="Recenter map view"
           @click="centerMapOnSelected"
         >
           <i class="bi bi-crosshair me-1"></i> Recenter
@@ -171,17 +176,17 @@
 
       <!-- Right Side Live Activity Stream Panel (Tall 660px) -->
       <div class="col-lg-4 col-12 border-start border-slate-200 p-3 bg-slate-50 d-flex flex-column" style="height: 660px; overflow-y: auto; border-bottom-right-radius: 16px;">
-        <h3 class="fw-bold mb-3 d-flex justify-content-between align-items-center" style="font-size: 0.9rem; color: #8E2435;">
+        <h2 class="fw-bold mb-3 d-flex justify-content-between align-items-center" style="font-size: 0.9rem; color: #8E2435;">
           <span><i class="bi bi-radar me-1"></i> RESPONSE STATUS</span>
           <span class="badge bg-slate-200 text-slate-700" style="font-size: 0.68rem;">
             {{ filteredResponders.length }} En-Route
           </span>
-        </h3>
+        </h2>
 
         <!-- No responders state -->
         <div v-if="filteredResponders.length === 0" class="text-center py-4 px-3 bg-white rounded border border-slate-200 flex-grow-1 d-flex flex-column justify-content-center align-items-center">
           <div class="mb-2 text-slate-300 fs-1"><i class="bi bi-geo-alt"></i></div>
-          <h4 class="fw-bold text-slate-700 mb-1" style="font-size: 0.88rem;">Searching for Active Responders</h4>
+          <h3 class="fw-bold text-slate-700 mb-1" style="font-size: 0.88rem;">Searching for Active Responders</h3>
           <p class="small text-slate-500 mb-0" style="font-size: 0.78rem;">
             Radar active across 10 km radius. Responders will appear here live when they accept emergency requests and share location.
           </p>
@@ -682,10 +687,10 @@ function renderHospitalMarkers() {
     const marker = L.marker(pos, { icon, zIndexOffset: 1000 }).addTo(leafletMap)
     const phoneNum = extractPhoneNumber(req)
     marker.bindPopup(`
-      <div style="font-family: system-ui, sans-serif; padding: 4px; max-width: 220px;">
-        <strong style="color: #8E2435; font-size: 0.9rem;">${req.hospitalName}</strong><br>
-        <span style="font-size: 0.78rem;">Blood Required: <strong style="color: #8E2435;">${req.bloodType}</strong> (${req.urgency})</span><br>
-        <span style="font-size: 0.75rem;">Confirmed: <strong>${req.confirmedCount || 0}/${req.unitsNeeded} units</strong></span><br>
+      <div style="font-family: system-ui, sans-serif; padding: 2px; width: 235px; min-width: 235px; box-sizing: border-box;">
+        <strong style="color: #8E2435; font-size: 0.9rem; display: block; line-height: 1.25; margin-bottom: 2px;">${req.hospitalName}</strong>
+        <span style="font-size: 0.78rem; display: block;">Blood Required: <strong style="color: #8E2435;">${req.bloodType}</strong> (${req.urgency})</span>
+        <span style="font-size: 0.75rem; display: block;">Confirmed: <strong>${req.confirmedCount || 0}/${req.unitsNeeded} units</strong></span>
         <div class="small text-slate-600 mt-1 mb-1" style="font-size: 0.73rem;">
           Hotline: <a href="tel:${phoneNum}" class="fw-bold text-decoration-none" style="color: #8E2435;">${phoneNum}</a>
         </div>
@@ -761,11 +766,11 @@ function renderEventMarkers() {
     const marker = L.marker(pos, { icon, zIndexOffset: 100 }).addTo(leafletMap)
     const phoneNum = extractPhoneNumber(ev)
     marker.bindPopup(`
-      <div style="font-family: system-ui, sans-serif; padding: 4px; max-width: 220px;">
-        <strong style="color: #0D6EFD; font-size: 0.88rem;">${cleanEventTitle(ev.title)}</strong><br>
-        <span style="font-size: 0.76rem; color: #555;">Category: <strong>${ev.category || 'Drive'}</strong></span><br>
-        <span style="font-size: 0.75rem; color: #555;">Location: ${ev.location || ev.city}</span><br>
-        <span style="font-size: 0.75rem; color: #0D6EFD; font-weight: bold;">Date: ${ev.date || 'Upcoming'}</span><br>
+      <div style="font-family: system-ui, sans-serif; padding: 2px; width: 235px; min-width: 235px; box-sizing: border-box;">
+        <strong style="color: #0D6EFD; font-size: 0.88rem; display: block; line-height: 1.25; margin-bottom: 2px;">${cleanEventTitle(ev.title)}</strong>
+        <span style="font-size: 0.76rem; color: #555; display: block;">Category: <strong>${ev.category || 'Drive'}</strong></span>
+        <span style="font-size: 0.75rem; color: #555; display: block;">Location: ${ev.location || ev.city}</span>
+        <span style="font-size: 0.75rem; color: #0D6EFD; font-weight: bold; display: block;">Date: ${ev.date || 'Upcoming'}</span>
         <div class="small text-slate-600 mt-1 mb-1" style="font-size: 0.73rem;">
           Hotline: <a href="tel:${phoneNum}" class="fw-bold text-decoration-none" style="color: #0D6EFD;">${phoneNum}</a>
         </div>
@@ -857,6 +862,7 @@ function renderDonorMarkers() {
 
 function centerMapOnSelected() {
   if (!leafletMap) return
+  leafletMap.invalidateSize(true)
 
   if (selectedRequestId.value) {
     if (selectedRequestId.value.startsWith('ev_')) {
@@ -874,7 +880,12 @@ function centerMapOnSelected() {
         leafletMap.setView([coords.lat, coords.lng], 14, { animate: true })
         updateMeasurementPolyline(coords.lat, coords.lng, '#0D6EFD')
         const m = eventMarkers.get('ev_' + String(ev.id))
-        if (m) m.openPopup()
+        if (m) {
+          setTimeout(() => {
+            if (leafletMap) leafletMap.invalidateSize(true)
+            m.openPopup()
+          }, 50)
+        }
         logActivity(`Focused on event: ${cleanEventTitle(ev.title)}`)
       }
     } else {
@@ -891,7 +902,12 @@ function centerMapOnSelected() {
         leafletMap.setView([coords.lat, coords.lng], 14, { animate: true })
         updateMeasurementPolyline(coords.lat, coords.lng, '#8E2435')
         const marker = hospitalMarkers.get(String(req.id))
-        if (marker) marker.openPopup()
+        if (marker) {
+          setTimeout(() => {
+            if (leafletMap) leafletMap.invalidateSize(true)
+            marker.openPopup()
+          }, 50)
+        }
         logActivity(`Focused on hospital: ${req.hospitalName}`)
       }
     }
@@ -1069,5 +1085,51 @@ defineExpose({
 .hover-lift:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+:deep(.leaflet-popup-content-wrapper) {
+  border-radius: 12px !important;
+  padding: 4px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+:deep(.leaflet-popup-content) {
+  margin: 12px 14px !important;
+  width: 245px !important;
+  min-width: 245px !important;
+  max-width: 260px !important;
+  line-height: 1.4 !important;
+  box-sizing: border-box !important;
+}
+
+:deep(.leaflet-control-zoom a) {
+  min-width: 44px !important;
+  min-height: 44px !important;
+  line-height: 44px !important;
+  font-size: 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+:deep(.leaflet-container a.leaflet-popup-close-button) {
+  top: 10px !important;
+  right: 10px !important;
+  font-size: 18px !important;
+  color: #64748B !important;
+  transition: all 0.2s ease !important;
+  width: 40px !important;
+  height: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+  border-radius: 50% !important;
+}
+
+:deep(.leaflet-container a.leaflet-popup-close-button:hover) {
+  color: #8E2435 !important;
+  background-color: #FAF5EF !important;
+  transform: scale(1.1) !important;
 }
 </style>

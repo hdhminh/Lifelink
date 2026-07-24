@@ -75,18 +75,18 @@ const routes = [
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ]
 
+if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+  window.history.scrollRestoration = 'manual'
+}
+
 const router = createRouter({
   history: createWebHashHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
-    if (savedPosition) {
-      return savedPosition
+    if (to.hash) {
+      return { el: to.hash, behavior: 'smooth' }
     }
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ top: 0 })
-      }, 200)
-    })
+    return { top: 0, left: 0 }
   }
 })
 

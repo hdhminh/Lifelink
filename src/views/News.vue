@@ -44,6 +44,7 @@
               :class="isLiked(item.id) ? 'll-like-btn--active' : 'll-like-btn--inactive'"
               @click="toggleLike(item.id)"
               :title="isLiked(item.id) ? 'Unlike this article' : 'Like this article'"
+              :aria-label="isLiked(item.id) ? 'Unlike this article' : 'Like this article'"
             >
               <i class="bi" :class="isLiked(item.id) ? 'bi-heart-fill' : 'bi-heart'"></i>
               <span>{{ getLikesCount(item) }}</span>

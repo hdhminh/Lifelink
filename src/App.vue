@@ -114,7 +114,7 @@
                 autocomplete="off"
                 style="height: 36px;"
               />
-              <button type="submit" class="btn btn-sm btn-danger px-3 d-flex align-items-center justify-content-center" style="height: 36px;"><i class="bi bi-send-fill"></i></button>
+              <button type="submit" class="btn btn-sm btn-danger px-3 d-flex align-items-center justify-content-center" style="height: 36px;" aria-label="Send message"><i class="bi bi-send-fill"></i></button>
             </form>
           </div>
         </div>

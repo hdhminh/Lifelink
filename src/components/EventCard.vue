@@ -7,16 +7,15 @@
     <div class="ll-card__body flex-grow-1">
       <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
         <h5 class="ll-event-title mb-0">{{ displayTitle }}</h5>
-        <!-- Google Maps Link -->
-        <a
-          :href="buildMapsUrl(event.location + ', ' + event.city)"
-          target="_blank"
-          rel="noopener"
+        <!-- Internal Live Map Link -->
+        <RouterLink
+          :to="{ path: '/map', query: { event: event.id } }"
           class="ll-maps-link text-decoration-none small text-wine font-weight-700"
-          title="Get directions on Google Maps"
+          title="View event location on Live Map"
         >
           <i class="bi bi-geo-alt-fill"></i> Map
-        </a>
+        </RouterLink>
+
       </div>
       <p class="ll-text-meta mb-1"><i class="bi bi-building me-1"></i> {{ event.city }}</p>
       <p class="ll-text-meta mb-3">{{ event.location }}</p>

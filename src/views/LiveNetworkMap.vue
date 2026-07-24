@@ -62,24 +62,30 @@ function handleRespond(requestId) {
   router.push({ path: '/emergency-board', query: { respond: requestId } })
 }
 
-watch([requests, () => route.query.request], () => {
-  if (route.query.request && mapRef.value) {
-    nextTick(() => {
-      mapRef.value.focusRequest(route.query.request)
-    })
-  }
+watch([requests, events, () => route.query.request, () => route.query.event], () => {
+  nextTick(() => {
+    if (mapRef.value) {
+      if (route.query.request) {
+        mapRef.value.focusRequest(route.query.request)
+      } else if (route.query.event) {
+        mapRef.value.focusRequest('ev_' + route.query.event)
+      }
+    }
+  })
 })
 
 onMounted(() => {
   startRequests()
   startEvents()
-  if (route.query.request) {
-    nextTick(() => {
-      if (mapRef.value) {
+  nextTick(() => {
+    if (mapRef.value) {
+      if (route.query.request) {
         mapRef.value.focusRequest(route.query.request)
+      } else if (route.query.event) {
+        mapRef.value.focusRequest('ev_' + route.query.event)
       }
-    })
-  }
+    }
+  })
 })
 
 onUnmounted(() => {

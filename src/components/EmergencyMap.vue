@@ -307,9 +307,8 @@ function initMapEngine() {
     zoomControl: true
   })
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-    subdomains: 'abcd',
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19
   }).addTo(leafletMap)
 
@@ -325,16 +324,19 @@ function initMapEngine() {
   renderEventMarkers()
   renderDonorMarkers()
 
+  nextTick(() => {
+    if (leafletMap) leafletMap.invalidateSize(true)
+  })
   setTimeout(() => {
-    if (leafletMap) {
-      leafletMap.invalidateSize(true)
-    }
+    if (leafletMap) leafletMap.invalidateSize(true)
   }, 100)
   setTimeout(() => {
-    if (leafletMap) {
-      leafletMap.invalidateSize(true)
-    }
-  }, 350)
+    if (leafletMap) leafletMap.invalidateSize(true)
+  }, 300)
+  setTimeout(() => {
+    if (leafletMap) leafletMap.invalidateSize(true)
+  }, 600)
+
 }
 
 /**

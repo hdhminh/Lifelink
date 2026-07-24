@@ -2,7 +2,8 @@
   <div class="ll-page-container" style="min-height: 80vh;">
     <div class="ll-section-header reveal-header">
       <div>
-        <h1 class="ll-section-title"><i class="bi bi-calendar-event me-2 text-danger"></i> Donation Events</h1>
+        <h1 class="ll-section-title"><i class="bi bi-calendar-event me-2" style="color: #8E2435;"></i> Donation Events</h1>
+
         <p class="ll-text-meta mb-0">Browse upcoming drives, campaigns, and awareness workshops.</p>
       </div>
       <button v-if="isAdmin" type="button" class="ll-btn-primary" @click="openCreateForm"><i class="bi bi-plus-lg me-1"></i> New Event</button>

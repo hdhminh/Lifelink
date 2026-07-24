@@ -3,9 +3,10 @@
     <section class="mb-4 reveal-header">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
-          <h1 class="ll-text-heading mb-2">Blood Donation News</h1>
+          <h1 class="ll-text-heading mb-2"><i class="bi bi-newspaper me-2" style="color: #8E2435;"></i> Blood Donation News</h1>
           <p class="ll-text-meta mb-0">Updates, campaigns, policy notes, and donor guidance for Vietnam.</p>
         </div>
+
         <span v-if="loadingLive" class="ll-live-badge">
           <span class="ll-live-dot" aria-hidden="true"></span>
           LIVE UPDATING

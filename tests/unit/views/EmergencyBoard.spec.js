@@ -105,8 +105,9 @@ describe('EmergencyBoard.vue View Integration Tests (30 Tests)', () => {
 
   it('renders section title and request counters', () => {
     const wrapper = mount(EmergencyBoard, { global: { stubs: commonStubs } })
-    expect(wrapper.text()).toContain('Emergency Request Board')
+    expect(wrapper.text()).toContain('Emergency Requests')
     expect(wrapper.text()).toContain('2 active requests')
+
   })
 
   it('renders filter controls for city, blood type and urgency', () => {

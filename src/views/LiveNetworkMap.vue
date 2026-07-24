@@ -1,6 +1,6 @@
 <template>
   <div class="ll-page-container" style="min-height: 85vh;">
-    <div class="ll-section-header reveal-header mb-3">
+    <div class="ll-section-header mb-3">
       <div>
         <h1 class="ll-section-title">
           <i class="bi bi-geo-alt-fill me-2" style="color: #8E2435;"></i> Live Network Map
@@ -13,7 +13,7 @@
 
     <AlertMessage v-if="requestsError || eventsError" type="danger" :message="requestsError || eventsError" />
 
-    <div class="reveal-item">
+    <div>
       <EmergencyMap
         ref="mapRef"
         :emergency-requests="requests"

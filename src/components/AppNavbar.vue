@@ -20,14 +20,15 @@
       <div class="collapse navbar-collapse" id="navbarMain">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <RouterLink class="nav-link" to="/emergency-board"><i class="bi bi-hospital me-1"></i> Emergency Board</RouterLink>
+            <RouterLink class="nav-link" to="/emergency-board"><i class="bi bi-hospital me-1"></i> Emergency</RouterLink>
           </li>
           <li class="nav-item">
-            <RouterLink class="nav-link" to="/map"><i class="bi bi-geo-alt-fill me-1"></i> Live Map</RouterLink>
+            <RouterLink class="nav-link" to="/map"><i class="bi bi-geo-alt-fill me-1"></i> Map</RouterLink>
           </li>
           <li class="nav-item">
             <RouterLink class="nav-link" to="/events"><i class="bi bi-calendar-event me-1"></i> Events</RouterLink>
           </li>
+
 
           <li class="nav-item" v-if="!user">
             <RouterLink class="nav-link" to="/news"><i class="bi bi-newspaper me-1"></i> News</RouterLink>

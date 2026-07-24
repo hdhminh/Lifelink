@@ -1,6 +1,6 @@
 <template>
   <div class="ll-page-container" style="min-height: 85vh;">
-    <div class="ll-section-header reveal-header mb-4">
+    <div class="ll-section-header reveal-header mb-3">
       <div>
         <h1 class="ll-section-title">
           <i class="bi bi-geo-alt-fill me-2" style="color: #8E2435;"></i> Live Network Map
@@ -11,10 +11,9 @@
       </div>
     </div>
 
-    <LoadingSpinner v-if="requestsLoading || eventsLoading" message="Loading Live Network Map..." />
-    <AlertMessage v-else-if="requestsError || eventsError" type="danger" :message="requestsError || eventsError" />
+    <AlertMessage v-if="requestsError || eventsError" type="danger" :message="requestsError || eventsError" />
 
-    <div v-else class="reveal-item">
+    <div class="reveal-item">
       <EmergencyMap
         ref="mapRef"
         :emergency-requests="requests"
@@ -34,12 +33,11 @@
  * Displays both Emergency Requests and Donation Events on a single interactive map.
  */
 
-import { ref, onMounted, watch, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useEmergencyRequests } from '@/composables/useEmergencyRequests.js'
 import { useDonationEvents } from '@/composables/useDonationEvents.js'
 import EmergencyMap from '@/components/EmergencyMap.vue'
-import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import AlertMessage from '@/components/AlertMessage.vue'
 
 const route = useRoute()
@@ -48,7 +46,6 @@ const mapRef = ref(null)
 
 const {
   requests,
-  loading: requestsLoading,
   error: requestsError,
   startListening: startRequests,
   stopListening: stopRequests
@@ -56,7 +53,6 @@ const {
 
 const {
   events,
-  loading: eventsLoading,
   error: eventsError,
   startListening: startEvents,
   stopListening: stopEvents

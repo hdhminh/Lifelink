@@ -18,11 +18,11 @@
           <div class="ll-footer__copy">Emergency donor coordination network</div>
         </div>
         <div class="d-flex flex-wrap gap-4">
-          <RouterLink to="/emergency-board" class="text-decoration-none ll-footer-link">Emergency Board</RouterLink>
-          <RouterLink to="/events" class="text-decoration-none ll-footer-link">Events</RouterLink>
+          <RouterLink to="/emergency-board" class="text-decoration-none ll-footer-link"><i class="bi bi-hospital me-1"></i> Emergency Board</RouterLink>
+          <RouterLink to="/events" class="text-decoration-none ll-footer-link"><i class="bi bi-calendar-event me-1"></i> Events</RouterLink>
           <RouterLink to="/map" class="text-decoration-none ll-footer-link"><i class="bi bi-geo-alt-fill me-1"></i> Live Map</RouterLink>
-          <RouterLink to="/news" class="text-decoration-none ll-footer-link">News</RouterLink>
-          <RouterLink to="/about" class="text-decoration-none ll-footer-link">About</RouterLink>
+          <RouterLink to="/news" class="text-decoration-none ll-footer-link"><i class="bi bi-newspaper me-1"></i> News</RouterLink>
+          <RouterLink to="/about" class="text-decoration-none ll-footer-link"><i class="bi bi-info-circle me-1"></i> About</RouterLink>
         </div>
       </div>
       <div class="mt-4 pt-3 border-top ll-footer-meta d-flex justify-content-between flex-wrap gap-2">

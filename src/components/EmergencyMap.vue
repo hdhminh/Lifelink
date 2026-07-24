@@ -1,9 +1,16 @@
 <template>
-  <div class="ll-emergency-map-container" style="position: relative; z-index: 1;">
-    <!-- Map Header Status Toolbar (LifeLink Brand Wine Red Surface) -->
-    <div class="ll-map-toolbar d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 rounded-top-lg border border-bottom-0" style="background-color: #ffffff; border-color: #EAE2DF; position: relative; z-index: 1050;">
-      <div class="d-flex align-items-center">
-        <span class="badge rounded-pill d-inline-flex align-items-center gap-2 shadow-xs" style="font-size: 0.78rem; padding: 0.48rem 0.95rem; line-height: 1; background-color: #8E2435; color: #ffffff; font-weight: 700; letter-spacing: 0.4px;">
+  <!-- Outer Shell: Unified 16px Rounded Container with Brand Shadow -->
+  <div class="ll-emergency-map-container overflow-hidden rounded-16 border shadow-sm" style="position: relative; z-index: 1; border-color: #EAE2DF !important; border-radius: 16px !important; box-shadow: 0 10px 30px rgba(142, 36, 53, 0.06) !important;">
+    <!-- Map Header Status Toolbar (LifeLink Brand Wine Red Surface with Rounded 16px Top Corners) -->
+    <div class="ll-map-toolbar d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 px-4 border-bottom bg-white" style="border-color: #EAE2DF; position: relative; z-index: 1050; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+      <div class="d-flex align-items-center gap-3">
+        <!-- Title & Icon -->
+        <h5 class="m-0 font-weight-700 d-inline-flex align-items-center" style="font-size: 1.05rem; line-height: 1.2; color: #8E2435 !important;">
+          <i class="bi bi-radar me-2" style="color: #8E2435; font-size: 1.15rem;"></i> Live Response Radar
+        </h5>
+
+        <!-- Sleek LIVE-style Wine Red Pill Badge -->
+        <span class="badge rounded-pill d-inline-flex align-items-center gap-2 shadow-xs" style="font-size: 0.75rem; padding: 0.45rem 0.85rem; line-height: 1; background-color: #8E2435; color: #ffffff; font-weight: 700; letter-spacing: 0.4px;">
           <span class="ll-white-dot-pulse"></span>
           <span>{{ filteredResponders.length }} ACTIVE RESPONDERS</span>
         </span>
@@ -14,7 +21,7 @@
         <div class="dropdown position-relative">
           <button
             class="btn btn-sm d-inline-flex align-items-center justify-content-between gap-2 shadow-xs"
-            style="min-width: 140px; min-height: 38px; font-size: 0.82rem; background-color: #FAF5EF; color: #2B2225; border: 1px solid #EAE2DF; border-radius: 6px;"
+            style="min-width: 140px; min-height: 38px; font-size: 0.82rem; background-color: #FAF5EF; color: #2B2225; border: 1px solid #EAE2DF; border-radius: 8px;"
             type="button"
             @click.stop="toggleLayerDropdown"
           >
@@ -49,7 +56,7 @@
         <div class="dropdown position-relative">
           <button
             class="btn btn-sm d-inline-flex align-items-center justify-content-between gap-2 shadow-xs"
-            style="min-width: 170px; max-width: 220px; min-height: 38px; font-size: 0.82rem; background-color: #FAF5EF; color: #2B2225; border: 1px solid #EAE2DF; border-radius: 6px;"
+            style="min-width: 170px; max-width: 220px; min-height: 38px; font-size: 0.82rem; background-color: #FAF5EF; color: #2B2225; border: 1px solid #EAE2DF; border-radius: 8px;"
             type="button"
             @click.stop="toggleFocusDropdown"
           >
@@ -100,7 +107,7 @@
         <button
           type="button"
           class="btn btn-sm d-inline-flex align-items-center gap-1 font-weight-600 shadow-xs"
-          style="min-height: 38px; padding: 0 0.9rem; font-size: 0.82rem; background-color: #FAF5EF; color: #8E2435; border: 1px solid #EAE2DF; border-radius: 6px;"
+          style="min-height: 38px; padding: 0 0.9rem; font-size: 0.82rem; background-color: #FAF5EF; color: #8E2435; border: 1px solid #EAE2DF; border-radius: 8px;"
           title="Recenter map"
           @click="centerMapOnSelected"
         >
@@ -109,10 +116,10 @@
       </div>
     </div>
 
-    <!-- Main Grid: Left Map Surface, Right Live Activity Panel (Tall 660px canvas) -->
-    <div class="row g-0 ll-map-body-grid border border-top-0 rounded-bottom-lg overflow-hidden bg-white shadow-sm" style="position: relative; z-index: 1;">
+    <!-- Main Grid: Left Map Surface, Right Live Activity Panel (Tall 660px canvas, rounded bottom) -->
+    <div class="row g-0 ll-map-body-grid overflow-hidden bg-white" style="position: relative; z-index: 1; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
       <!-- Map View Surface (Tall 660px) -->
-      <div class="col-lg-8 col-12 position-relative" style="height: 660px; min-height: 660px;">
+      <div class="col-lg-8 col-12 position-relative" style="height: 660px; min-height: 660px; border-bottom-left-radius: 16px; overflow: hidden;">
         <!-- Loading overlay -->
         <div v-if="mapLoading" class="ll-map-loader-overlay d-flex flex-column justify-content-center align-items-center">
           <div class="spinner-border mb-2" style="color: #8E2435;" role="status"></div>
@@ -166,7 +173,7 @@
       </div>
 
       <!-- Right Side Live Activity Stream Panel (Tall 660px) -->
-      <div class="col-lg-4 col-12 border-start border-slate-200 p-3 bg-slate-50 d-flex flex-column" style="height: 660px; overflow-y: auto;">
+      <div class="col-lg-4 col-12 border-start border-slate-200 p-3 bg-slate-50 d-flex flex-column" style="height: 660px; overflow-y: auto; border-bottom-right-radius: 16px;">
         <h6 class="fw-bold mb-3 d-flex justify-content-between align-items-center" style="font-size: 0.9rem; color: #8E2435;">
           <span><i class="bi bi-radar me-1"></i> RESPONSE STATUS</span>
           <span class="badge bg-slate-200 text-slate-700" style="font-size: 0.68rem;">
@@ -808,7 +815,6 @@ defineExpose({
     box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
   }
 }
-
 
 .ll-map-loader-overlay,
 .ll-map-error-overlay {

@@ -717,11 +717,11 @@ watch(selectedRequestId, () => {
   centerMapOnSelected()
 })
 
-watch(() => props.isVisible, (visible) => {
-  if (visible) {
-    nextTick(() => {
+function refreshMapSize() {
+  nextTick(() => {
+    setTimeout(() => {
       if (isUsingLeaflet.value && leafletMap) {
-        leafletMap.invalidateSize()
+        leafletMap.invalidateSize(true)
         renderLeafletHospitalMarkers()
         renderLeafletDonorMarkers()
       } else if (googleMap && googleInstance) {
@@ -729,9 +729,21 @@ watch(() => props.isVisible, (visible) => {
         renderHospitalMarkers()
         renderDonorMarkers()
       }
-    })
+    }, 50)
+    setTimeout(() => {
+      if (isUsingLeaflet.value && leafletMap) {
+        leafletMap.invalidateSize(true)
+      }
+    }, 250)
+  })
+}
+
+watch(() => props.isVisible, (visible) => {
+  if (visible) {
+    refreshMapSize()
   }
-})
+}, { immediate: true })
+
 
 onMounted(() => {
   startListening()

@@ -16,7 +16,7 @@
         <select
           v-model="selectedRequestId"
           class="form-select form-select-sm"
-          style="max-width: 210px; height: 31px; padding: 0.2rem 1.8rem 0.2rem 0.6rem; font-size: 0.76rem; background-color: #FAF5EF; color: #2B2225; border-color: #EAE2DF; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;"
+          style="width: 220px; min-width: 160px; max-width: 240px; height: 32px; font-size: 0.76rem; background-color: #FAF5EF; color: #2B2225; border-color: #EAE2DF;"
           aria-label="Select emergency request focus"
         >
           <option value="" style="background-color: #ffffff; color: #2B2225;">All Active Hospitals ({{ activeRequests.length }})</option>
@@ -27,14 +27,14 @@
             style="background-color: #ffffff; color: #2B2225;"
             :title="`[${req.bloodType}] ${req.hospitalName} (${req.urgency})`"
           >
-            [{{ req.bloodType }}] {{ truncateText(req.hospitalName, 22) }}
+            [{{ req.bloodType }}] {{ truncateText(req.hospitalName, 20) }}
           </option>
         </select>
 
         <button
           type="button"
           class="btn btn-sm d-flex align-items-center gap-1 font-weight-600"
-          style="height: 31px; padding: 0.2rem 0.7rem; font-size: 0.76rem; background-color: #FAF5EF; color: #8E2435; border: 1px solid #EAE2DF;"
+          style="height: 32px; padding: 0.2rem 0.75rem; font-size: 0.76rem; background-color: #FAF5EF; color: #8E2435; border: 1px solid #EAE2DF;"
           title="Recenter map"
           @click="centerMapOnSelected"
         >
@@ -43,11 +43,10 @@
       </div>
     </div>
 
-
     <!-- Main Grid: Left Map Surface, Right Live Activity Panel -->
     <div class="row g-0 ll-map-body-grid border border-top-0 rounded-bottom-lg overflow-hidden bg-white shadow-sm">
       <!-- Map View Surface -->
-      <div class="col-lg-8 col-12 position-relative" style="min-height: 520px;">
+      <div class="col-lg-8 col-12 position-relative" style="height: 540px; min-height: 540px;">
         <!-- Loading overlay -->
         <div v-if="mapLoading" class="ll-map-loader-overlay d-flex flex-column justify-content-center align-items-center">
           <div class="spinner-border mb-2" style="color: #8E2435;" role="status"></div>
@@ -62,31 +61,33 @@
           </button>
         </div>
 
-        <!-- Map Container Div -->
-        <div id="emergency-map-surface" ref="mapElement" class="w-100 h-100 position-absolute top-0 start-0 z-index-1"></div>
+        <!-- Map Container Div (Guaranteed height: 540px) -->
+        <div id="emergency-map-surface" ref="mapElement" style="width: 100%; height: 540px; min-height: 540px; position: relative; z-index: 1;"></div>
 
-        <!-- Floating Map Legend Overlay -->
-        <div class="ll-map-legend p-2 px-3 bg-white border rounded shadow-sm position-absolute bottom-0 start-0 m-3 z-index-2">
-          <div class="small fw-bold text-slate-800 mb-1" style="font-size: 0.72rem;">RADAR & MARKER LEGEND</div>
+        <!-- Floating Map Legend Overlay (Z-Index 1000 for guaranteed visibility) -->
+        <div class="ll-map-legend p-2 px-3 bg-white border rounded shadow-sm position-absolute bottom-0 start-0 m-3" style="z-index: 1000;">
+          <div class="small fw-bold text-slate-800 mb-1" style="font-size: 0.72rem;">
+            <i class="bi bi-info-circle-fill me-1" style="color: #8E2435;"></i> RADAR LEGEND
+          </div>
           <div class="d-flex flex-column gap-1" style="font-size: 0.7rem;">
             <div class="d-flex align-items-center gap-2">
-              <span class="ll-legend-icon ll-legend-icon--hospital">🏥</span> Hospital Location & Priority Radar
+              <span class="badge rounded-circle p-1" style="background-color: #8E2435; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 9px;">🏥</span> Hospital & Priority Radar
             </div>
             <div class="d-flex align-items-center gap-2">
-              <span class="ll-legend-icon ll-legend-icon--donor">🚗</span> En-Route Donor Marker (Live Location)
+              <span class="badge rounded-circle p-1 bg-primary" style="width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 9px;">🚗</span> En-Route Donor Marker
             </div>
             <div class="d-flex align-items-center gap-2">
-              <span class="ll-legend-circle ll-legend-circle--3k"></span> Inner Radar (3km — Priority Zone)
+              <span class="ll-legend-circle ll-legend-circle--3k"></span> Inner Radar (3km)
             </div>
             <div class="d-flex align-items-center gap-2">
-              <span class="ll-legend-circle ll-legend-circle--10k"></span> Outer Radar (10km — Extended Zone)
+              <span class="ll-legend-circle ll-legend-circle--10k"></span> Outer Radar (10km)
             </div>
           </div>
         </div>
       </div>
 
       <!-- Right Side Live Activity Stream Panel -->
-      <div class="col-lg-4 col-12 border-start border-slate-200 p-3 bg-slate-50 d-flex flex-column" style="max-height: 580px; overflow-y: auto;">
+      <div class="col-lg-4 col-12 border-start border-slate-200 p-3 bg-slate-50 d-flex flex-column" style="height: 540px; overflow-y: auto;">
         <h6 class="fw-bold mb-3 d-flex justify-content-between align-items-center" style="font-size: 0.9rem; color: #8E2435;">
           <span><i class="bi bi-radar me-1"></i> RESPONSE STATUS</span>
           <span class="badge bg-slate-200 text-slate-700" style="font-size: 0.68rem;">
@@ -95,7 +96,7 @@
         </h6>
 
         <!-- No responders state -->
-        <div v-if="filteredResponders.length === 0" class="text-center py-5 px-3 bg-white rounded border border-slate-200 flex-grow-1 d-flex flex-column justify-content-center align-items-center">
+        <div v-if="filteredResponders.length === 0" class="text-center py-4 px-3 bg-white rounded border border-slate-200 flex-grow-1 d-flex flex-column justify-content-center align-items-center">
           <div class="mb-2 text-slate-300 fs-1"><i class="bi bi-geo-alt"></i></div>
           <h6 class="fw-bold text-slate-700 mb-1" style="font-size: 0.88rem;">Searching for Responders</h6>
           <p class="small text-slate-500 mb-0" style="font-size: 0.78rem;">
@@ -138,6 +139,31 @@
           </div>
         </div>
 
+        <!-- Always Visible Legend Box in Right Panel -->
+        <div class="mt-3 pt-3 border-top border-slate-200">
+          <div class="small font-weight-700 text-slate-800 mb-2" style="font-size: 0.75rem;">
+            <i class="bi bi-info-circle-fill me-1" style="color: #8E2435;"></i> RADAR & MARKER LEGEND
+          </div>
+          <div class="d-flex flex-column gap-1 bg-white p-2 rounded border border-slate-200" style="font-size: 0.7rem;">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge rounded-circle p-1" style="background-color: #8E2435; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 9px;">🏥</span>
+              <span class="text-slate-700 font-weight-500">Hospital Location & Priority Radar</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge rounded-circle p-1 bg-primary" style="width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 9px;">🚗</span>
+              <span class="text-slate-700 font-weight-500">En-Route Donor Marker (Live Location)</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="ll-legend-circle ll-legend-circle--3k"></span>
+              <span class="text-slate-600">Inner Radar (3km — Priority Zone)</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="ll-legend-circle ll-legend-circle--10k"></span>
+              <span class="text-slate-600">Outer Radar (10km — Extended Zone)</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Live Activity Log Ticker -->
         <div class="mt-3 pt-3 border-top border-slate-200">
           <div class="small font-weight-700 text-slate-700 mb-2" style="font-size: 0.75rem;">
@@ -158,7 +184,7 @@
 <script setup>
 /**
  * EmergencyMap.vue
- * Core real-time response map component built with Google Maps & Leaflet OpenStreetMap fallback.
+ * Core real-time response map component built with Google Maps & CartoDB Voyager Leaflet fallback.
  * Uses LifeLink brand Wine Red palette (#8E2435).
  */
 
@@ -179,7 +205,6 @@ const props = defineProps({
     default: true
   }
 })
-
 
 const { responses: activeResponses, startListening, stopListening } = useActiveResponses()
 
@@ -218,6 +243,12 @@ function logActivity(text) {
   const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
   activityLogs.value.unshift({ time, text })
   if (activityLogs.value.length > 5) activityLogs.value.pop()
+}
+
+function truncateText(text, maxLen = 20) {
+  if (!text) return ''
+  if (text.length <= maxLen) return text
+  return text.substring(0, maxLen - 3) + '...'
 }
 
 function loadGoogleMapsScript(apiKey) {
@@ -301,12 +332,6 @@ async function initGoogleMap() {
   }
 }
 
-function truncateText(text, maxLen = 22) {
-  if (!text) return ''
-  if (text.length <= maxLen) return text
-  return text.substring(0, maxLen - 3) + '...'
-}
-
 /**
  * Fallback Leaflet Map Engine (CartoDB Voyager Tiles).
  */
@@ -333,8 +358,13 @@ function initLeafletMap() {
   logActivity('Live Response Map Engine active.')
   renderLeafletHospitalMarkers()
   renderLeafletDonorMarkers()
-}
 
+  setTimeout(() => {
+    if (leafletMap) {
+      leafletMap.invalidateSize()
+    }
+  }, 200)
+}
 
 /**
  * Renders Hospital Markers & Radar Circles in Leaflet.
@@ -376,7 +406,6 @@ function renderLeafletHospitalMarkers() {
       iconSize: [32, 38],
       iconAnchor: [16, 38]
     })
-
 
     const marker = L.marker(pos, { icon }).addTo(leafletMap)
     marker.bindPopup(`
@@ -458,7 +487,6 @@ function renderLeafletDonorMarkers() {
         iconSize: [30, 36],
         iconAnchor: [15, 36]
       })
-
 
       const m = L.marker(pos, { icon }).addTo(leafletMap)
       m.bindPopup(`
@@ -720,7 +748,6 @@ onMounted(() => {
   startListening()
   initGoogleMap()
 })
-
 
 onUnmounted(() => {
   stopListening()

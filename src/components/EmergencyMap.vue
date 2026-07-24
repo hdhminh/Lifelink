@@ -1,37 +1,40 @@
 <template>
   <div class="ll-emergency-map-container">
     <!-- Map Header Status Toolbar (LifeLink Brand Wine Red Surface) -->
-    <div class="ll-map-toolbar d-flex flex-wrap justify-content-between align-items-center gap-3 p-3 rounded-top-lg border border-bottom-0" style="background-color: #ffffff; border-color: #EAE2DF;">
+    <div class="ll-map-toolbar d-flex flex-wrap justify-content-between align-items-center gap-2 p-2 px-3 rounded-top-lg border border-bottom-0" style="background-color: #ffffff; border-color: #EAE2DF;">
       <div class="d-flex align-items-center gap-2">
         <span class="ll-live-dot ll-live-dot--pulse" style="background-color: #8E2435;"></span>
-        <h5 class="m-0 font-weight-700" style="font-size: 1.05rem; color: #8E2435 !important;">
-          <i class="bi bi-geo-alt-fill me-1" style="color: #8E2435;"></i> Live Emergency Response Map
+        <h5 class="m-0 font-weight-700" style="font-size: 1.0rem; color: #8E2435 !important;">
+          <i class="bi bi-geo-alt-fill me-1" style="color: #8E2435;"></i> Live Response Map
         </h5>
-        <span class="badge rounded-pill ms-2" style="font-size: 0.72rem; background-color: #8E2435; color: #ffffff;">
+        <span class="badge rounded-pill ms-1" style="font-size: 0.7rem; background-color: #8E2435; color: #ffffff;">
           {{ activeResponses.length }} Active Responder{{ activeResponses.length !== 1 ? 's' : '' }}
-        </span>
-        <span v-if="isUsingLeaflet" class="badge bg-secondary rounded-pill ms-1" style="font-size: 0.65rem;">
-          OpenStreetMap Engine
         </span>
       </div>
 
-      <div class="d-flex align-items-center gap-2">
+      <div class="d-flex align-items-center gap-2 ms-auto">
         <select
           v-model="selectedRequestId"
           class="form-select form-select-sm"
-          style="min-width: 200px; background-color: #FAF5EF; color: #2B2225; border-color: #EAE2DF;"
+          style="max-width: 210px; height: 31px; padding: 0.2rem 1.8rem 0.2rem 0.6rem; font-size: 0.76rem; background-color: #FAF5EF; color: #2B2225; border-color: #EAE2DF; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;"
           aria-label="Select emergency request focus"
         >
           <option value="" style="background-color: #ffffff; color: #2B2225;">All Active Hospitals ({{ activeRequests.length }})</option>
-          <option v-for="req in activeRequests" :key="req.id" :value="req.id" style="background-color: #ffffff; color: #2B2225;">
-            [{{ req.bloodType }}] {{ req.hospitalName }} ({{ req.urgency }})
+          <option
+            v-for="req in activeRequests"
+            :key="req.id"
+            :value="req.id"
+            style="background-color: #ffffff; color: #2B2225;"
+            :title="`[${req.bloodType}] ${req.hospitalName} (${req.urgency})`"
+          >
+            [{{ req.bloodType }}] {{ truncateText(req.hospitalName, 22) }}
           </option>
         </select>
 
         <button
           type="button"
           class="btn btn-sm d-flex align-items-center gap-1 font-weight-600"
-          style="background-color: #FAF5EF; color: #8E2435; border: 1px solid #EAE2DF;"
+          style="height: 31px; padding: 0.2rem 0.7rem; font-size: 0.76rem; background-color: #FAF5EF; color: #8E2435; border: 1px solid #EAE2DF;"
           title="Recenter map"
           @click="centerMapOnSelected"
         >
@@ -39,6 +42,7 @@
         </button>
       </div>
     </div>
+
 
     <!-- Main Grid: Left Map Surface, Right Live Activity Panel -->
     <div class="row g-0 ll-map-body-grid border border-top-0 rounded-bottom-lg overflow-hidden bg-white shadow-sm">
@@ -297,8 +301,14 @@ async function initGoogleMap() {
   }
 }
 
+function truncateText(text, maxLen = 22) {
+  if (!text) return ''
+  if (text.length <= maxLen) return text
+  return text.substring(0, maxLen - 3) + '...'
+}
+
 /**
- * Fallback Leaflet OpenStreetMap Engine.
+ * Fallback Leaflet Map Engine (CartoDB Voyager Tiles).
  */
 function initLeafletMap() {
   isUsingLeaflet.value = true
@@ -314,14 +324,17 @@ function initLeafletMap() {
 
   leafletMap = L.map(mapElement.value).setView([10.7548, 106.6601], 12)
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19
   }).addTo(leafletMap)
 
-  logActivity('OpenStreetMap Engine active.')
+  logActivity('Live Response Map Engine active.')
   renderLeafletHospitalMarkers()
   renderLeafletDonorMarkers()
 }
+
 
 /**
  * Renders Hospital Markers & Radar Circles in Leaflet.

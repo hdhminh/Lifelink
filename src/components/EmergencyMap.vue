@@ -273,7 +273,7 @@ const props = defineProps({
   },
   titleText: {
     type: String,
-    default: 'Live Response & Events Map'
+    default: 'Live Map'
   }
 })
 

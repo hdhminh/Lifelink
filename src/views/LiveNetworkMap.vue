@@ -19,7 +19,7 @@
         :emergency-requests="requests"
         :events="events"
         :is-visible="true"
-        title-text="Nationwide Response & Events Map"
+        title-text="Live Map"
         @respond="handleRespond"
       />
     </div>

@@ -105,13 +105,15 @@
     <LoadingSpinner v-if="loading" message="Loading emergency requests..." />
     <AlertMessage v-else-if="error" type="danger" :message="error" :dismissible="false" />
     
-    <!-- Live Response Map View -->
-    <div v-else-if="viewMode === 'map'" class="mb-5">
-      <EmergencyMap :emergency-requests="requests" />
-    </div>
+    <div v-else>
+      <!-- Live Response Map View -->
+      <div v-show="viewMode === 'map'" class="mb-5">
+        <EmergencyMap :emergency-requests="requests" :is-visible="viewMode === 'map'" />
+      </div>
 
-    <!-- Board Grid View -->
-    <div v-else class="row g-4">
+      <!-- Board Grid View -->
+      <div v-show="viewMode === 'board'" class="row g-4">
+
       <!-- Left Column: Live requests grid -->
       <div class="col-lg-8 col-12">
         <div v-if="filteredRequests.length === 0" class="ll-empty-state">
@@ -169,7 +171,6 @@
           </div>
         </aside>
 
-        <!-- Pagination for Emergency Requests Grid placed under Hotlines card -->
         <PaginationControls
           :current-page="currentPage"
           :total-pages="totalPages"
@@ -177,8 +178,10 @@
         />
       </div>
     </div>
+    </div>
 
     <!-- Modals -->
+
     <div v-if="showForm && isAdmin" class="ll-form-overlay">
       <div class="ll-page-container ll-board-form-container">
         <RequestForm

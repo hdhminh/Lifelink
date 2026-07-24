@@ -158,7 +158,7 @@
  * Uses LifeLink brand Wine Red palette (#8E2435).
  */
 
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useActiveResponses } from '@/composables/useActiveResponses.js'
@@ -169,8 +169,13 @@ const props = defineProps({
   emergencyRequests: {
     type: Array,
     default: () => []
+  },
+  isVisible: {
+    type: Boolean,
+    default: true
   }
 })
+
 
 const { responses: activeResponses, startListening, stopListening } = useActiveResponses()
 
@@ -682,10 +687,27 @@ watch(selectedRequestId, () => {
   centerMapOnSelected()
 })
 
+watch(() => props.isVisible, (visible) => {
+  if (visible) {
+    nextTick(() => {
+      if (isUsingLeaflet.value && leafletMap) {
+        leafletMap.invalidateSize()
+        renderLeafletHospitalMarkers()
+        renderLeafletDonorMarkers()
+      } else if (googleMap && googleInstance) {
+        googleInstance.maps.event.trigger(googleMap, 'resize')
+        renderHospitalMarkers()
+        renderDonorMarkers()
+      }
+    })
+  }
+})
+
 onMounted(() => {
   startListening()
   initGoogleMap()
 })
+
 
 onUnmounted(() => {
   stopListening()

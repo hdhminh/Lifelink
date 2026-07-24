@@ -4,10 +4,10 @@
     <div class="ll-map-toolbar d-flex flex-wrap justify-content-between align-items-center gap-2 p-2 px-3 rounded-top-lg border border-bottom-0" style="background-color: #ffffff; border-color: #EAE2DF;">
       <div class="d-flex align-items-center gap-2">
         <span class="ll-live-dot ll-live-dot--pulse" style="background-color: #8E2435;"></span>
-        <h5 class="m-0 font-weight-700" style="font-size: 1.0rem; color: #8E2435 !important;">
+        <h5 class="m-0 font-weight-700 d-inline-flex align-items-center" style="font-size: 1.0rem; line-height: 1; color: #8E2435 !important;">
           <i class="bi bi-geo-alt-fill me-1" style="color: #8E2435;"></i> Live Response Map
         </h5>
-        <span class="badge rounded-pill ms-1" style="font-size: 0.7rem; background-color: #8E2435; color: #ffffff;">
+        <span class="badge rounded-pill ms-1 d-inline-flex align-items-center" style="font-size: 0.72rem; padding: 0.35rem 0.65rem; line-height: 1; background-color: #8E2435; color: #ffffff;">
           {{ activeResponses.length }} Active Responder{{ activeResponses.length !== 1 ? 's' : '' }}
         </span>
       </div>
@@ -16,7 +16,7 @@
         <select
           v-model="selectedRequestId"
           class="form-select form-select-sm"
-          style="min-width: 170px; max-width: 220px; font-size: 0.78rem; background-color: #FAF5EF; color: #2B2225; border-color: #EAE2DF;"
+          style="min-width: 170px; max-width: 220px; height: 36px; font-size: 0.78rem; background-color: #FAF5EF; color: #2B2225; border-color: #EAE2DF;"
           aria-label="Select emergency request focus"
         >
           <option value="" style="background-color: #ffffff; color: #2B2225;">All Active Hospitals ({{ activeRequests.length }})</option>
@@ -33,8 +33,8 @@
 
         <button
           type="button"
-          class="btn btn-sm d-flex align-items-center gap-1 font-weight-600"
-          style="padding: 0.25rem 0.75rem; font-size: 0.78rem; background-color: #FAF5EF; color: #8E2435; border: 1px solid #EAE2DF;"
+          class="btn btn-sm d-inline-flex align-items-center gap-1 font-weight-600"
+          style="height: 36px; padding: 0 0.85rem; font-size: 0.78rem; background-color: #FAF5EF; color: #8E2435; border: 1px solid #EAE2DF;"
           title="Recenter map"
           @click="centerMapOnSelected"
         >
@@ -42,6 +42,7 @@
         </button>
       </div>
     </div>
+
 
     <!-- Main Grid: Left Map Surface, Right Live Activity Panel -->
     <div class="row g-0 ll-map-body-grid border border-top-0 rounded-bottom-lg overflow-hidden bg-white shadow-sm">

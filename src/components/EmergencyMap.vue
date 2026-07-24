@@ -1,14 +1,17 @@
 <template>
   <div class="ll-emergency-map-container">
-    <!-- Map Header Status Toolbar -->
-    <div class="ll-map-toolbar d-flex flex-wrap justify-content-between align-items-center gap-3 p-3 rounded-top-lg" style="background-color: #0f172a; color: #ffffff;">
+    <!-- Map Header Status Toolbar (LifeLink Brand Wine Red Surface) -->
+    <div class="ll-map-toolbar d-flex flex-wrap justify-content-between align-items-center gap-3 p-3 rounded-top-lg border border-bottom-0" style="background-color: #ffffff; border-color: #EAE2DF;">
       <div class="d-flex align-items-center gap-2">
-        <span class="ll-live-dot ll-live-dot--pulse"></span>
-        <h5 class="m-0 font-weight-700" style="font-size: 1.05rem; color: #ffffff !important;">
-          <i class="bi bi-geo-alt-fill text-danger me-1"></i> Live Emergency Response Map
+        <span class="ll-live-dot ll-live-dot--pulse" style="background-color: #8E2435;"></span>
+        <h5 class="m-0 font-weight-700" style="font-size: 1.05rem; color: #8E2435 !important;">
+          <i class="bi bi-geo-alt-fill me-1" style="color: #8E2435;"></i> Live Emergency Response Map
         </h5>
-        <span class="badge bg-danger rounded-pill ms-2" style="font-size: 0.72rem; color: #ffffff;">
+        <span class="badge rounded-pill ms-2" style="font-size: 0.72rem; background-color: #8E2435; color: #ffffff;">
           {{ activeResponses.length }} Active Responder{{ activeResponses.length !== 1 ? 's' : '' }}
+        </span>
+        <span v-if="isUsingLeaflet" class="badge bg-secondary rounded-pill ms-1" style="font-size: 0.65rem;">
+          OpenStreetMap Engine
         </span>
       </div>
 
@@ -16,19 +19,19 @@
         <select
           v-model="selectedRequestId"
           class="form-select form-select-sm"
-          style="min-width: 200px; background-color: #1e293b; color: #ffffff; border-color: #334155;"
+          style="min-width: 200px; background-color: #FAF5EF; color: #2B2225; border-color: #EAE2DF;"
           aria-label="Select emergency request focus"
         >
-          <option value="" style="background-color: #1e293b; color: #ffffff;">All Active Hospitals ({{ activeRequests.length }})</option>
-          <option v-for="req in activeRequests" :key="req.id" :value="req.id" style="background-color: #1e293b; color: #ffffff;">
+          <option value="" style="background-color: #ffffff; color: #2B2225;">All Active Hospitals ({{ activeRequests.length }})</option>
+          <option v-for="req in activeRequests" :key="req.id" :value="req.id" style="background-color: #ffffff; color: #2B2225;">
             [{{ req.bloodType }}] {{ req.hospitalName }} ({{ req.urgency }})
           </option>
         </select>
 
         <button
           type="button"
-          class="btn btn-sm d-flex align-items-center gap-1"
-          style="background-color: #334155; color: #ffffff; border-color: #475569;"
+          class="btn btn-sm d-flex align-items-center gap-1 font-weight-600"
+          style="background-color: #FAF5EF; color: #8E2435; border: 1px solid #EAE2DF;"
           title="Recenter map"
           @click="centerMapOnSelected"
         >
@@ -37,25 +40,26 @@
       </div>
     </div>
 
-
     <!-- Main Grid: Left Map Surface, Right Live Activity Panel -->
     <div class="row g-0 ll-map-body-grid border border-top-0 rounded-bottom-lg overflow-hidden bg-white shadow-sm">
-      <!-- Google Map View Surface -->
+      <!-- Map View Surface -->
       <div class="col-lg-8 col-12 position-relative" style="min-height: 520px;">
         <!-- Loading overlay -->
         <div v-if="mapLoading" class="ll-map-loader-overlay d-flex flex-column justify-content-center align-items-center">
-          <div class="spinner-border text-danger mb-2" role="status"></div>
-          <span class="small text-slate-600 font-weight-500">Initializing Google Maps Engine...</span>
+          <div class="spinner-border mb-2" style="color: #8E2435;" role="status"></div>
+          <span class="small text-slate-600 font-weight-500">Initializing Live Response Map...</span>
         </div>
 
         <div v-else-if="mapError" class="ll-map-error-overlay p-4 text-center">
-          <i class="bi bi-exclamation-triangle-fill text-warning fs-2 mb-2 d-block"></i>
+          <i class="bi bi-exclamation-triangle-fill fs-2 mb-2 d-block" style="color: #8E2435;"></i>
           <h6 class="fw-bold text-slate-800">{{ mapError }}</h6>
-          <p class="small text-slate-500 mb-0">Please check your network or VITE_GOOGLE_MAPS_API_KEY environment variable.</p>
+          <button type="button" class="btn btn-sm mt-2 text-white font-weight-600" style="background-color: #8E2435;" @click="initLeafletMap">
+            Switch to OpenStreetMap
+          </button>
         </div>
 
-        <!-- Google Map Container Div -->
-        <div id="google-emergency-map" ref="mapElement" class="w-100 h-100 position-absolute top-0 start-0"></div>
+        <!-- Map Container Div -->
+        <div id="emergency-map-surface" ref="mapElement" class="w-100 h-100 position-absolute top-0 start-0 z-index-1"></div>
 
         <!-- Floating Map Legend Overlay -->
         <div class="ll-map-legend p-2 px-3 bg-white border rounded shadow-sm position-absolute bottom-0 start-0 m-3 z-index-2">
@@ -79,7 +83,7 @@
 
       <!-- Right Side Live Activity Stream Panel -->
       <div class="col-lg-4 col-12 border-start border-slate-200 p-3 bg-slate-50 d-flex flex-column" style="max-height: 580px; overflow-y: auto;">
-        <h6 class="fw-bold text-wine mb-3 d-flex justify-content-between align-items-center" style="font-size: 0.9rem;">
+        <h6 class="fw-bold mb-3 d-flex justify-content-between align-items-center" style="font-size: 0.9rem; color: #8E2435;">
           <span><i class="bi bi-radar me-1"></i> RESPONSE STATUS</span>
           <span class="badge bg-slate-200 text-slate-700" style="font-size: 0.68rem;">
             {{ filteredResponders.length }} En-Route
@@ -105,7 +109,7 @@
             <div class="d-flex justify-content-between align-items-start mb-1">
               <div>
                 <strong class="text-slate-900 font-weight-700" style="font-size: 0.85rem;">{{ resp.donorName }}</strong>
-                <span class="badge bg-danger ms-1" style="font-size: 0.65rem;">{{ resp.bloodType }}</span>
+                <span class="badge ms-1 text-white" style="font-size: 0.65rem; background-color: #8E2435;">{{ resp.bloodType }}</span>
               </div>
               <span
                 :class="resp.status === 'approaching' ? 'badge bg-success' : 'badge bg-primary'"
@@ -116,14 +120,14 @@
             </div>
 
             <div class="small text-slate-600 mb-1" style="font-size: 0.78rem;">
-              <i class="bi bi-hospital me-1 text-wine"></i> {{ resp.hospitalName }}
+              <i class="bi bi-hospital me-1" style="color: #8E2435;"></i> {{ resp.hospitalName }}
             </div>
 
             <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-slate-100" style="font-size: 0.75rem;">
               <span class="text-slate-500">
-                <i class="bi bi-geo-alt text-wine me-1"></i> Distance: <strong>{{ formatMeters(resp.distanceMeters) }}</strong>
+                <i class="bi bi-geo-alt me-1" style="color: #8E2435;"></i> Distance: <strong>{{ formatMeters(resp.distanceMeters) }}</strong>
               </span>
-              <span class="text-wine font-weight-700">
+              <span class="font-weight-700" style="color: #8E2435;">
                 <i class="bi bi-clock-history me-1"></i> ETA: <strong>~{{ resp.etaMins || 1 }} min</strong>
               </span>
             </div>
@@ -133,7 +137,7 @@
         <!-- Live Activity Log Ticker -->
         <div class="mt-3 pt-3 border-top border-slate-200">
           <div class="small font-weight-700 text-slate-700 mb-2" style="font-size: 0.75rem;">
-            <i class="bi bi-broadcast me-1 text-danger"></i> RECENT ACTIVITY LOG
+            <i class="bi bi-broadcast me-1" style="color: #8E2435;"></i> RECENT ACTIVITY LOG
           </div>
           <ul class="list-unstyled mb-0" style="font-size: 0.72rem;">
             <li v-for="(log, idx) in activityLogs" :key="idx" class="mb-1 text-slate-600 d-flex align-items-center gap-1">
@@ -150,15 +154,62 @@
 <script setup>
 /**
  * EmergencyMap.vue
- * Core real-time response map component built with Google Maps JavaScript API.
- * Renders live hospital markers with urgency radar circles, animated donor location markers,
- * and polyline path connections.
+ * Core real-time response map component built with Google Maps & Leaflet OpenStreetMap fallback.
+ * Uses LifeLink brand Wine Red palette (#8E2435).
  */
 
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 import { useActiveResponses } from '@/composables/useActiveResponses.js'
 import { getHospitalCoordinates } from '@/data/hospitalCoordinates.js'
 import { formatDistance } from '@/utils/haversine.js'
+
+const props = defineProps({
+  emergencyRequests: {
+    type: Array,
+    default: () => []
+  }
+})
+
+const { responses: activeResponses, startListening, stopListening } = useActiveResponses()
+
+const mapElement = ref(null)
+const mapLoading = ref(true)
+const mapError = ref(null)
+const selectedRequestId = ref('')
+const activityLogs = ref([])
+const isUsingLeaflet = ref(false)
+
+let googleMap = null
+let googleInstance = null
+let leafletMap = null
+
+// Dictionaries to manage map instances
+const hospitalMarkers = new Map()
+const hospitalCircles = new Map()
+const donorMarkers = new Map()
+const donorPolylines = new Map()
+const infoWindows = new Map()
+
+const activeRequests = computed(() => {
+  return props.emergencyRequests.filter(r => r.status === 'active')
+})
+
+const filteredResponders = computed(() => {
+  if (!selectedRequestId.value) return activeResponses.value
+  return activeResponses.value.filter(r => r.requestId === selectedRequestId.value)
+})
+
+function formatMeters(meters) {
+  return formatDistance(meters)
+}
+
+function logActivity(text) {
+  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  activityLogs.value.unshift({ time, text })
+  if (activityLogs.value.length > 5) activityLogs.value.pop()
+}
 
 function loadGoogleMapsScript(apiKey) {
   return new Promise((resolve, reject) => {
@@ -187,69 +238,32 @@ function loadGoogleMapsScript(apiKey) {
   })
 }
 
-const props = defineProps({
-  emergencyRequests: {
-    type: Array,
-    default: () => []
-  }
-})
-
-const { responses: activeResponses, startListening, stopListening } = useActiveResponses()
-
-const mapElement = ref(null)
-const mapLoading = ref(true)
-const mapError = ref(null)
-const selectedRequestId = ref('')
-const activityLogs = ref([])
-
-let googleMap = null
-let googleInstance = null
-
-// Dictionaries to manage map instances
-const hospitalMarkers = new Map()
-const hospitalCircles = new Map()
-const donorMarkers = new Map()
-const donorPolylines = new Map()
-const infoWindows = new Map()
-
-const activeRequests = computed(() => {
-  return props.emergencyRequests.filter(r => r.status === 'active')
-})
-
-const filteredResponders = computed(() => {
-  if (!selectedRequestId.value) return activeResponses.value
-  return activeResponses.value.filter(r => r.requestId === selectedRequestId.value)
-})
-
-function formatMeters(meters) {
-  return formatDistance(meters)
-}
-
-function logActivity(text) {
-  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-  activityLogs.value.unshift({ time, text })
-  if (activityLogs.value.length > 5) activityLogs.value.pop()
-}
-
 /**
- * Initializes Google Maps Engine.
+ * Initializes Google Maps Engine with automatic Leaflet fallback.
  */
 async function initGoogleMap() {
   mapLoading.value = true
   mapError.value = null
+  isUsingLeaflet.value = false
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+
+  if (typeof window !== 'undefined') {
+    window.gm_authFailure = () => {
+      console.warn('[EmergencyMap] Google Maps gm_authFailure triggered. Switching to Leaflet engine...')
+      initLeafletMap()
+    }
+  }
+
   if (!apiKey) {
-    mapError.value = 'Google Maps API Key is missing. Please set VITE_GOOGLE_MAPS_API_KEY in .env file.'
-    mapLoading.value = false
+    initLeafletMap()
     return
   }
 
   try {
     googleInstance = await loadGoogleMapsScript(apiKey)
 
-    // Default map center (Vietnam)
-    const center = { lat: 10.7548, lng: 106.6601 } // HCMC default
+    const center = { lat: 10.7548, lng: 106.6601 }
 
     googleMap = new googleInstance.maps.Map(mapElement.value, {
       center,
@@ -273,20 +287,174 @@ async function initGoogleMap() {
     renderHospitalMarkers()
     renderDonorMarkers()
   } catch (err) {
-    console.error('[EmergencyMap] Google Maps load error:', err)
-    mapError.value = 'Could not load Google Maps. Please verify your API Key and internet connection.'
-    mapLoading.value = false
+    console.warn('[EmergencyMap] Google Maps load warning, falling back to Leaflet:', err)
+    initLeafletMap()
   }
 }
 
+/**
+ * Fallback Leaflet OpenStreetMap Engine.
+ */
+function initLeafletMap() {
+  isUsingLeaflet.value = true
+  mapError.value = null
+  mapLoading.value = false
+
+  if (leafletMap) {
+    leafletMap.remove()
+    leafletMap = null
+  }
+
+  if (!mapElement.value) return
+
+  leafletMap = L.map(mapElement.value).setView([10.7548, 106.6601], 12)
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(leafletMap)
+
+  logActivity('OpenStreetMap Engine active.')
+  renderLeafletHospitalMarkers()
+  renderLeafletDonorMarkers()
+}
 
 /**
- * Renders Hospital Markers & Radar Proximity Circles.
+ * Renders Hospital Markers & Radar Circles in Leaflet.
+ */
+function renderLeafletHospitalMarkers() {
+  if (!leafletMap) return
+
+  hospitalMarkers.forEach(m => leafletMap.removeLayer(m))
+  hospitalCircles.forEach(cArray => cArray.forEach(c => leafletMap.removeLayer(c)))
+  hospitalMarkers.clear()
+  hospitalCircles.clear()
+
+  const bounds = L.latLngBounds([])
+  let count = 0
+
+  activeRequests.value.forEach((req) => {
+    const coords = (req.latitude && req.longitude)
+      ? { lat: req.latitude, lng: req.longitude }
+      : getHospitalCoordinates(req.hospitalName, req.city)
+
+    const pos = [coords.lat, coords.lng]
+    bounds.extend(pos)
+    count++
+
+    const urgencyColor = req.urgency === 'critical' ? '#8E2435' : (req.urgency === 'urgent' ? '#B45309' : '#D99B26')
+
+    const icon = L.divIcon({
+      className: 'll-hospital-leaflet-icon',
+      html: `<div style="background-color: ${urgencyColor}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px;">🏥</div>`,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12]
+    })
+
+    const marker = L.marker(pos, { icon }).addTo(leafletMap)
+    marker.bindPopup(`
+      <div style="font-family: system-ui, sans-serif; padding: 4px;">
+        <strong style="color: #8E2435; font-size: 0.9rem;">🏥 ${req.hospitalName}</strong><br>
+        <span style="font-size: 0.78rem;">Blood: <strong style="color: #8E2435;">${req.bloodType}</strong> (${req.urgency})</span><br>
+        <span style="font-size: 0.75rem;">Confirmed: <strong>${req.confirmedCount || 0}/${req.unitsNeeded}</strong></span>
+      </div>
+    `)
+
+    const innerCircle = L.circle(pos, {
+      color: urgencyColor,
+      fillColor: urgencyColor,
+      fillOpacity: 0.15,
+      radius: 3000
+    }).addTo(leafletMap)
+
+    const outerCircle = L.circle(pos, {
+      color: urgencyColor,
+      fillColor: urgencyColor,
+      fillOpacity: 0.05,
+      dashArray: '4, 8',
+      radius: 10000
+    }).addTo(leafletMap)
+
+    hospitalMarkers.set(req.id, marker)
+    hospitalCircles.set(req.id, [innerCircle, outerCircle])
+  })
+
+  if (count > 0) {
+    leafletMap.fitBounds(bounds, { padding: [30, 30] })
+  }
+}
+
+/**
+ * Renders Donor Markers in Leaflet.
+ */
+function renderLeafletDonorMarkers() {
+  if (!leafletMap) return
+
+  const currentKeys = new Set(filteredResponders.value.map(r => r.trackingKey))
+
+  donorMarkers.forEach((m, key) => {
+    if (!currentKeys.has(key)) {
+      leafletMap.removeLayer(m)
+      donorMarkers.delete(key)
+    }
+  })
+  donorPolylines.forEach((p, key) => {
+    if (!currentKeys.has(key)) {
+      leafletMap.removeLayer(p)
+      donorPolylines.delete(key)
+    }
+  })
+
+  filteredResponders.value.forEach((resp) => {
+    const pos = [resp.latitude, resp.longitude]
+    const key = resp.trackingKey
+
+    if (donorMarkers.has(key)) {
+      const m = donorMarkers.get(key)
+      m.setLatLng(pos)
+      if (donorPolylines.has(key) && resp.hospitalLat && resp.hospitalLng) {
+        const poly = donorPolylines.get(key)
+        poly.setLatLngs([pos, [resp.hospitalLat, resp.hospitalLng]])
+      }
+    } else {
+      const icon = L.divIcon({
+        className: 'll-donor-leaflet-icon',
+        html: `<div style="background-color: #0d6efd; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px;">🚗</div>`,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
+      })
+
+      const m = L.marker(pos, { icon }).addTo(leafletMap)
+      m.bindPopup(`
+        <div style="font-size: 0.78rem;">
+          <strong>🚗 ${resp.donorName}</strong> (${resp.bloodType})<br>
+          Status: <strong>${resp.status}</strong><br>
+          ETA: <strong>~${resp.etaMins || 1} min</strong>
+        </div>
+      `)
+      donorMarkers.set(key, m)
+
+      if (resp.hospitalLat && resp.hospitalLng) {
+        const poly = L.polyline([pos, [resp.hospitalLat, resp.hospitalLng]], {
+          color: '#0d6efd',
+          dashArray: '5, 10',
+          weight: 3
+        }).addTo(leafletMap)
+        donorPolylines.set(key, poly)
+      }
+    }
+  })
+}
+
+/**
+ * Renders Hospital Markers & Radar Circles in Google Maps.
  */
 function renderHospitalMarkers() {
+  if (isUsingLeaflet.value) {
+    renderLeafletHospitalMarkers()
+    return
+  }
   if (!googleMap || !googleInstance) return
 
-  // Clear existing hospital markers & circles
   hospitalMarkers.forEach(m => m.setMap(null))
   hospitalCircles.forEach(cArray => cArray.forEach(c => c.setMap(null)))
   hospitalMarkers.clear()
@@ -304,10 +472,8 @@ function renderHospitalMarkers() {
     bounds.extend(pos)
     hasValidCoords = true
 
-    // Color theme based on urgency
-    const urgencyColor = req.urgency === 'critical' ? '#dc3545' : (req.urgency === 'urgent' ? '#fd7e14' : '#ffc107')
+    const urgencyColor = req.urgency === 'critical' ? '#8E2435' : (req.urgency === 'urgent' ? '#B45309' : '#D99B26')
 
-    // Hospital Marker Pin
     const marker = new googleInstance.maps.Marker({
       position: pos,
       map: googleMap,
@@ -322,13 +488,12 @@ function renderHospitalMarkers() {
       }
     })
 
-    // Info Window
     const infoWindow = new googleInstance.maps.InfoWindow({
       content: `
         <div style="padding: 6px; font-family: system-ui, sans-serif; max-width: 220px;">
-          <strong style="color: #8b0000; font-size: 0.9rem;">🏥 ${req.hospitalName}</strong>
+          <strong style="color: #8E2435; font-size: 0.9rem;">🏥 ${req.hospitalName}</strong>
           <div style="font-size: 0.75rem; color: #555; margin-top: 4px;">
-            Blood Needed: <strong style="color: #dc3545;">${req.bloodType}</strong><br>
+            Blood Needed: <strong style="color: #8E2435;">${req.bloodType}</strong><br>
             Urgency: <span style="text-transform: uppercase; font-weight: bold; color: ${urgencyColor};">${req.urgency}</span><br>
             Confirmed: <strong>${req.confirmedCount || 0} / ${req.unitsNeeded}</strong> units
           </div>
@@ -345,7 +510,6 @@ function renderHospitalMarkers() {
     hospitalMarkers.set(req.id, marker)
     infoWindows.set(req.id, infoWindow)
 
-    // Radar Circles (3km inner priority, 10km outer search)
     const innerCircle = new googleInstance.maps.Circle({
       strokeColor: urgencyColor,
       strokeOpacity: 0.8,
@@ -354,7 +518,7 @@ function renderHospitalMarkers() {
       fillOpacity: 0.15,
       map: googleMap,
       center: pos,
-      radius: 3000 // 3km
+      radius: 3000
     })
 
     const outerCircle = new googleInstance.maps.Circle({
@@ -365,7 +529,7 @@ function renderHospitalMarkers() {
       fillOpacity: 0.05,
       map: googleMap,
       center: pos,
-      radius: 10000 // 10km
+      radius: 10000
     })
 
     hospitalCircles.set(req.id, [innerCircle, outerCircle])
@@ -380,14 +544,17 @@ function renderHospitalMarkers() {
 }
 
 /**
- * Renders En-Route Donor Markers & Polyline Routes.
+ * Renders Donor Markers in Google Maps.
  */
 function renderDonorMarkers() {
+  if (isUsingLeaflet.value) {
+    renderLeafletDonorMarkers()
+    return
+  }
   if (!googleMap || !googleInstance) return
 
   const currentKeys = new Set(filteredResponders.value.map(r => r.trackingKey))
 
-  // Remove markers that are no longer active
   donorMarkers.forEach((marker, key) => {
     if (!currentKeys.has(key)) {
       marker.setMap(null)
@@ -403,23 +570,19 @@ function renderDonorMarkers() {
     }
   })
 
-  // Render / Update active donor markers
   filteredResponders.value.forEach((resp) => {
     const donorPos = { lat: resp.latitude, lng: resp.longitude }
     const key = resp.trackingKey
 
     if (donorMarkers.has(key)) {
-      // Update existing marker position smoothly
       const existingMarker = donorMarkers.get(key)
       existingMarker.setPosition(donorPos)
 
-      // Update polyline path
       if (donorPolylines.has(key) && resp.hospitalLat && resp.hospitalLng) {
         const line = donorPolylines.get(key)
         line.setPath([donorPos, { lat: resp.hospitalLat, lng: resp.hospitalLng }])
       }
     } else {
-      // Create new donor marker
       logActivity(`🚗 Donor ${resp.donorName} (${resp.bloodType}) joined route`)
 
       const marker = new googleInstance.maps.Marker({
@@ -453,7 +616,6 @@ function renderDonorMarkers() {
 
       donorMarkers.set(key, marker)
 
-      // Polyline path to hospital
       if (resp.hospitalLat && resp.hospitalLng) {
         const polyline = new googleInstance.maps.Polyline({
           path: [donorPos, { lat: resp.hospitalLat, lng: resp.hospitalLng }],
@@ -470,15 +632,19 @@ function renderDonorMarkers() {
 }
 
 function centerMapOnSelected() {
-  if (!googleMap) return
   if (selectedRequestId.value) {
     const req = activeRequests.value.find(r => r.id === selectedRequestId.value)
     if (req) {
       const coords = (req.latitude && req.longitude)
         ? { lat: req.latitude, lng: req.longitude }
         : getHospitalCoordinates(req.hospitalName, req.city)
-      googleMap.setCenter(coords)
-      googleMap.setZoom(14)
+
+      if (isUsingLeaflet.value && leafletMap) {
+        leafletMap.setView([coords.lat, coords.lng], 14)
+      } else if (googleMap) {
+        googleMap.setCenter(coords)
+        googleMap.setZoom(14)
+      }
     }
   } else {
     renderHospitalMarkers()
@@ -504,10 +670,16 @@ onMounted(() => {
 
 onUnmounted(() => {
   stopListening()
-  hospitalMarkers.forEach(m => m.setMap(null))
-  hospitalCircles.forEach(cArr => cArr.forEach(c => c.setMap(null)))
-  donorMarkers.forEach(m => m.setMap(null))
-  donorPolylines.forEach(l => l.setMap(null))
+  if (googleMap) {
+    hospitalMarkers.forEach(m => m.setMap && m.setMap(null))
+    hospitalCircles.forEach(cArr => cArr.forEach(c => c.setMap && c.setMap(null)))
+    donorMarkers.forEach(m => m.setMap && m.setMap(null))
+    donorPolylines.forEach(l => l.setMap && l.setMap(null))
+  }
+  if (leafletMap) {
+    leafletMap.remove()
+    leafletMap = null
+  }
 })
 </script>
 
@@ -519,24 +691,24 @@ onUnmounted(() => {
 .ll-live-dot--pulse {
   width: 10px;
   height: 10px;
-  background-color: #dc3545;
+  background-color: #8E2435;
   border-radius: 50%;
-  box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
-  animation: pulse-red 1.6s infinite;
+  box-shadow: 0 0 0 0 rgba(142, 36, 53, 0.7);
+  animation: pulse-wine 1.6s infinite;
 }
 
-@keyframes pulse-red {
+@keyframes pulse-wine {
   0% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    box-shadow: 0 0 0 0 rgba(142, 36, 53, 0.7);
   }
   70% {
     transform: scale(1.1);
-    box-shadow: 0 0 0 8px rgba(220, 53, 69, 0);
+    box-shadow: 0 0 0 8px rgba(142, 36, 53, 0);
   }
   100% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    box-shadow: 0 0 0 0 rgba(142, 36, 53, 0);
   }
 }
 
@@ -547,7 +719,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.94);
   z-index: 10;
 }
 
@@ -556,8 +728,8 @@ onUnmounted(() => {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: rgba(220, 53, 69, 0.2);
-  border: 1.5px solid #dc3545;
+  background: rgba(142, 36, 53, 0.2);
+  border: 1.5px solid #8E2435;
 }
 
 .ll-legend-circle--10k {
@@ -565,8 +737,8 @@ onUnmounted(() => {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: rgba(220, 53, 69, 0.08);
-  border: 1px dashed #dc3545;
+  background: rgba(142, 36, 53, 0.08);
+  border: 1px dashed #8E2435;
 }
 
 .hover-lift {

@@ -11,17 +11,17 @@
       </div>
 
       <div class="d-flex align-items-center gap-2">
-        <div class="btn-group btn-group-sm" role="group" aria-label="View mode switch">
+        <div class="ll-view-switch p-1 rounded-pill bg-white border border-slate-200 shadow-xs d-inline-flex align-items-center">
           <button
             type="button"
-            :class="['btn', viewMode === 'board' ? 'btn-danger fw-bold' : 'btn-outline-danger']"
+            :class="['btn btn-sm rounded-pill px-3 py-1 font-weight-700 border-0', viewMode === 'board' ? 'll-btn-wine-active' : 'text-slate-600']"
             @click="viewMode = 'board'"
           >
             <i class="bi bi-grid-fill me-1"></i> Board View
           </button>
           <button
             type="button"
-            :class="['btn', viewMode === 'map' ? 'btn-danger fw-bold' : 'btn-outline-danger']"
+            :class="['btn btn-sm rounded-pill px-3 py-1 font-weight-700 border-0', viewMode === 'map' ? 'll-btn-wine-active' : 'text-slate-600']"
             @click="viewMode = 'map'"
           >
             <i class="bi bi-geo-alt-fill me-1"></i> Live Map
@@ -30,6 +30,7 @@
         <button v-if="isAdmin" class="ll-btn-primary" type="button" @click="openCreateForm"><i class="bi bi-plus-lg me-1"></i> New Request</button>
       </div>
     </div>
+
 
 
     <div aria-live="polite" aria-atomic="true" class="visually-hidden">
@@ -785,7 +786,14 @@ onUnmounted(() => {
   transform: scale(0.95);
 }
 
+.ll-btn-wine-active {
+  background-color: var(--ll-wine-red, #8E2435) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(142, 36, 53, 0.25);
+}
+
 .emergency-grid-item {
+
   opacity: 0;
 }
 </style>

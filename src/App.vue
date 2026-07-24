@@ -5,9 +5,11 @@
     <AppNavbar />
 
     <main class="ll-main" role="main">
-      <RouterView v-slot="{ Component }">
-        <transition name="slide-up" mode="out-in">
-          <component :is="Component" />
+      <RouterView v-slot="{ Component, route }">
+        <transition name="page-fade" mode="out-in">
+          <keep-alive>
+            <component :is="Component" :key="route.fullPath" />
+          </keep-alive>
         </transition>
       </RouterView>
     </main>
@@ -1543,6 +1545,23 @@ textarea {
   opacity: 1 !important;
   transform: none !important;
   transition: none !important;
+}
+
+/* Optimized Page Route Transitions (GPU Accelerated, No Flickering) */
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  will-change: opacity, transform;
+}
+
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translate3d(0, 6px, 0);
+}
+
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translate3d(0, -4px, 0);
 }
 
 /* Global Prefers Reduced Motion settings */

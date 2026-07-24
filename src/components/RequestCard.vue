@@ -30,16 +30,17 @@
     <div class="ll-card__body">
       <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
         <h5 class="ll-request-title mb-0">{{ request.hospitalName }}</h5>
-        <!-- Google Maps Link -->
-        <a
-          :href="buildMapsUrl(request.hospitalName + ', ' + request.city)"
-          target="_blank"
-          rel="noopener"
-          class="ll-maps-link text-decoration-none small text-wine font-weight-700"
-          title="Get directions on Google Maps"
+        <!-- Focus on Internal Live Map -->
+        <button
+          type="button"
+          class="btn btn-link p-0 text-decoration-none small text-wine font-weight-700"
+          style="color: #8E2435; font-size: 0.8rem;"
+          title="Focus hospital on Live Map"
+          @click.prevent="$emit('focus-map', request.id)"
         >
-          <i class="bi bi-geo-alt-fill"></i> Map
-        </a>
+          <i class="bi bi-geo-alt-fill me-1"></i>Map
+        </button>
+
       </div>
       <p class="ll-text-meta mb-3"><i class="bi bi-building me-1"></i> {{ request.city }}</p>
 
@@ -135,7 +136,8 @@ const props = defineProps({
 })
 
 
-const emit = defineEmits(['confirm', 'edit', 'delete', 'status-change'])
+const emit = defineEmits(['confirm', 'edit', 'delete', 'status-change', 'focus-map'])
+
 
 const eligibility = computed(() => {
   if (!userProfile.value) return { eligible: true, daysLeft: 0, nextDateFormatted: '' }

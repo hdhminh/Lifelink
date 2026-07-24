@@ -51,6 +51,14 @@ const routes = [
     meta: { title: 'LifeLink - Emergency Request Board' }
   },
   {
+    path: '/map',
+    name: 'NetworkMap',
+    component: EmergencyBoard,
+    props: { defaultView: 'map' },
+    meta: { title: 'LifeLink - Live Network Map' }
+  },
+
+  {
     path: '/profile',
     name: 'Profile',
     component: Profile,

@@ -9,7 +9,19 @@ vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({
   removeEventListener: vi.fn()
 }))
 
-vi.mock('@/firebase.js', () => ({ db: {} }))
+vi.mock('@/firebase.js', () => ({ db: {}, rtdb: {} }))
+
+vi.mock('firebase/database', () => ({
+  ref: vi.fn(),
+  onValue: vi.fn().mockReturnValue(vi.fn()),
+  off: vi.fn(),
+  set: vi.fn(),
+  remove: vi.fn(),
+  onDisconnect: vi.fn().mockReturnValue({ remove: vi.fn().mockResolvedValue() }),
+  serverTimestamp: vi.fn()
+}))
+
+
 
 const mockStartListening = vi.fn()
 const mockStopListening = vi.fn()

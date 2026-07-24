@@ -30,34 +30,66 @@
       <p class="ll-text-meta mb-0 mt-3">Showing {{ paginatedEvents.length }} of {{ filteredEvents.length }} events</p>
     </section>
 
+    <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
+      <div class="ll-view-toggle p-1 bg-slate-100 rounded-pill d-inline-flex border">
+        <button
+          type="button"
+          :class="['btn btn-sm rounded-pill px-3 py-1 font-weight-700 border-0', viewMode === 'list' ? 'll-btn-wine-active' : 'text-slate-600']"
+          @click="viewMode = 'list'"
+        >
+          <i class="bi bi-grid-fill me-1"></i> List View
+        </button>
+        <button
+          type="button"
+          :class="['btn btn-sm rounded-pill px-3 py-1 font-weight-700 border-0', viewMode === 'map' ? 'll-btn-wine-active' : 'text-slate-600']"
+          @click="viewMode = 'map'"
+        >
+          <i class="bi bi-geo-alt-fill me-1"></i> Event Map
+        </button>
+      </div>
+    </div>
+
     <AlertMessage v-if="error" type="danger" :message="error" />
 
     <LoadingSpinner v-if="loading" message="Loading donation events..." />
-    <div v-else-if="paginatedEvents.length === 0" class="ll-empty-state ll-event-fade-in reveal-item">
-      <div class="ll-empty-state__icon"><i class="bi bi-calendar-x text-muted"></i></div>
-      <div class="ll-empty-state__title">No donation events found</div>
-      <p class="ll-empty-state__body">Try clearing your search or category filter.</p>
+
+    <!-- Donation Events Map View -->
+    <div v-show="viewMode === 'map'" class="mb-5">
+      <EmergencyMap
+        :events="filteredEvents"
+        :is-visible="viewMode === 'map'"
+        title-text="Donation Events Map"
+      />
     </div>
 
-    <section v-else class="row g-4 ll-event-fade-in">
-      <div v-for="event in paginatedEvents" :key="event.id" class="col-lg-4 col-md-6 col-12 reveal-item">
-        <EventCard
-          :event="event"
-          :is-logged-in="!!user"
-          :is-interested="isInterested(event)"
-          :is-admin="isAdmin"
-          @toggle-interested="handleToggleInterested(event.id)"
-          @edit="openEditForm(event)"
-          @delete="handleDelete(event.id)"
-        />
+    <div v-show="viewMode === 'list'">
+      <div v-if="paginatedEvents.length === 0" class="ll-empty-state ll-event-fade-in reveal-item">
+        <div class="ll-empty-state__icon"><i class="bi bi-calendar-x text-muted"></i></div>
+        <div class="ll-empty-state__title">No donation events found</div>
+        <p class="ll-empty-state__body">Try clearing your search or category filter.</p>
       </div>
-    </section>
 
-    <PaginationControls
-      :current-page="currentPage"
-      :total-pages="totalPages"
-      @page-change="currentPage = $event"
-    />
+      <section v-else class="row g-4 ll-event-fade-in">
+        <div v-for="event in paginatedEvents" :key="event.id" class="col-lg-4 col-md-6 col-12 reveal-item">
+          <EventCard
+            :event="event"
+            :is-logged-in="!!user"
+            :is-interested="isInterested(event)"
+            :is-admin="isAdmin"
+            @toggle-interested="handleToggleInterested(event.id)"
+            @edit="openEditForm(event)"
+            @delete="handleDelete(event.id)"
+          />
+        </div>
+      </section>
+
+      <PaginationControls
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        @page-change="currentPage = $event"
+      />
+    </div>
+
 
     <div v-if="showForm && isAdmin" class="ll-form-overlay">
       <div class="ll-page-container ll-event-form-container">
@@ -105,6 +137,7 @@ import { useDonationEvents } from '@/composables/useDonationEvents.js'
 import { useGuestSession } from '@/composables/useGuestSession.js'
 import EventCard from '@/components/EventCard.vue'
 import EventForm from '@/components/EventForm.vue'
+import EmergencyMap from '@/components/EmergencyMap.vue'
 import PaginationControls from '@/components/PaginationControls.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import AlertMessage from '@/components/AlertMessage.vue'
@@ -119,6 +152,7 @@ const { getGuestSession, updateGuestSession } = useGuestSession()
 
 const { showToast } = useToast()
 
+const viewMode = ref('list')
 const searchQuery = ref('')
 const filterCategory = ref('')
 const currentPage = ref(1)
@@ -126,6 +160,7 @@ const showForm = ref(false)
 const editingEvent = ref(null)
 const showDeleteModal = ref(false)
 const deletingEventId = ref(null)
+
 
 const showInterestModal = ref(false)
 const pendingInterestEvent = ref(null)

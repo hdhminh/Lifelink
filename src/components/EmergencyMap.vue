@@ -4,19 +4,31 @@
     <div class="ll-map-toolbar d-flex flex-wrap justify-content-between align-items-center gap-2 p-2 px-3 rounded-top-lg border border-bottom-0" style="background-color: #ffffff; border-color: #EAE2DF;">
       <div class="d-flex align-items-center gap-2">
         <span class="ll-live-dot ll-live-dot--pulse" style="background-color: #8E2435;"></span>
-        <h5 class="m-0 font-weight-700" style="font-size: 1.0rem; color: #8E2435 !important;">
-          <i class="bi bi-geo-alt-fill me-1" style="color: #8E2435;"></i> Live Response Map
+        <h5 class="m-0 font-weight-700 d-inline-flex align-items-center" style="font-size: 1.0rem; line-height: 1; color: #8E2435 !important;">
+          <i class="bi bi-geo-alt-fill me-1" style="color: #8E2435;"></i> {{ titleText }}
         </h5>
-        <span class="badge rounded-pill ms-1" style="font-size: 0.7rem; background-color: #8E2435; color: #ffffff;">
-          {{ activeResponses.length }} Active Responder{{ activeResponses.length !== 1 ? 's' : '' }}
+        <span class="badge rounded-pill ms-1 d-inline-flex align-items-center" style="font-size: 0.72rem; padding: 0.35rem 0.65rem; line-height: 1; background-color: #8E2435; color: #ffffff;">
+          {{ filteredResponders.length }} Active Responder{{ filteredResponders.length !== 1 ? 's' : '' }}
         </span>
       </div>
 
       <div class="d-flex align-items-center gap-2 ms-auto">
+        <!-- Demo Simulation Mode Toggle -->
+        <button
+          type="button"
+          :class="['btn btn-sm d-inline-flex align-items-center gap-1 font-weight-600', isSimulating ? 'btn-warning text-dark' : 'btn-outline-secondary']"
+          style="height: 36px; padding: 0 0.75rem; font-size: 0.76rem;"
+          :title="isSimulating ? 'Turn off demo simulation' : 'Start live demo simulation with 2 moving responders'"
+          @click="toggleDemoSimulation"
+        >
+          <i :class="['bi', isSimulating ? 'bi-lightning-charge-fill' : 'bi-lightning-charge']"></i>
+          {{ isSimulating ? 'Demo Active' : '⚡ Demo Simulation' }}
+        </button>
+
         <select
           v-model="selectedRequestId"
           class="form-select form-select-sm"
-          style="min-width: 170px; max-width: 220px; font-size: 0.78rem; background-color: #FAF5EF; color: #2B2225; border-color: #EAE2DF;"
+          style="min-width: 170px; max-width: 220px; height: 36px; font-size: 0.78rem; background-color: #FAF5EF; color: #2B2225; border-color: #EAE2DF;"
           aria-label="Select emergency request focus"
         >
           <option value="" style="background-color: #ffffff; color: #2B2225;">All Active Hospitals ({{ activeRequests.length }})</option>
@@ -104,9 +116,12 @@
         <div v-if="filteredResponders.length === 0" class="text-center py-4 px-3 bg-white rounded border border-slate-200 flex-grow-1 d-flex flex-column justify-content-center align-items-center">
           <div class="mb-2 text-slate-300 fs-1"><i class="bi bi-geo-alt"></i></div>
           <h6 class="fw-bold text-slate-700 mb-1" style="font-size: 0.88rem;">Searching for Responders</h6>
-          <p class="small text-slate-500 mb-0" style="font-size: 0.78rem;">
+          <p class="small text-slate-500 mb-2" style="font-size: 0.78rem;">
             Radar active across 10 km radius. Responders will appear here live when they accept requests and share location.
           </p>
+          <button type="button" class="btn btn-xs btn-outline-danger fw-bold rounded-pill px-3 mt-1" style="font-size: 0.72rem;" @click="toggleDemoSimulation">
+            <i class="bi bi-lightning-charge-fill me-1"></i> Try Demo Simulation
+          </button>
         </div>
 
         <!-- Responders list cards -->
@@ -114,7 +129,8 @@
           <div
             v-for="resp in filteredResponders"
             :key="resp.trackingKey"
-            class="p-3 bg-white border border-slate-200 rounded shadow-xs position-relative hover-lift"
+            class="p-3 bg-white border border-slate-200 rounded shadow-xs position-relative hover-lift cursor-pointer"
+            @click="focusResponder(resp)"
           >
             <div class="d-flex justify-content-between align-items-start mb-1">
               <div>
@@ -150,7 +166,12 @@
             <i class="bi bi-broadcast me-1" style="color: #8E2435;"></i> RECENT ACTIVITY LOG
           </div>
           <ul class="list-unstyled mb-0" style="font-size: 0.72rem;">
-            <li v-for="(log, idx) in activityLogs" :key="idx" class="mb-1 text-slate-600 d-flex align-items-center gap-1">
+            <li
+              v-for="(log, idx) in activityLogs"
+              :key="idx"
+              class="mb-1 text-slate-600 d-flex align-items-center gap-1 cursor-pointer hover-text-wine"
+              @click="centerMapOnSelected"
+            >
               <span class="text-slate-400 font-monospace">[{{ log.time }}]</span>
               <span>{{ log.text }}</span>
             </li>
@@ -163,9 +184,9 @@
 
 <script setup>
 /**
- * EmergencyMap.vue
+ * EmergencyMap.vue (Unified Map Component)
  * Core real-time response map component built with CartoDB Voyager Leaflet Map Engine.
- * Uses LifeLink brand Wine Red palette (#8E2435).
+ * Supports Emergency Requests, Donation Events, and Demo Live Simulation Mode.
  */
 
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
@@ -180,11 +201,21 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
+  events: {
+    type: Array,
+    default: () => []
+  },
   isVisible: {
     type: Boolean,
     default: true
+  },
+  titleText: {
+    type: String,
+    default: 'Live Response Map'
   }
 })
+
+const emit = defineEmits(['respond'])
 
 const { responses: activeResponses, startListening, stopListening } = useActiveResponses()
 
@@ -192,8 +223,10 @@ const mapElement = ref(null)
 const mapLoading = ref(true)
 const selectedRequestId = ref('')
 const activityLogs = ref([])
+const isSimulating = ref(false)
 
 let leafletMap = null
+let simulationInterval = null
 
 // Dictionaries to manage map instances
 const hospitalMarkers = new Map()
@@ -201,13 +234,47 @@ const hospitalCircles = new Map()
 const donorMarkers = new Map()
 const donorPolylines = new Map()
 
+// Demo Simulated Responders
+const simulatedDonors = ref([
+  {
+    trackingKey: 'sim_1',
+    donorName: 'Lê Văn Nam (Demo Donor)',
+    bloodType: 'O+',
+    status: 'en-route',
+    distanceMeters: 3800,
+    etaMins: 7,
+    latitude: 10.7600,
+    longitude: 106.6700,
+    targetLat: 10.7548,
+    targetLng: 106.6601,
+    hospitalName: 'Cho Ray Hospital'
+  },
+  {
+    trackingKey: 'sim_2',
+    donorName: 'Trần Thị Mai (Demo Donor)',
+    bloodType: 'A+',
+    status: 'approaching',
+    distanceMeters: 1600,
+    etaMins: 3,
+    latitude: 10.7480,
+    longitude: 106.6500,
+    targetLat: 10.7548,
+    targetLng: 106.6601,
+    hospitalName: 'Cho Ray Hospital'
+  }
+])
+
 const activeRequests = computed(() => {
   return props.emergencyRequests.filter(r => r.status === 'active')
 })
 
 const filteredResponders = computed(() => {
-  if (!selectedRequestId.value) return activeResponses.value
-  return activeResponses.value.filter(r => r.requestId === selectedRequestId.value)
+  let list = [...activeResponses.value]
+  if (isSimulating.value) {
+    list = [...list, ...simulatedDonors.value]
+  }
+  if (!selectedRequestId.value) return list
+  return list.filter(r => r.requestId === selectedRequestId.value || r.trackingKey.startsWith('sim_'))
 })
 
 function formatMeters(meters) {
@@ -224,6 +291,40 @@ function truncateText(text, maxLen = 18) {
   if (!text) return ''
   if (text.length <= maxLen) return text
   return text.substring(0, maxLen - 3) + '...'
+}
+
+function toggleDemoSimulation() {
+  isSimulating.value = !isSimulating.value
+  if (isSimulating.value) {
+    logActivity('⚡ Demo Live Simulation active.')
+    startSimulationLoop()
+  } else {
+    stopSimulationLoop()
+    logActivity('Demo Simulation stopped.')
+  }
+}
+
+function startSimulationLoop() {
+  if (simulationInterval) clearInterval(simulationInterval)
+  simulationInterval = setInterval(() => {
+    if (!isSimulating.value) return
+    simulatedDonors.value.forEach(d => {
+      d.latitude = d.latitude + (d.targetLat - d.latitude) * 0.02
+      d.longitude = d.longitude + (d.targetLng - d.longitude) * 0.02
+      d.distanceMeters = Math.max(150, Math.round(d.distanceMeters - 70))
+      d.etaMins = Math.max(1, Math.ceil(d.distanceMeters / 450))
+      if (d.distanceMeters < 1000) d.status = 'approaching'
+    })
+    renderDonorMarkers()
+  }, 1500)
+}
+
+function stopSimulationLoop() {
+  if (simulationInterval) {
+    clearInterval(simulationInterval)
+    simulationInterval = null
+  }
+  renderDonorMarkers()
 }
 
 /**
@@ -243,7 +344,6 @@ function initMapEngine() {
 
   if (!mapElement.value) return
 
-  // CLEAR PREVIOUS DOM NODES
   mapElement.value.innerHTML = ''
 
   leafletMap = L.map(mapElement.value, {
@@ -257,6 +357,12 @@ function initMapEngine() {
     subdomains: 'abcd',
     maxZoom: 19
   }).addTo(leafletMap)
+
+  if (typeof window !== 'undefined') {
+    window.handleHospitalPopupRespond = (reqId) => {
+      emit('respond', reqId)
+    }
+  }
 
   mapLoading.value = false
   logActivity('Live Response Map Engine active.')
@@ -318,10 +424,13 @@ function renderHospitalMarkers() {
 
     const marker = L.marker(pos, { icon }).addTo(leafletMap)
     marker.bindPopup(`
-      <div style="font-family: system-ui, sans-serif; padding: 4px;">
+      <div style="font-family: system-ui, sans-serif; padding: 4px; max-width: 220px;">
         <strong style="color: #8E2435; font-size: 0.9rem;">🏥 ${req.hospitalName}</strong><br>
         <span style="font-size: 0.78rem;">Blood: <strong style="color: #8E2435;">${req.bloodType}</strong> (${req.urgency})</span><br>
-        <span style="font-size: 0.75rem;">Confirmed: <strong>${req.confirmedCount || 0}/${req.unitsNeeded}</strong></span>
+        <span style="font-size: 0.75rem;">Confirmed: <strong>${req.confirmedCount || 0}/${req.unitsNeeded}</strong></span><br>
+        <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100" style="background-color: #8E2435; font-size: 0.72rem; border-radius: 6px;" onclick="window.handleHospitalPopupRespond('${req.id}')">
+          🩸 Phản ứng khẩn cấp
+        </button>
       </div>
     `)
 
@@ -344,7 +453,7 @@ function renderHospitalMarkers() {
     hospitalCircles.set(req.id, [innerCircle, outerCircle])
   })
 
-  if (count > 0) {
+  if (count > 0 && !selectedRequestId.value) {
     leafletMap.fitBounds(bounds, { padding: [30, 30] })
   }
 }
@@ -429,10 +538,25 @@ function centerMapOnSelected() {
 
       if (leafletMap) {
         leafletMap.setView([coords.lat, coords.lng], 14)
+        const marker = hospitalMarkers.get(selectedRequestId.value)
+        if (marker) marker.openPopup()
       }
     }
   } else {
     renderHospitalMarkers()
+  }
+}
+
+function focusRequest(requestId) {
+  selectedRequestId.value = requestId
+  centerMapOnSelected()
+}
+
+function focusResponder(resp) {
+  if (leafletMap && resp.latitude && resp.longitude) {
+    leafletMap.setView([resp.latitude, resp.longitude], 15)
+    const m = donorMarkers.get(resp.trackingKey)
+    if (m) m.openPopup()
   }
 }
 
@@ -478,6 +602,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   stopListening()
+  stopSimulationLoop()
   if (leafletMap) {
     try {
       leafletMap.remove()
@@ -486,6 +611,12 @@ onUnmounted(() => {
     }
     leafletMap = null
   }
+})
+
+defineExpose({
+  focusRequest,
+  centerMapOnSelected,
+  toggleDemoSimulation
 })
 </script>
 
@@ -545,6 +676,10 @@ onUnmounted(() => {
   border-radius: 50%;
   background: rgba(142, 36, 53, 0.08);
   border: 1px dashed #8E2435;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 
 .hover-lift {

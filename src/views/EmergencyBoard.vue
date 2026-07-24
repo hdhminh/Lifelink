@@ -109,7 +109,12 @@
     <div v-else>
       <!-- Live Response Map View -->
       <div v-show="viewMode === 'map'" class="mb-5">
-        <EmergencyMap :emergency-requests="requests" :is-visible="viewMode === 'map'" />
+        <EmergencyMap
+          ref="mapComponentRef"
+          :emergency-requests="requests"
+          :is-visible="viewMode === 'map'"
+          @respond="handleConfirm"
+        />
       </div>
 
       <!-- Board Grid View -->
@@ -133,9 +138,11 @@
               @edit="openEditForm(request)"
               @delete="handleDelete(request.id)"
               @status-change="handleStatusChange(request)"
+              @focus-map="handleFocusMap"
             />
           </div>
         </div>
+
       </div>
 
 
@@ -352,7 +359,16 @@ const { user, userProfile, isAdmin } = useAuth()
 const router = useRouter()
 const { getEnRouteCountForRequest } = useActiveResponses()
 
-const viewMode = ref(isAdmin.value ? 'map' : 'board')
+const props = defineProps({
+  defaultView: {
+    type: String,
+    default: ''
+  }
+})
+
+const viewMode = ref(props.defaultView || 'board')
+
+
 
 const {
   requests,
@@ -399,7 +415,20 @@ function setMode(mode) {
   }
 }
 
+const mapComponentRef = ref(null)
+
+function handleFocusMap(requestId) {
+  viewMode.value = 'map'
+  nextTick(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (mapComponentRef.value) {
+      mapComponentRef.value.focusRequest(requestId)
+    }
+  })
+}
+
 const confirmedRequestIds = ref([])
+
 
 
 let unsubscribeConfirmations = null

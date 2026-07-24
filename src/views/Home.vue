@@ -249,15 +249,15 @@
  * Overhauled Stage 1 landing page matching the custom Wine Red & Beige minimal aesthetic.
  * Enhanced with GSAP 3.15 character split-text animations, counter tweens, and 3D magnetic card tilt.
  */
-import { onMounted, ref } from 'vue'
+import { onMounted, onActivated, ref } from 'vue'
 import gsap from 'gsap'
 import { useAuth } from '@/composables/useAuth.js'
 
 const { user } = useAuth()
 
-const donorCount = ref(0)
-const partnerCount = ref(0)
-const resolveRate = ref(0)
+const donorCount = ref(12486)
+const partnerCount = ref(48)
+const resolveRate = ref(98.4)
 
 const heroBadge = ref(null)
 const heroTitle = ref(null)
@@ -268,26 +268,25 @@ const statsContainer = ref(null)
 const timelineContainer = ref(null)
 const featuresContainer = ref(null)
 
-onMounted(() => {
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+const runAnimations = () => {
+  const prefersReduced = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false
 
-  if (prefersReduced) {
-    donorCount.value = 12486
-    partnerCount.value = 48
-    resolveRate.value = 98.4
-    
-    document.querySelectorAll('.ll-feature-card, .ll-vertical-step-item').forEach(el => {
-      el.style.opacity = '1'
-    })
-    
-    if (heroBadge.value) heroBadge.value.style.opacity = '1'
-    if (heroTitle.value) heroTitle.value.style.opacity = '1'
-    if (heroText.value) heroText.value.style.opacity = '1'
-    if (heroButtons.value) heroButtons.value.style.opacity = '1'
-    return
-  }
+  donorCount.value = 12486
+  partnerCount.value = 48
+  resolveRate.value = 98.4
+
+  document.querySelectorAll('.ll-feature-card, .ll-vertical-step-item').forEach(el => {
+    el.style.opacity = '1'
+  })
   
-  // 1. GSAP Hero Sequence Timeline + Character Split-Text Animation (Inspired by GSAP Showcase)
+  if (heroBadge.value) heroBadge.value.style.opacity = '1'
+  if (heroTitle.value) heroTitle.value.style.opacity = '1'
+  if (heroText.value) heroText.value.style.opacity = '1'
+  if (heroButtons.value) heroButtons.value.style.opacity = '1'
+
+  if (prefersReduced) return
+
+  // 1. GSAP Hero Sequence Timeline
   const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
 
   if (heroBadge.value) {
@@ -405,7 +404,7 @@ onMounted(() => {
   if (featuresContainer.value) {
     featuresObserver.observe(featuresContainer.value)
   }
-})
+}
 </script>
 
 <style scoped>

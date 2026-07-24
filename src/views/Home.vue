@@ -352,10 +352,15 @@ const runAnimations = () => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         const stepItems = entry.target.querySelectorAll('.ll-vertical-step-item')
-        gsap.fromTo(stepItems, 
-          { opacity: 0, x: -20 },
-          { opacity: 1, x: 0, duration: 0.6, stagger: 0.12, ease: 'power2.out' }
-        )
+        if (stepItems.length) {
+          gsap.from(stepItems, {
+            opacity: 0,
+            x: -20,
+            duration: 0.6,
+            stagger: 0.12,
+            ease: 'power2.out'
+          })
+        }
         timelineObserver.unobserve(entry.target)
       }
     })
@@ -370,10 +375,15 @@ const runAnimations = () => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         const featureCards = entry.target.querySelectorAll('.ll-feature-card')
-        gsap.fromTo(featureCards,
-          { opacity: 0, y: 24 },
-          { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: 'power2.out' }
-        )
+        if (featureCards.length) {
+          gsap.from(featureCards, {
+            opacity: 0,
+            y: 24,
+            duration: 0.6,
+            stagger: 0.1,
+            ease: 'power2.out'
+          })
+        }
         featuresObserver.unobserve(entry.target)
       }
     })
@@ -536,7 +546,6 @@ const runAnimations = () => {
   border-radius: var(--ll-radius-lg);
   box-shadow: var(--ll-shadow-xs);
   transition: all var(--ll-transition);
-  opacity: 0;
 }
 
 .ll-feature-card:hover {
@@ -570,7 +579,6 @@ const runAnimations = () => {
 .ll-vertical-step-item {
   position: relative;
   z-index: 2;
-  opacity: 0;
 }
 
 .ll-vertical-step-dot {

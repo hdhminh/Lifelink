@@ -5,14 +5,12 @@
       <div class="container py-5 px-lg-4 position-relative z-index-2 text-white text-shadow-sm text-start">
         <div class="row">
           <div class="col-lg-9 col-12">
-            <span ref="heroBadge" class="ll-badge-hero mb-3 text-uppercase font-weight-700" style="opacity: 0">Connecting Lives Vietnam</span>
-            <h1 ref="heroTitle" class="display-3 fw-bold mb-3 ll-hero-title d-flex flex-wrap" style="opacity: 0">
-              <span v-for="(char, idx) in 'LifeLink'.split('')" :key="idx" class="ll-gsap-char">{{ char }}</span>
-            </h1>
-            <p ref="heroText" class="lead mb-4 text-white-80" style="max-width: 620px; opacity: 0">
+            <span ref="heroBadge" class="ll-badge-hero mb-3 text-uppercase font-weight-700">Connecting Lives Vietnam</span>
+            <h1 ref="heroTitle" class="display-3 fw-bold mb-3 ll-hero-title">LifeLink</h1>
+            <p ref="heroText" class="lead mb-4 text-white-80" style="max-width: 620px;">
               Connecting voluntary blood donors with hospitals in real-time. Every donation saves a life when seconds count.
             </p>
-            <div ref="heroButtons" class="d-flex flex-wrap gap-3" style="opacity: 0">
+            <div ref="heroButtons" class="d-flex flex-wrap gap-3">
               <RouterLink to="/emergency-board" class="ll-btn-primary ll-btn-lg text-decoration-none">
                 <i class="bi bi-hospital me-2"></i> Browse Board
               </RouterLink>
@@ -275,42 +273,18 @@ const runAnimations = () => {
   partnerCount.value = 48
   resolveRate.value = 98.4
 
-  document.querySelectorAll('.ll-feature-card, .ll-vertical-step-item').forEach(el => {
-    el.style.opacity = '1'
-  })
-  
-  if (heroBadge.value) heroBadge.value.style.opacity = '1'
-  if (heroTitle.value) heroTitle.value.style.opacity = '1'
-  if (heroText.value) heroText.value.style.opacity = '1'
-  if (heroButtons.value) heroButtons.value.style.opacity = '1'
-
   if (prefersReduced) return
 
-  // 1. GSAP Hero Sequence Timeline
-  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
-
-  if (heroBadge.value) {
-    tl.fromTo(heroBadge.value, { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.7, ease: 'back.out(1.7)' })
-  }
-
-  if (heroTitle.value) {
-    heroTitle.value.style.opacity = '1'
-    const chars = heroTitle.value.querySelectorAll('.ll-gsap-char')
-    if (chars.length) {
-      tl.fromTo(chars, 
-        { opacity: 0, y: 24, rotationX: 45, scale: 0.8 }, 
-        { opacity: 1, y: 0, rotationX: 0, scale: 1, duration: 0.6, stagger: 0.05, ease: 'back.out(1.8)' }, 
-        '-=0.4'
-      )
-    }
-  }
-
-  if (heroText.value) {
-    tl.fromTo(heroText.value, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.7 }, '-=0.3')
-  }
-
-  if (heroButtons.value) {
-    tl.fromTo(heroButtons.value, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.7 }, '-=0.5')
+  // 1. GSAP Hero Sequence Timeline (Non-destructive gsap.from)
+  const heroElements = [heroBadge.value, heroTitle.value, heroText.value, heroButtons.value].filter(Boolean)
+  if (heroElements.length) {
+    gsap.from(heroElements, {
+      opacity: 0,
+      y: 20,
+      duration: 0.7,
+      stagger: 0.1,
+      ease: 'power3.out'
+    })
   }
 
   // 2. GSAP Floating Ambient Blobs Animation

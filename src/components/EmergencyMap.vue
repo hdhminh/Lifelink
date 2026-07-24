@@ -405,15 +405,23 @@ function initMapEngine() {
   mapElement.value.innerHTML = ''
 
   leafletMap = L.map(mapElement.value, {
-    center: [10.7548, 106.6601],
-    zoom: 12,
+    center: [16.0, 107.5],
+    zoom: 6,
+    minZoom: 5,
     zoomControl: true,
     attributionControl: false
   })
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+    minZoom: 5,
+    subdomains: 'abcd'
   }).addTo(leafletMap)
+
+  leafletMap.setMaxBounds([
+    [4.0, 96.0],
+    [26.0, 116.0]
+  ])
 
   if (typeof window !== 'undefined') {
     window.handleHospitalPopupRespond = (reqId) => {

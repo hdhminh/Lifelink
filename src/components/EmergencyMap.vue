@@ -3,12 +3,12 @@
     <!-- Map Header Status Toolbar (LifeLink Brand Wine Red Surface) -->
     <div class="ll-map-toolbar d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 rounded-top-lg border border-bottom-0" style="background-color: #ffffff; border-color: #EAE2DF; position: relative; z-index: 1050;">
       <div class="d-flex align-items-center gap-2">
-        <span class="ll-live-dot ll-live-dot--pulse" style="background-color: #8E2435;"></span>
-        <h5 class="m-0 font-weight-700 d-inline-flex align-items-center" style="font-size: 1.05rem; line-height: 1.2; color: #8E2435 !important;">
+        <h5 class="m-0 font-weight-700 d-inline-flex align-items-center me-1" style="font-size: 1.05rem; line-height: 1.2; color: #8E2435 !important;">
           <i class="bi bi-geo-alt-fill me-1" style="color: #8E2435;"></i> {{ titleText }}
         </h5>
-        <span class="badge rounded-pill ms-1 d-inline-flex align-items-center" style="font-size: 0.75rem; padding: 0.4rem 0.75rem; line-height: 1; background-color: #8E2435; color: #ffffff;">
-          {{ filteredResponders.length }} Active Responder{{ filteredResponders.length !== 1 ? 's' : '' }}
+        <span class="badge rounded-pill d-inline-flex align-items-center gap-2 shadow-xs" style="font-size: 0.75rem; padding: 0.45rem 0.85rem; line-height: 1; background-color: #8E2435; color: #ffffff; font-weight: 700; letter-spacing: 0.4px;">
+          <span class="ll-white-dot-pulse"></span>
+          <span>{{ filteredResponders.length }} ACTIVE RESPONDERS</span>
         </span>
       </div>
 
@@ -787,29 +787,31 @@ defineExpose({
   font-family: var(--ll-font-family, system-ui, sans-serif);
 }
 
-.ll-live-dot--pulse {
-  width: 10px;
-  height: 10px;
-  background-color: #8E2435;
+.ll-white-dot-pulse {
+  width: 8px;
+  height: 8px;
+  background-color: #ffffff;
   border-radius: 50%;
-  box-shadow: 0 0 0 0 rgba(142, 36, 53, 0.7);
-  animation: pulse-wine 1.6s infinite;
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.8);
+  animation: pulse-white-dot 1.5s infinite;
+  display: inline-block;
 }
 
-@keyframes pulse-wine {
+@keyframes pulse-white-dot {
   0% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(142, 36, 53, 0.7);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.8);
   }
   70% {
     transform: scale(1.1);
-    box-shadow: 0 0 0 8px rgba(142, 36, 53, 0);
+    box-shadow: 0 0 0 6px rgba(255, 255, 255, 0);
   }
   100% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(142, 36, 53, 0);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
   }
 }
+
 
 .ll-map-loader-overlay,
 .ll-map-error-overlay {

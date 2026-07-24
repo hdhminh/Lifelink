@@ -30,39 +30,11 @@
       <p class="ll-text-meta mb-0 mt-3">Showing {{ paginatedEvents.length }} of {{ filteredEvents.length }} events</p>
     </section>
 
-    <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
-      <div class="ll-view-toggle p-1 bg-slate-100 rounded-pill d-inline-flex border">
-        <button
-          type="button"
-          :class="['btn btn-sm rounded-pill px-3 py-1 font-weight-700 border-0', viewMode === 'list' ? 'll-btn-wine-active' : 'text-slate-600']"
-          @click="viewMode = 'list'"
-        >
-          <i class="bi bi-grid-fill me-1"></i> List View
-        </button>
-        <button
-          type="button"
-          :class="['btn btn-sm rounded-pill px-3 py-1 font-weight-700 border-0', viewMode === 'map' ? 'll-btn-wine-active' : 'text-slate-600']"
-          @click="viewMode = 'map'"
-        >
-          <i class="bi bi-geo-alt-fill me-1"></i> Event Map
-        </button>
-      </div>
-    </div>
-
     <AlertMessage v-if="error" type="danger" :message="error" />
 
     <LoadingSpinner v-if="loading" message="Loading donation events..." />
 
-    <!-- Donation Events Map View -->
-    <div v-show="viewMode === 'map'" class="mb-5">
-      <EmergencyMap
-        :events="filteredEvents"
-        :is-visible="viewMode === 'map'"
-        title-text="Donation Events Map"
-      />
-    </div>
-
-    <div v-show="viewMode === 'list'">
+    <div>
       <div v-if="paginatedEvents.length === 0" class="ll-empty-state ll-event-fade-in reveal-item">
         <div class="ll-empty-state__icon"><i class="bi bi-calendar-x text-muted"></i></div>
         <div class="ll-empty-state__title">No donation events found</div>
@@ -89,6 +61,7 @@
         @page-change="currentPage = $event"
       />
     </div>
+
 
 
     <div v-if="showForm && isAdmin" class="ll-form-overlay">

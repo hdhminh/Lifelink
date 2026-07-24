@@ -13,34 +13,48 @@
       </div>
 
       <div class="d-flex align-items-center gap-2 ms-auto">
-        <!-- Demo Simulation Mode Toggle -->
-        <button
-          type="button"
-          :class="['btn btn-sm d-inline-flex align-items-center gap-1 font-weight-600', isSimulating ? 'btn-warning text-dark' : 'btn-outline-secondary']"
-          style="height: 36px; padding: 0 0.75rem; font-size: 0.76rem;"
-          :title="isSimulating ? 'Turn off demo simulation' : 'Start live demo simulation with 2 moving responders'"
-          @click="toggleDemoSimulation"
+        <!-- Layer Filter Switch -->
+        <select
+          v-model="activeLayerFilter"
+          class="form-select form-select-sm"
+          style="min-width: 140px; max-width: 180px; height: 36px; font-size: 0.78rem; background-color: #FAF5EF; color: #2B2225; border-color: #EAE2DF;"
+          aria-label="Filter map layers"
         >
-          <i :class="['bi', isSimulating ? 'bi-lightning-charge-fill' : 'bi-lightning-charge']"></i>
-          {{ isSimulating ? 'Demo Active' : '⚡ Demo Simulation' }}
-        </button>
+          <option value="all">All Locations</option>
+          <option value="hospitals">🏥 Hospitals ({{ activeRequests.length }})</option>
+          <option value="events">📅 Events ({{ activeEvents.length }})</option>
+        </select>
 
+        <!-- Focus Selector -->
         <select
           v-model="selectedRequestId"
           class="form-select form-select-sm"
           style="min-width: 170px; max-width: 220px; height: 36px; font-size: 0.78rem; background-color: #FAF5EF; color: #2B2225; border-color: #EAE2DF;"
-          aria-label="Select emergency request focus"
+          aria-label="Select request or event focus"
         >
-          <option value="" style="background-color: #ffffff; color: #2B2225;">All Active Hospitals ({{ activeRequests.length }})</option>
-          <option
-            v-for="req in activeRequests"
-            :key="req.id"
-            :value="req.id"
-            style="background-color: #ffffff; color: #2B2225;"
-            :title="`[${req.bloodType}] ${req.hospitalName} (${req.urgency})`"
-          >
-            [{{ req.bloodType }}] {{ truncateText(req.hospitalName, 18) }}
-          </option>
+          <option value="" style="background-color: #ffffff; color: #2B2225;">Select Location Focus</option>
+          <optgroup label="🏥 Emergency Hospitals">
+            <option
+              v-for="req in activeRequests"
+              :key="req.id"
+              :value="req.id"
+              style="background-color: #ffffff; color: #2B2225;"
+              :title="`[${req.bloodType}] ${req.hospitalName} (${req.urgency})`"
+            >
+              [{{ req.bloodType }}] {{ truncateText(req.hospitalName, 18) }}
+            </option>
+          </optgroup>
+          <optgroup label="📅 Donation Events">
+            <option
+              v-for="ev in activeEvents"
+              :key="'ev_' + ev.id"
+              :value="'ev_' + ev.id"
+              style="background-color: #ffffff; color: #2B2225;"
+              :title="`${ev.title} (${ev.city || ev.location})`"
+            >
+              📅 {{ truncateText(ev.title, 18) }}
+            </option>
+          </optgroup>
         </select>
 
         <button
@@ -68,7 +82,7 @@
         <!-- Map Container Div (Guaranteed height: 540px) -->
         <div id="emergency-map-surface" ref="mapElement" style="width: 100%; height: 540px; min-height: 540px; position: relative; z-index: 1; background-color: #f8f9fa;"></div>
 
-        <!-- Floating Map Legend Overlay (Z-Index 1000 with EXACT SVG Map Pin Icons) -->
+        <!-- Floating Map Legend Overlay (Z-Index 1000 with EXACT SVG Map Pin Icons in English) -->
         <div class="ll-map-legend p-2 px-3 bg-white border rounded shadow-sm position-absolute bottom-0 start-0 m-3" style="z-index: 1000;">
           <div class="small fw-bold text-slate-800 mb-1" style="font-size: 0.72rem;">
             <i class="bi bi-info-circle-fill me-1" style="color: #8E2435;"></i> RADAR LEGEND
@@ -81,13 +95,21 @@
                 <rect x="14" y="9" width="4" height="12" rx="1" fill="#8E2435"/>
                 <rect x="10" y="13" width="12" height="4" rx="1" fill="#8E2435"/>
               </svg>
-              <span>Hospital Location & Priority Radar</span>
+              <span>Emergency Hospital & Priority Radar</span>
             </div>
             <div class="d-flex align-items-center gap-2">
               <svg width="18" height="22" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
                 <path d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z" fill="#0D6EFD"/>
                 <circle cx="16" cy="15" r="9" fill="#ffffff"/>
-                <path d="M11 17.5C10.5 17.5 10.1 17.1 10.1 16.6V15.3C10.1 14.8 10.4 14.3 10.8 14.1L13 13C13.5 12.7 14.2 12.5 14.8 12.5H17.2C17.8 12.5 18.5 12.7 19 13L21.2 14.1C21.6 14.3 21.9 14.8 21.9 15.3V16.6C21.9 17.1 21.5 17.5 21 17.5H11Z" fill="#0D6EFD"/>
+                <path d="M16 10C14.5 10 13 11.2 13 12.8C13 15 16 18 16 18C16 18 19 15 19 12.8C19 11.2 17.5 10 16 10Z" fill="#0D6EFD"/>
+              </svg>
+              <span>Donation Drive Event Marker</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <svg width="18" height="22" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+                <path d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z" fill="#198754"/>
+                <circle cx="16" cy="15" r="9" fill="#ffffff"/>
+                <path d="M11 17.5C10.5 17.5 10.1 17.1 10.1 16.6V15.3C10.1 14.8 10.4 14.3 10.8 14.1L13 13C13.5 12.7 14.2 12.5 14.8 12.5H17.2C17.8 12.5 18.5 12.7 19 13L21.2 14.1C21.6 14.3 21.9 14.8 21.9 15.3V16.6C21.9 17.1 21.5 17.5 21 17.5H11Z" fill="#198754"/>
               </svg>
               <span>En-Route Donor Marker (Live Location)</span>
             </div>
@@ -115,13 +137,10 @@
         <!-- No responders state -->
         <div v-if="filteredResponders.length === 0" class="text-center py-4 px-3 bg-white rounded border border-slate-200 flex-grow-1 d-flex flex-column justify-content-center align-items-center">
           <div class="mb-2 text-slate-300 fs-1"><i class="bi bi-geo-alt"></i></div>
-          <h6 class="fw-bold text-slate-700 mb-1" style="font-size: 0.88rem;">Searching for Responders</h6>
-          <p class="small text-slate-500 mb-2" style="font-size: 0.78rem;">
-            Radar active across 10 km radius. Responders will appear here live when they accept requests and share location.
+          <h6 class="fw-bold text-slate-700 mb-1" style="font-size: 0.88rem;">Searching for Active Responders</h6>
+          <p class="small text-slate-500 mb-0" style="font-size: 0.78rem;">
+            Radar active across 10 km radius. Responders will appear here live when they accept emergency requests and share location.
           </p>
-          <button type="button" class="btn btn-xs btn-outline-danger fw-bold rounded-pill px-3 mt-1" style="font-size: 0.72rem;" @click="toggleDemoSimulation">
-            <i class="bi bi-lightning-charge-fill me-1"></i> Try Demo Simulation
-          </button>
         </div>
 
         <!-- Responders list cards -->
@@ -184,9 +203,9 @@
 
 <script setup>
 /**
- * EmergencyMap.vue (Unified Map Component)
- * Core real-time response map component built with CartoDB Voyager Leaflet Map Engine.
- * Supports Emergency Requests, Donation Events, and Demo Live Simulation Mode.
+ * EmergencyMap.vue (Unified Live Network Map)
+ * Single reusable map component rendering Hospital Emergency Requests, Donation Events, and Live Responders.
+ * All UI labels, tooltips, popups, and legends are strictly in English.
  */
 
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
@@ -211,7 +230,7 @@ const props = defineProps({
   },
   titleText: {
     type: String,
-    default: 'Live Response Map'
+    default: 'Live Response & Events Map'
   }
 })
 
@@ -222,59 +241,29 @@ const { responses: activeResponses, startListening, stopListening } = useActiveR
 const mapElement = ref(null)
 const mapLoading = ref(true)
 const selectedRequestId = ref('')
+const activeLayerFilter = ref('all') // 'all' | 'hospitals' | 'events'
 const activityLogs = ref([])
-const isSimulating = ref(false)
 
 let leafletMap = null
-let simulationInterval = null
 
 // Dictionaries to manage map instances
 const hospitalMarkers = new Map()
 const hospitalCircles = new Map()
+const eventMarkers = new Map()
 const donorMarkers = new Map()
 const donorPolylines = new Map()
-
-// Demo Simulated Responders
-const simulatedDonors = ref([
-  {
-    trackingKey: 'sim_1',
-    donorName: 'Lê Văn Nam (Demo Donor)',
-    bloodType: 'O+',
-    status: 'en-route',
-    distanceMeters: 3800,
-    etaMins: 7,
-    latitude: 10.7600,
-    longitude: 106.6700,
-    targetLat: 10.7548,
-    targetLng: 106.6601,
-    hospitalName: 'Cho Ray Hospital'
-  },
-  {
-    trackingKey: 'sim_2',
-    donorName: 'Trần Thị Mai (Demo Donor)',
-    bloodType: 'A+',
-    status: 'approaching',
-    distanceMeters: 1600,
-    etaMins: 3,
-    latitude: 10.7480,
-    longitude: 106.6500,
-    targetLat: 10.7548,
-    targetLng: 106.6601,
-    hospitalName: 'Cho Ray Hospital'
-  }
-])
 
 const activeRequests = computed(() => {
   return props.emergencyRequests.filter(r => r.status === 'active')
 })
 
+const activeEvents = computed(() => {
+  return props.events || []
+})
+
 const filteredResponders = computed(() => {
-  let list = [...activeResponses.value]
-  if (isSimulating.value) {
-    list = [...list, ...simulatedDonors.value]
-  }
-  if (!selectedRequestId.value) return list
-  return list.filter(r => r.requestId === selectedRequestId.value || r.trackingKey.startsWith('sim_'))
+  if (!selectedRequestId.value) return activeResponses.value
+  return activeResponses.value.filter(r => r.requestId === selectedRequestId.value)
 })
 
 function formatMeters(meters) {
@@ -291,40 +280,6 @@ function truncateText(text, maxLen = 18) {
   if (!text) return ''
   if (text.length <= maxLen) return text
   return text.substring(0, maxLen - 3) + '...'
-}
-
-function toggleDemoSimulation() {
-  isSimulating.value = !isSimulating.value
-  if (isSimulating.value) {
-    logActivity('⚡ Demo Live Simulation active.')
-    startSimulationLoop()
-  } else {
-    stopSimulationLoop()
-    logActivity('Demo Simulation stopped.')
-  }
-}
-
-function startSimulationLoop() {
-  if (simulationInterval) clearInterval(simulationInterval)
-  simulationInterval = setInterval(() => {
-    if (!isSimulating.value) return
-    simulatedDonors.value.forEach(d => {
-      d.latitude = d.latitude + (d.targetLat - d.latitude) * 0.02
-      d.longitude = d.longitude + (d.targetLng - d.longitude) * 0.02
-      d.distanceMeters = Math.max(150, Math.round(d.distanceMeters - 70))
-      d.etaMins = Math.max(1, Math.ceil(d.distanceMeters / 450))
-      if (d.distanceMeters < 1000) d.status = 'approaching'
-    })
-    renderDonorMarkers()
-  }, 1500)
-}
-
-function stopSimulationLoop() {
-  if (simulationInterval) {
-    clearInterval(simulationInterval)
-    simulationInterval = null
-  }
-  renderDonorMarkers()
 }
 
 /**
@@ -365,8 +320,9 @@ function initMapEngine() {
   }
 
   mapLoading.value = false
-  logActivity('Live Response Map Engine active.')
+  logActivity('Live Network Map active.')
   renderHospitalMarkers()
+  renderEventMarkers()
   renderDonorMarkers()
 
   setTimeout(() => {
@@ -382,7 +338,7 @@ function initMapEngine() {
 }
 
 /**
- * Renders Hospital Markers & Radar Circles in Leaflet.
+ * Renders Hospital Emergency Markers & Radar Circles in Leaflet.
  */
 function renderHospitalMarkers() {
   if (!leafletMap) return
@@ -391,6 +347,8 @@ function renderHospitalMarkers() {
   hospitalCircles.forEach(cArray => cArray.forEach(c => leafletMap.removeLayer(c)))
   hospitalMarkers.clear()
   hospitalCircles.clear()
+
+  if (activeLayerFilter.value === 'events') return
 
   const bounds = L.latLngBounds([])
   let count = 0
@@ -426,10 +384,10 @@ function renderHospitalMarkers() {
     marker.bindPopup(`
       <div style="font-family: system-ui, sans-serif; padding: 4px; max-width: 220px;">
         <strong style="color: #8E2435; font-size: 0.9rem;">🏥 ${req.hospitalName}</strong><br>
-        <span style="font-size: 0.78rem;">Blood: <strong style="color: #8E2435;">${req.bloodType}</strong> (${req.urgency})</span><br>
-        <span style="font-size: 0.75rem;">Confirmed: <strong>${req.confirmedCount || 0}/${req.unitsNeeded}</strong></span><br>
+        <span style="font-size: 0.78rem;">Blood Required: <strong style="color: #8E2435;">${req.bloodType}</strong> (${req.urgency})</span><br>
+        <span style="font-size: 0.75rem;">Confirmed: <strong>${req.confirmedCount || 0}/${req.unitsNeeded} units</strong></span><br>
         <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100" style="background-color: #8E2435; font-size: 0.72rem; border-radius: 6px;" onclick="window.handleHospitalPopupRespond('${req.id}')">
-          🩸 Phản ứng khẩn cấp
+          🩸 Confirm Availability
         </button>
       </div>
     `)
@@ -456,6 +414,53 @@ function renderHospitalMarkers() {
   if (count > 0 && !selectedRequestId.value) {
     leafletMap.fitBounds(bounds, { padding: [30, 30] })
   }
+}
+
+/**
+ * Renders Donation Event Markers in Leaflet.
+ */
+function renderEventMarkers() {
+  if (!leafletMap) return
+
+  eventMarkers.forEach(m => leafletMap.removeLayer(m))
+  eventMarkers.clear()
+
+  if (activeLayerFilter.value === 'hospitals') return
+
+  activeEvents.value.forEach((ev) => {
+    const coords = (ev.latitude && ev.longitude)
+      ? { lat: ev.latitude, lng: ev.longitude }
+      : getHospitalCoordinates(ev.location || ev.title, ev.city)
+
+    const pos = [coords.lat, coords.lng]
+
+    const icon = L.divIcon({
+      className: 'll-event-leaflet-icon',
+      html: `
+        <div style="position: relative; width: 30px; height: 36px; filter: drop-shadow(0 3px 6px rgba(13,110,253,0.35)); cursor: pointer;">
+          <svg width="30" height="36" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z" fill="#0D6EFD"/>
+            <circle cx="16" cy="15" r="9" fill="#ffffff"/>
+            <path d="M16 10C14.5 10 13 11.2 13 12.8C13 15 16 18 16 18C16 18 19 15 19 12.8C19 11.2 17.5 10 16 10Z" fill="#0D6EFD"/>
+          </svg>
+        </div>
+      `,
+      iconSize: [30, 36],
+      iconAnchor: [15, 36]
+    })
+
+    const marker = L.marker(pos, { icon }).addTo(leafletMap)
+    marker.bindPopup(`
+      <div style="font-family: system-ui, sans-serif; padding: 4px; max-width: 220px;">
+        <strong style="color: #0D6EFD; font-size: 0.88rem;">📅 ${ev.title}</strong><br>
+        <span style="font-size: 0.76rem; color: #555;">Category: <strong>${ev.category || 'Drive'}</strong></span><br>
+        <span style="font-size: 0.75rem; color: #555;">Location: ${ev.location || ev.city}</span><br>
+        <span style="font-size: 0.75rem; color: #0D6EFD; font-weight: bold;">Date: ${ev.date || 'Upcoming'}</span>
+      </div>
+    `)
+
+    eventMarkers.set('ev_' + ev.id, marker)
+  })
 }
 
 /**
@@ -494,11 +499,11 @@ function renderDonorMarkers() {
       const icon = L.divIcon({
         className: 'll-donor-leaflet-icon',
         html: `
-          <div style="position: relative; width: 30px; height: 36px; filter: drop-shadow(0 3px 6px rgba(13,110,253,0.35)); cursor: pointer;">
+          <div style="position: relative; width: 30px; height: 36px; filter: drop-shadow(0 3px 6px rgba(25,135,84,0.4)); cursor: pointer;">
             <svg width="30" height="36" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z" fill="#0D6EFD"/>
+              <path d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z" fill="#198754"/>
               <circle cx="16" cy="15" r="9" fill="#ffffff"/>
-              <path d="M11 17.5C10.5 17.5 10.1 17.1 10.1 16.6V15.3C10.1 14.8 10.4 14.3 10.8 14.1L13 13C13.5 12.7 14.2 12.5 14.8 12.5H17.2C17.8 12.5 18.5 12.7 19 13L21.2 14.1C21.6 14.3 21.9 14.8 21.9 15.3V16.6C21.9 17.1 21.5 17.5 21 17.5H11Z" fill="#0D6EFD"/>
+              <path d="M11 17.5C10.5 17.5 10.1 17.1 10.1 16.6V15.3C10.1 14.8 10.4 14.3 10.8 14.1L13 13C13.5 12.7 14.2 12.5 14.8 12.5H17.2C17.8 12.5 18.5 12.7 19 13L21.2 14.1C21.6 14.3 21.9 14.8 21.9 15.3V16.6C21.9 17.1 21.5 17.5 21 17.5H11Z" fill="#198754"/>
             </svg>
           </div>
         `,
@@ -518,7 +523,7 @@ function renderDonorMarkers() {
 
       if (resp.hospitalLat && resp.hospitalLng) {
         const poly = L.polyline([pos, [resp.hospitalLat, resp.hospitalLng]], {
-          color: '#0d6efd',
+          color: '#198754',
           dashArray: '5, 10',
           weight: 3
         }).addTo(leafletMap)
@@ -530,13 +535,22 @@ function renderDonorMarkers() {
 
 function centerMapOnSelected() {
   if (selectedRequestId.value) {
-    const req = activeRequests.value.find(r => r.id === selectedRequestId.value)
-    if (req) {
-      const coords = (req.latitude && req.longitude)
-        ? { lat: req.latitude, lng: req.longitude }
-        : getHospitalCoordinates(req.hospitalName, req.city)
-
-      if (leafletMap) {
+    if (selectedRequestId.value.startsWith('ev_')) {
+      const ev = activeEvents.value.find(e => 'ev_' + e.id === selectedRequestId.value)
+      if (ev && leafletMap) {
+        const coords = (ev.latitude && ev.longitude)
+          ? { lat: ev.latitude, lng: ev.longitude }
+          : getHospitalCoordinates(ev.location || ev.title, ev.city)
+        leafletMap.setView([coords.lat, coords.lng], 14)
+        const m = eventMarkers.get(selectedRequestId.value)
+        if (m) m.openPopup()
+      }
+    } else {
+      const req = activeRequests.value.find(r => r.id === selectedRequestId.value)
+      if (req && leafletMap) {
+        const coords = (req.latitude && req.longitude)
+          ? { lat: req.latitude, lng: req.longitude }
+          : getHospitalCoordinates(req.hospitalName, req.city)
         leafletMap.setView([coords.lat, coords.lng], 14)
         const marker = hospitalMarkers.get(selectedRequestId.value)
         if (marker) marker.openPopup()
@@ -544,6 +558,7 @@ function centerMapOnSelected() {
     }
   } else {
     renderHospitalMarkers()
+    renderEventMarkers()
   }
 }
 
@@ -566,6 +581,7 @@ function refreshMapSize() {
       if (leafletMap) {
         leafletMap.invalidateSize(true)
         renderHospitalMarkers()
+        renderEventMarkers()
         renderDonorMarkers()
       }
     }, 50)
@@ -581,12 +597,21 @@ watch(activeRequests, () => {
   renderHospitalMarkers()
 }, { deep: true })
 
+watch(activeEvents, () => {
+  renderEventMarkers()
+}, { deep: true })
+
 watch(filteredResponders, () => {
   renderDonorMarkers()
 }, { deep: true })
 
 watch(selectedRequestId, () => {
   centerMapOnSelected()
+})
+
+watch(activeLayerFilter, () => {
+  renderHospitalMarkers()
+  renderEventMarkers()
 })
 
 watch(() => props.isVisible, (visible) => {
@@ -602,7 +627,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   stopListening()
-  stopSimulationLoop()
   if (leafletMap) {
     try {
       leafletMap.remove()
@@ -615,8 +639,7 @@ onUnmounted(() => {
 
 defineExpose({
   focusRequest,
-  centerMapOnSelected,
-  toggleDemoSimulation
+  centerMapOnSelected
 })
 </script>
 

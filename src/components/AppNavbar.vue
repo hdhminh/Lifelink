@@ -23,8 +23,12 @@
             <RouterLink class="nav-link" to="/emergency-board"><i class="bi bi-hospital me-1"></i> Emergency Board</RouterLink>
           </li>
           <li class="nav-item">
+            <RouterLink class="nav-link" to="/map"><i class="bi bi-geo-alt-fill me-1"></i> Live Map</RouterLink>
+          </li>
+          <li class="nav-item">
             <RouterLink class="nav-link" to="/events"><i class="bi bi-calendar-event me-1"></i> Events</RouterLink>
           </li>
+
           <li class="nav-item" v-if="!user">
             <RouterLink class="nav-link" to="/news"><i class="bi bi-newspaper me-1"></i> News</RouterLink>
           </li>

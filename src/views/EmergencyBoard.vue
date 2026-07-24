@@ -11,26 +11,10 @@
       </div>
 
       <div class="d-flex align-items-center gap-2">
-        <div class="ll-view-switch p-1 rounded-pill bg-white border border-slate-200 shadow-xs d-inline-flex align-items-center">
-          <button
-            type="button"
-            :class="['btn btn-sm rounded-pill px-3 py-1 font-weight-700 border-0', viewMode === 'board' ? 'll-btn-wine-active' : 'text-slate-600']"
-            @click="setMode('board')"
-          >
-            <i class="bi bi-grid-fill me-1"></i> Board View
-          </button>
-          <button
-            type="button"
-            :class="['btn btn-sm rounded-pill px-3 py-1 font-weight-700 border-0', viewMode === 'map' ? 'll-btn-wine-active' : 'text-slate-600']"
-            @click="setMode('map')"
-          >
-            <i class="bi bi-geo-alt-fill me-1"></i> Live Map
-          </button>
-
-        </div>
         <button v-if="isAdmin" class="ll-btn-primary" type="button" @click="openCreateForm"><i class="bi bi-plus-lg me-1"></i> New Request</button>
       </div>
     </div>
+
 
 
 
@@ -107,21 +91,12 @@
     <AlertMessage v-else-if="error" type="danger" :message="error" :dismissible="false" />
     
     <div v-else>
-      <!-- Live Response Map View -->
-      <div v-show="viewMode === 'map'" class="mb-5">
-        <EmergencyMap
-          ref="mapComponentRef"
-          :emergency-requests="requests"
-          :is-visible="viewMode === 'map'"
-          @respond="handleConfirm"
-        />
-      </div>
-
       <!-- Board Grid View -->
-      <div v-show="viewMode === 'board'" class="row g-4">
+      <div class="row g-4">
 
       <!-- Left Column: Live requests grid -->
       <div class="col-lg-8 col-12">
+
         <div v-if="filteredRequests.length === 0" class="ll-empty-state">
           <div class="ll-empty-state__icon"><i class="bi bi-droplet-fill text-danger"></i></div>
           <div class="ll-empty-state__title">No active emergency requests</div>
@@ -418,14 +393,9 @@ function setMode(mode) {
 const mapComponentRef = ref(null)
 
 function handleFocusMap(requestId) {
-  viewMode.value = 'map'
-  nextTick(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-    if (mapComponentRef.value) {
-      mapComponentRef.value.focusRequest(requestId)
-    }
-  })
+  router.push({ path: '/map', query: { request: requestId } })
 }
+
 
 const confirmedRequestIds = ref([])
 

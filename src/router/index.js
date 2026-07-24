@@ -31,6 +31,8 @@ const DonationEvents = () => import('@/views/DonationEvents.vue')
 const AdminRequests = () => import('@/views/AdminRequests.vue')
 const Profile = () => import('@/views/Profile.vue')
 
+const LiveNetworkMap = () => import('@/views/LiveNetworkMap.vue')
+
 const routes = [
   { path: '/', name: 'Home', component: Home, meta: { title: 'LifeLink - Connected Lives Vietnam' } },
   { path: '/news', name: 'News', component: News, meta: { title: 'LifeLink - Blood Donation News' } },
@@ -52,11 +54,11 @@ const routes = [
   },
   {
     path: '/map',
-    name: 'NetworkMap',
-    component: EmergencyBoard,
-    props: { defaultView: 'map' },
+    name: 'LiveNetworkMap',
+    component: LiveNetworkMap,
     meta: { title: 'LifeLink - Live Network Map' }
   },
+
 
   {
     path: '/profile',

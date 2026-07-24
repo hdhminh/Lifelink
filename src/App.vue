@@ -1,5 +1,6 @@
 <template>
   <div id="app" class="ll-app-shell">
+    <AppLoader />
     <div class="ll-ambient-blob ll-ambient-blob-1" aria-hidden="true"></div>
     <div class="ll-ambient-blob ll-ambient-blob-2" aria-hidden="true"></div>
     <AppNavbar />

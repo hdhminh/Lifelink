@@ -6,7 +6,9 @@
         <div class="row">
           <div class="col-lg-9 col-12">
             <span ref="heroBadge" class="ll-badge-hero mb-3 text-uppercase font-weight-700" style="opacity: 0">Connecting Lives Vietnam</span>
-            <h1 ref="heroTitle" class="display-3 fw-bold mb-3 ll-hero-title" style="opacity: 0">LifeLink</h1>
+            <h1 ref="heroTitle" class="display-3 fw-bold mb-3 ll-hero-title d-flex flex-wrap" style="opacity: 0">
+              <span v-for="(char, idx) in 'LifeLink'.split('')" :key="idx" class="ll-gsap-char" :style="char === 'L' && idx > 0 ? 'color: #FF4D6D;' : ''">{{ char }}</span>
+            </h1>
             <p ref="heroText" class="lead mb-4 text-white-80" style="max-width: 620px; opacity: 0">
               Connecting voluntary blood donors with hospitals in real-time. Every donation saves a life when seconds count.
             </p>
@@ -245,9 +247,10 @@
 /**
  * Home.vue
  * Overhauled Stage 1 landing page matching the custom Wine Red & Beige minimal aesthetic.
+ * Enhanced with GSAP 3.15 character split-text animations, counter tweens, and 3D magnetic card tilt.
  */
 import { onMounted, ref } from 'vue'
-import { animate, stagger } from 'motion'
+import gsap from 'gsap'
 import { useAuth } from '@/composables/useAuth.js'
 
 const { user } = useAuth()
@@ -284,32 +287,80 @@ onMounted(() => {
     return
   }
   
-  // Stagger entry for Hero
-  animate(
-    [heroBadge.value, heroTitle.value, heroText.value, heroButtons.value].filter(Boolean),
-    { opacity: [0, 1], y: [16, 0] },
-    { delay: stagger(0.08), duration: 0.5, easing: [0.23, 1, 0.32, 1] }
-  )
-  
-  // Intersection Observer for Stats
+  // 1. GSAP Hero Sequence Timeline + Character Split-Text Animation (Inspired by GSAP Showcase)
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
+
+  if (heroBadge.value) {
+    tl.fromTo(heroBadge.value, { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.7, ease: 'back.out(1.7)' })
+  }
+
+  if (heroTitle.value) {
+    heroTitle.value.style.opacity = '1'
+    const chars = heroTitle.value.querySelectorAll('.ll-gsap-char')
+    if (chars.length) {
+      tl.fromTo(chars, 
+        { opacity: 0, y: 24, rotationX: 45, scale: 0.8 }, 
+        { opacity: 1, y: 0, rotationX: 0, scale: 1, duration: 0.6, stagger: 0.05, ease: 'back.out(1.8)' }, 
+        '-=0.4'
+      )
+    }
+  }
+
+  if (heroText.value) {
+    tl.fromTo(heroText.value, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.7 }, '-=0.3')
+  }
+
+  if (heroButtons.value) {
+    tl.fromTo(heroButtons.value, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.7 }, '-=0.5')
+  }
+
+  // 2. GSAP Floating Ambient Blobs Animation
+  gsap.to('.ll-ambient-blob-1', {
+    y: 20,
+    x: 10,
+    duration: 6,
+    repeat: -1,
+    yoyo: true,
+    ease: 'sine.inOut'
+  })
+
+  gsap.to('.ll-ambient-blob-2', {
+    y: -15,
+    x: -12,
+    duration: 7,
+    repeat: -1,
+    yoyo: true,
+    ease: 'sine.inOut'
+  })
+
+  // 3. GSAP Animated Counter Numbers for Stats
   const statsObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
-        animate(0, 12486, {
-          duration: 1.2,
-          easing: "ease-out",
-          onUpdate: (latest) => { donorCount.value = Math.floor(latest) }
+        const dummyDonor = { val: 0 }
+        gsap.to(dummyDonor, {
+          val: 12486,
+          duration: 1.6,
+          ease: 'power2.out',
+          onUpdate: () => { donorCount.value = Math.floor(dummyDonor.val) }
         })
-        animate(0, 48, {
-          duration: 1.0,
-          easing: "ease-out",
-          onUpdate: (latest) => { partnerCount.value = Math.floor(latest) }
+
+        const dummyPartner = { val: 0 }
+        gsap.to(dummyPartner, {
+          val: 48,
+          duration: 1.4,
+          ease: 'power2.out',
+          onUpdate: () => { partnerCount.value = Math.floor(dummyPartner.val) }
         })
-        animate(0, 98, {
-          duration: 0.8,
-          easing: "ease-out",
-          onUpdate: (latest) => { resolveRate.value = Math.floor(latest) }
+
+        const dummyResolve = { val: 0 }
+        gsap.to(dummyResolve, {
+          val: 98.4,
+          duration: 1.5,
+          ease: 'power2.out',
+          onUpdate: () => { resolveRate.value = Number(dummyResolve.val.toFixed(1)) }
         })
+
         statsObserver.unobserve(entry.target)
       }
     })
@@ -319,15 +370,14 @@ onMounted(() => {
     statsObserver.observe(statsContainer.value)
   }
 
-  // Intersection Observer for Timeline
+  // 4. GSAP Stagger Entrance for Timeline Steps
   const timelineObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         const stepItems = entry.target.querySelectorAll('.ll-vertical-step-item')
-        animate(
-          stepItems,
-          { opacity: [0, 1], x: [-16, 0] },
-          { delay: stagger(0.12), duration: 0.5, easing: [0.23, 1, 0.32, 1] }
+        gsap.fromTo(stepItems, 
+          { opacity: 0, x: -20 },
+          { opacity: 1, x: 0, duration: 0.6, stagger: 0.12, ease: 'power2.out' }
         )
         timelineObserver.unobserve(entry.target)
       }
@@ -338,15 +388,14 @@ onMounted(() => {
     timelineObserver.observe(timelineContainer.value)
   }
 
-  // Intersection Observer for Features
+  // 5. GSAP Stagger Entrance for Features Grid
   const featuresObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         const featureCards = entry.target.querySelectorAll('.ll-feature-card')
-        animate(
-          featureCards,
-          { opacity: [0, 1], y: [24, 0] },
-          { delay: stagger(0.1), duration: 0.6, easing: [0.23, 1, 0.32, 1] }
+        gsap.fromTo(featureCards,
+          { opacity: 0, y: 24 },
+          { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: 'power2.out' }
         )
         featuresObserver.unobserve(entry.target)
       }

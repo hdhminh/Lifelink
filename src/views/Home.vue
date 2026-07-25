@@ -5,21 +5,17 @@
       <div class="container py-5 px-lg-4 position-relative z-index-2 text-white text-shadow-sm text-start">
         <div class="row">
           <div class="col-lg-9 col-12">
-            <span ref="heroBadge" class="ll-badge-hero mb-3 text-uppercase font-weight-700">Connecting Lives Vietnam</span>
-            <h1 ref="heroTitle" class="display-3 fw-bold mb-3 ll-hero-title">LifeLink</h1>
+            <span ref="heroBadge" class="ll-badge-hero mb-3 text-uppercase">Connecting Lives Vietnam</span>
+            <h1 ref="heroTitle" class="display-3 fw-bold mb-3 ll-hero-title">Life<span class="ll-title-accent">Link</span></h1>
             <p ref="heroText" class="lead mb-4 text-white-80" style="max-width: 620px;">
               Connecting voluntary blood donors with hospitals in real-time. Every donation saves a life when seconds count.
             </p>
             <div ref="heroButtons" class="d-flex flex-wrap gap-3">
-              <RouterLink to="/emergency-board" class="ll-btn-primary ll-btn-lg text-decoration-none">
+              <RouterLink to="/emergency-board" class="ll-btn-primary ll-btn-lg ll-btn-hero text-decoration-none">
                 <i class="bi bi-hospital me-2"></i> Browse Board
               </RouterLink>
-              <RouterLink
-                v-if="!user"
-                to="/register"
-                class="ll-btn-secondary ll-btn-lg text-decoration-none"
-              >
-                <i class="bi bi-person-plus me-2"></i> Join as Donor
+              <RouterLink to="/map" class="ll-btn-secondary ll-btn-lg ll-btn-hero text-decoration-none">
+                <i class="bi bi-geo-alt-fill me-2"></i> View Live Map
               </RouterLink>
             </div>
           </div>
@@ -270,7 +266,7 @@ const statsContainer = ref(null)
 const timelineContainer = ref(null)
 const featuresContainer = ref(null)
 
-const runAnimations = () => {
+const executeAnimations = () => {
   const prefersReduced = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false
 
   donorCount.value = 12486
@@ -279,16 +275,22 @@ const runAnimations = () => {
 
   if (prefersReduced) return
 
-  // 1. GSAP Hero Sequence Timeline (Non-destructive gsap.from)
+  // 1. GSAP Hero Sequence Timeline (Robust gsap.fromTo with clearProps)
   const heroElements = [heroBadge.value, heroTitle.value, heroText.value, heroButtons.value].filter(Boolean)
   if (heroElements.length) {
-    gsap.from(heroElements, {
-      opacity: 0,
-      y: 20,
-      duration: 0.7,
-      stagger: 0.1,
-      ease: 'power3.out'
-    })
+    gsap.killTweensOf(heroElements)
+    gsap.fromTo(
+      heroElements,
+      { opacity: 0, y: 20 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.7,
+        stagger: 0.1,
+        ease: 'power3.out',
+        clearProps: 'opacity,transform'
+      }
+    )
   }
 
   // 2. GSAP Floating Ambient Blobs Animation
@@ -348,6 +350,20 @@ const runAnimations = () => {
   }
 }
 
+const runAnimations = () => {
+  const isLoaderActive = typeof document !== 'undefined' && !!document.querySelector('.ll-global-loader-overlay')
+  if (isLoaderActive) {
+    donorCount.value = 0
+    partnerCount.value = 0
+    resolveRate.value = 0
+    setTimeout(() => {
+      executeAnimations()
+    }, 1300)
+  } else {
+    executeAnimations()
+  }
+}
+
 onMounted(() => {
   if (typeof window !== 'undefined') {
     window.scrollTo(0, 0)
@@ -404,6 +420,25 @@ onActivated(() => {
 
 .text-shadow-sm {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.ll-title-accent {
+  color: #8E2435;
+}
+
+.ll-btn-hero {
+  min-width: 200px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+@media (max-width: 576px) {
+  .ll-btn-hero {
+    width: 100%;
+    min-width: unset;
+  }
 }
 
 /* Light badge-led page background tint */

@@ -1049,25 +1049,37 @@ textarea {
 .ll-urgency-moderate { background-color: var(--ll-moderate-bg) !important; color: var(--ll-moderate-text) !important; border: 1px solid rgba(84, 122, 107, 0.2); }
 
 /* Form Fields */
-.ll-form-group { margin-bottom: 1.5rem; }
-.ll-form-group label {
+.ll-form-group { 
+  margin-bottom: 1.25rem; 
+  text-align: left;
+}
+.ll-form-group label,
+.form-label {
   display: block;
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--ll-slate-900);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
+  line-height: 1.4;
+  text-align: left;
 }
 
 .form-control,
 .form-select {
+  display: block !important;
+  width: 100% !important;
+  height: 46px !important;
+  line-height: 1.5 !important;
   border: 1px solid var(--ll-slate-200) !important;
   border-radius: var(--ll-radius-md) !important;
   color: var(--ll-slate-900) !important;
   font-size: 0.95rem !important;
-  padding: 0.65rem 1rem !important;
+  padding: 0.6rem 1rem !important;
   background-color: var(--ll-surface) !important;
   transition: all var(--ll-transition-fast) !important;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+  box-sizing: border-box !important;
+  vertical-align: middle !important;
 }
 
 .form-control:focus,

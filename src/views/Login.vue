@@ -1,19 +1,29 @@
 <template>
   <div class="ll-auth-page">
-    <form ref="loginCard" class="ll-auth-card" style="opacity: 0" @submit.prevent="handleLogin" novalidate>
+    <form ref="loginCard" class="ll-auth-card" @submit.prevent="handleLogin" novalidate>
       <div class="ll-auth-card__logo">
         <h2>LifeLink Login</h2>
         <p class="ll-text-meta mb-0">Access your donor dashboard and emergency board.</p>
       </div>
 
       <div class="ll-form-group">
-        <label for="login-email">Email</label>
-        <input id="login-email" v-model.trim="formEmail" class="form-control" :class="{ 'is-invalid': errors.email }" type="email" autocomplete="email">
+        <label for="login-email" class="form-label">Email</label>
+        <div class="position-relative">
+          <input 
+            id="login-email" 
+            v-model.trim="formEmail" 
+            class="form-control" 
+            :class="{ 'is-invalid': errors.email }" 
+            type="email" 
+            placeholder="Enter your email"
+            autocomplete="email"
+          >
+        </div>
         <div v-if="errors.email" class="invalid-feedback d-block">{{ errors.email }}</div>
       </div>
 
       <div class="ll-form-group">
-        <label for="login-password">Password</label>
+        <label for="login-password" class="form-label">Password</label>
         <div class="position-relative">
           <input 
             id="login-password" 
@@ -21,6 +31,7 @@
             class="form-control pe-5" 
             :class="{ 'is-invalid': errors.password }" 
             :type="showPassword ? 'text' : 'password'" 
+            placeholder="Enter your password"
             autocomplete="current-password"
           >
           <button 
@@ -35,7 +46,7 @@
         <div v-if="errors.password" class="invalid-feedback d-block">{{ errors.password }}</div>
       </div>
 
-      <button class="ll-btn-primary ll-btn-block" type="submit" :disabled="isLoading">
+      <button class="ll-btn-primary ll-btn-block mt-3" type="submit" :disabled="isLoading">
         {{ isLoading ? 'Logging in...' : 'Login' }}
       </button>
 
@@ -56,47 +67,50 @@ import { reactive, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth.js'
 import { useToast } from '@/composables/useToast.js'
-import { animate } from 'motion'
-
-const loginCard = ref(null)
-
-onMounted(() => {
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    animate(
-      loginCard.value,
-      { opacity: [0, 1], y: [24, 0] },
-      { duration: 0.5, easing: [0.23, 1, 0.32, 1] }
-    )
-  } else {
-    loginCard.value.style.opacity = '1'
-  }
-})
 
 const { login } = useAuth()
+const { showToast } = useToast()
 const router = useRouter()
 const route = useRoute()
-const { showToast } = useToast()
 
+const loginCard = ref(null)
 const formEmail = ref('')
 const formPassword = ref('')
 const showPassword = ref(false)
-const errors = reactive({})
 const isLoading = ref(false)
 
+const errors = reactive({
+  email: '',
+  password: ''
+})
+
 /**
- * Validates login fields before calling Firebase.
- * @returns {boolean} Whether the login form is valid.
+ * Validates form inputs before submitting.
+ * @returns {boolean} True if all fields are valid.
  */
 function validateForm() {
-  Object.keys(errors).forEach(key => delete errors[key])
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailPattern.test(formEmail.value)) errors.email = 'Please enter a valid email address.'
-  if (!formPassword.value) errors.password = 'Password is required.'
-  return Object.keys(errors).length === 0
+  errors.email = ''
+  errors.password = ''
+  let isValid = true
+
+  if (!formEmail.value) {
+    errors.email = 'Email address is required.'
+    isValid = false
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formEmail.value)) {
+    errors.email = 'Please enter a valid email address.'
+    isValid = false
+  }
+
+  if (!formPassword.value) {
+    errors.password = 'Password is required.'
+    isValid = false
+  }
+
+  return isValid
 }
 
 /**
- * Maps Firebase auth error codes to readable messages.
+ * Maps Firebase auth error codes to user-friendly Vietnamese/English messages.
  * @param {string} code - Firebase error code.
  * @returns {string} Friendly error message.
  */

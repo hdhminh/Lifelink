@@ -20,7 +20,7 @@
         <div class="d-flex flex-wrap gap-4">
           <RouterLink to="/emergency-board" class="text-decoration-none ll-footer-link">Emergency</RouterLink>
           <RouterLink to="/events" class="text-decoration-none ll-footer-link">Events</RouterLink>
-          <RouterLink to="/map" class="text-decoration-none ll-footer-link">Live Map</RouterLink>
+          <RouterLink to="/map" class="text-decoration-none ll-footer-link">Map</RouterLink>
           <RouterLink to="/news" class="text-decoration-none ll-footer-link">News</RouterLink>
           <RouterLink to="/about" class="text-decoration-none ll-footer-link">About</RouterLink>
         </div>

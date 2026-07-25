@@ -29,8 +29,6 @@
             <RouterLink class="nav-link" to="/map"><i class="bi bi-geo-alt-fill me-1"></i> Map</RouterLink>
           </li>
 
-
-
           <li class="nav-item" v-if="!user">
             <RouterLink class="nav-link" to="/news"><i class="bi bi-newspaper me-1"></i> News</RouterLink>
           </li>
@@ -117,10 +115,9 @@ async function handleLogout() {
     width: 100%;
     text-align: center;
     margin-left: 0 !important;
-    padding: 0.6rem 1rem !important; /* Make buttons taller and easier to tap on mobile */
+    padding: 0.6rem 1rem !important;
   }
   
-  /* Custom collapse slide-down animation */
   .navbar-collapse {
     max-height: 0;
     opacity: 0;

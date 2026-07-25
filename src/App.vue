@@ -726,7 +726,7 @@ textarea {
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden;
+  overflow-x: clip;
 }
 
 .ll-ambient-blob {
@@ -780,12 +780,15 @@ textarea {
 
 /* Sticky Navbar Glassmorphism */
 .ll-navbar {
-  background-color: rgba(43, 34, 37, 0.96) !important;
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: sticky !important;
+  top: 0 !important;
+  background-color: rgba(33, 24, 27, 0.94) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   min-height: 64px;
-  box-shadow: var(--ll-shadow-sm);
-  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18) !important;
+  z-index: 1050 !important;
   transition: background-color var(--ll-transition);
 }
 

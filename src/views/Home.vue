@@ -387,11 +387,11 @@ onActivated(() => {
 /* Premium Image Background Hero with downward curve border-radius */
 .ll-hero-premium {
   position: relative;
-  min-height: 480px;
+  min-height: clamp(520px, 65vh, 620px);
   display: flex;
   align-items: center;
   overflow: hidden;
-  padding: 6rem 0 8rem 0;
+  padding: 4.5rem 0 7.5rem 0;
   background-image: linear-gradient(rgba(43, 34, 37, 0.72), rgba(43, 34, 37, 0.72)), url('/images/hero-blood-donation.jpg');
   background-size: cover;
   background-position: center;
@@ -405,6 +405,20 @@ onActivated(() => {
     border-bottom-left-radius: 50% 80px;
     border-bottom-right-radius: 50% 80px;
   }
+}
+
+.ll-badge-hero {
+  display: inline-block;
+  padding: 0.35rem 1rem;
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 99px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.05em;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .ll-hero-title {
@@ -448,7 +462,7 @@ onActivated(() => {
   padding: 2rem 0 6rem 0;
 }
 
-/* Stats Row Overlapping curved bottom of hero */
+/* Stats Row Overlapping straight bottom of hero */
 .ll-stats-overlap-container {
   margin-top: -70px;
   position: relative;

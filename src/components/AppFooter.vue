@@ -46,12 +46,12 @@
   font-family: 'Outfit', sans-serif;
   font-weight: 800;
   font-size: 1.25rem;
-  color: #F87171;
+  color: #FFFFFF;
   letter-spacing: -0.02em;
   transition: opacity var(--ll-transition-fast);
 }
 .ll-footer__brand:hover {
-  color: #F87171;
+  color: #FFFFFF;
   opacity: 0.85;
 }
 .ll-footer__copy {

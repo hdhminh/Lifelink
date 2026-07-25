@@ -1,8 +1,6 @@
 {
   "rules": {
     "liveTracking": {
-      // For demo purposes, we restrict read to authenticated users. 
-      // In production with custom claims, use: ".read": "auth.token.role === 'admin'"
       ".read": "auth != null",
       ".write": false,
       "$trackingId": {

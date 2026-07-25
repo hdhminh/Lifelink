@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { HOSPITAL_DATABASE } from '../src/data/hospitalCoordinates.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -36,34 +37,39 @@ function getRandomName() {
 // Cities and centers
 // 50% HCMC, 30% Hanoi, 10% Da Nang, 10% Can Tho
 const CITIES = [
-  { name: 'Ho Chi Minh City', lat: 10.7769, lng: 106.7009, weight: 50, spread: 0.1 }, // spread in degrees (approx 11km)
-  { name: 'Hanoi', lat: 21.0285, lng: 105.8542, weight: 30, spread: 0.08 },
-  { name: 'Da Nang', lat: 16.0544, lng: 108.2022, weight: 10, spread: 0.05 },
-  { name: 'Can Tho', lat: 10.0452, lng: 105.7469, weight: 10, spread: 0.05 }
+  { name: 'Ho Chi Minh City', weight: 50 },
+  { name: 'Ha Noi', weight: 30 },
+  { name: 'Da Nang', weight: 10 },
+  { name: 'Can Tho', weight: 10 }
 ]
 
 function getRandomLocation() {
   const rand = Math.random() * 100
   let sum = 0
-  let selectedCity = CITIES[0]
+  let selectedCityName = 'Ho Chi Minh City'
   for (const city of CITIES) {
     sum += city.weight
     if (rand <= sum) {
-      selectedCity = city
+      selectedCityName = city.name
       break
     }
   }
 
-  // Add random spread (roughly a circle)
+  const cityHospitals = HOSPITAL_DATABASE.filter(h => h.city === selectedCityName)
+  const baseHospital = cityHospitals.length > 0 
+    ? cityHospitals[Math.floor(Math.random() * cityHospitals.length)]
+    : HOSPITAL_DATABASE[0]
+
+  // Add small random spread (max 0.015 degrees ~ 1.5km) to stay on land
   const angle = Math.random() * Math.PI * 2
-  const distance = Math.random() * selectedCity.spread
+  const distance = Math.random() * 0.015
   const latOffset = Math.sin(angle) * distance
   const lngOffset = Math.cos(angle) * distance
 
   return {
-    city: selectedCity.name,
-    lat: selectedCity.lat + latOffset,
-    lng: selectedCity.lng + lngOffset
+    city: selectedCityName === 'Ha Noi' ? 'Hanoi' : selectedCityName,
+    lat: baseHospital.lat + latOffset,
+    lng: baseHospital.lng + lngOffset
   }
 }
 

@@ -1,14 +1,17 @@
 <template>
   <div class="ll-page-container">
     <div class="ll-section-header">
-      <div class="d-flex flex-wrap align-items-center gap-3">
-        <h1 class="ll-section-title"><i class="bi bi-exclamation-triangle-fill me-2" style="color: #8E2435;"></i> Emergency Requests</h1>
+      <div>
+        <div class="d-flex flex-wrap align-items-center gap-3 mb-1">
+          <h1 class="ll-section-title mb-0"><i class="bi bi-exclamation-triangle-fill me-2" style="color: #8E2435;"></i> Emergency Requests</h1>
 
-        <span class="ll-live-badge">
-          <span class="ll-live-dot" aria-hidden="true"></span>
-          LIVE
-        </span>
-        <span class="ll-text-meta">{{ filteredRequests.length }} active requests</span>
+          <span class="ll-live-badge">
+            <span class="ll-live-dot" aria-hidden="true"></span>
+            LIVE
+          </span>
+          <span class="ll-text-meta">{{ filteredRequests.length }} active requests</span>
+        </div>
+        <p class="ll-text-meta mb-0 mt-1">Browse and respond to urgent real-time blood donation needs.</p>
       </div>
 
       <div class="d-flex align-items-center gap-2">

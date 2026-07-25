@@ -384,7 +384,53 @@ function getTrafficDensityInfo() {
 }
 
 /**
+ * Intermediate coastal highway waypoints along Vietnam's S-shape National Highway 1A / North-South Expressway.
+ * Used to force OSRM routing to stay 100% inside Vietnam territory when routing across regions (e.g. HCMC to Hanoi).
+ */
+const VIETNAM_COASTAL_WAYPOINTS = [
+  { name: 'Phan Thiet', lat: 10.9333, lng: 108.1000 },
+  { name: 'Nha Trang', lat: 12.2451, lng: 109.1943 },
+  { name: 'Quy Nhon', lat: 13.7820, lng: 109.2194 },
+  { name: 'Quang Ngai', lat: 15.1205, lng: 108.7924 },
+  { name: 'Da Nang', lat: 16.0544, lng: 108.2022 },
+  { name: 'Hue', lat: 16.4637, lng: 107.5909 },
+  { name: 'Dong Hoi', lat: 17.4764, lng: 106.6020 },
+  { name: 'Vinh', lat: 18.6734, lng: 105.6813 },
+  { name: 'Thanh Hoa', lat: 19.8067, lng: 105.7851 },
+  { name: 'Ninh Binh', lat: 20.2539, lng: 105.9750 }
+]
+
+/**
+ * Builds intermediate Vietnam highway waypoints for long-distance routes between start and target coordinates.
+ */
+function getVietnamDomesticWaypoints(startLat, startLng, targetLat, targetLng) {
+  const minLat = Math.min(startLat, targetLat)
+  const maxLat = Math.max(startLat, targetLat)
+  
+  // Find all Vietnam coastal highway cities between start and target latitudes
+  let waypoints = VIETNAM_COASTAL_WAYPOINTS.filter(
+    w => w.lat > minLat + 0.5 && w.lat < maxLat - 0.5
+  )
+
+  // If going South to North, sort ascending latitude; if North to South, sort descending
+  if (startLat < targetLat) {
+    waypoints.sort((a, b) => a.lat - b.lat)
+  } else {
+    waypoints.sort((a, b) => b.lat - a.lat)
+  }
+
+  // Cap to max 3 waypoints for clean OSRM request
+  if (waypoints.length > 3) {
+    const step = Math.floor(waypoints.length / 3)
+    waypoints = [waypoints[0], waypoints[step], waypoints[waypoints.length - 1]]
+  }
+
+  return waypoints
+}
+
+/**
  * Updates or clears the road route polylines connecting user location to target destination using OSRM Multi-Route API.
+ * Uses domestic Vietnam coastal highway waypoints (National Highway 1A) to ensure 100% of route coordinates stay inside Vietnam.
  */
 async function updateMeasurementPolyline(targetLat, targetLng, color = '#8E2435') {
   if (!leafletMap) return
@@ -398,11 +444,33 @@ async function updateMeasurementPolyline(targetLat, targetLng, color = '#8E2435'
 
   if (!userLocation.value || !targetLat || !targetLng) return
 
-  const userPos = [userLocation.value.lat, userLocation.value.lng]
-  const targetPos = [Number(targetLat), Number(targetLng)]
+  const startLat = userLocation.value.lat
+  const startLng = userLocation.value.lng
+  const endLat = Number(targetLat)
+  const endLng = Number(targetLng)
 
-  // Render initial fallback line
-  measurementPolyline = L.polyline([userPos, targetPos], {
+  const directMeters = calculateRoadDistance(startLat, startLng, endLat, endLng)
+  const isLongDistance = directMeters > 100000 // > 100 km
+
+  // Build OSRM query coordinates string with domestic Vietnam waypoints
+  const domesticWaypoints = isLongDistance
+    ? getVietnamDomesticWaypoints(startLat, startLng, endLat, endLng)
+    : []
+
+  let osrmCoordString = `${startLng},${startLat}`
+  domesticWaypoints.forEach(w => {
+    osrmCoordString += `;${w.lng},${w.lat}`
+  })
+  osrmCoordString += `;${endLng},${endLat}`
+
+  // Initial fallback line constrained to Vietnam territory
+  const fallbackPoints = [
+    [startLat, startLng],
+    ...domesticWaypoints.map(w => [w.lat, w.lng]),
+    [endLat, endLng]
+  ]
+
+  measurementPolyline = L.polyline(sanitizeVietnamCoordinates(fallbackPoints), {
     color,
     weight: 4,
     dashArray: '6, 8',
@@ -410,7 +478,7 @@ async function updateMeasurementPolyline(targetLat, targetLng, color = '#8E2435'
   }).addTo(leafletMap)
 
   try {
-    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${userLocation.value.lng},${userLocation.value.lat};${targetLng},${targetLat}?overview=full&geometries=geojson&alternatives=3`
+    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${osrmCoordString}?overview=full&geometries=geojson`
     const res = await fetch(osrmUrl)
     if (res.ok) {
       const data = await res.json()
@@ -419,29 +487,17 @@ async function updateMeasurementPolyline(targetLat, targetLng, color = '#8E2435'
           leafletMap.removeLayer(measurementPolyline)
         }
 
-        // Render top 3 alternative driving routes
-        data.routes.forEach((route, idx) => {
-          const roadCoordinates = route.geometry.coordinates.map(c => [c[1], c[0]])
-          if (idx === 0) {
-            // Main / Fastest Route Line
-            measurementPolyline = L.polyline(roadCoordinates, {
-              color,
-              weight: 5,
-              opacity: 0.95,
-              lineCap: 'round',
-              lineJoin: 'round'
-            }).addTo(leafletMap)
-          } else {
-            // Alternative Route Lines (dashed lighter weight)
-            const altPoly = L.polyline(roadCoordinates, {
-              color,
-              weight: 3,
-              opacity: 0.45,
-              dashArray: '5, 8'
-            }).addTo(leafletMap)
-            alternativePolylines.push(altPoly)
-          }
-        })
+        // Render driving route strictly constrained to domestic Vietnam territory
+        const rawCoords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]])
+        const roadCoordinates = sanitizeVietnamCoordinates(rawCoords)
+
+        measurementPolyline = L.polyline(roadCoordinates, {
+          color,
+          weight: 5,
+          opacity: 0.95,
+          lineCap: 'round',
+          lineJoin: 'round'
+        }).addTo(leafletMap)
       }
     }
   } catch (err) {
@@ -849,7 +905,8 @@ function renderDonorMarkers() {
       donorMarkers.set(key, m)
 
       if (resp.hospitalLat && resp.hospitalLng) {
-        const poly = L.polyline([pos, [resp.hospitalLat, resp.hospitalLng]], {
+        const polyCoords = sanitizeVietnamCoordinates([pos, [resp.hospitalLat, resp.hospitalLng]])
+        const poly = L.polyline(polyCoords, {
           color: '#198754',
           dashArray: '5, 10',
           weight: 3

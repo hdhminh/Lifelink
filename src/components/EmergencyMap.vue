@@ -132,13 +132,14 @@
         <div id="emergency-map-surface" ref="mapElement" style="width: 100%; height: 660px; min-height: 660px; position: relative; z-index: 1; background-color: #f8f9fa;"></div>
 
         <!-- Floating Map Legend Overlay -->
-        <div class="ll-map-legend p-2 px-3 bg-white border rounded shadow-sm position-absolute bottom-0 start-0 m-3" style="z-index: 1000;">
-          <div class="small fw-bold text-slate-800 mb-1" style="font-size: 0.72rem;">
-            <i class="bi bi-info-circle-fill me-1" style="color: #8E2435;"></i> RADAR LEGEND
+        <div class="ll-map-legend p-2 px-3 bg-white border rounded shadow-sm position-absolute bottom-0 start-0 m-3" style="z-index: 1000; max-width: 290px;">
+          <div class="small fw-bold text-slate-800 d-flex justify-content-between align-items-center cursor-pointer" style="font-size: 0.72rem;" @click.stop.prevent="showLegend = !showLegend" aria-label="Toggle Legend">
+            <span><i class="bi bi-info-circle-fill me-1" style="color: #8E2435;"></i> RADAR LEGEND</span>
+            <i class="bi text-slate-400" :class="showLegend ? 'bi-chevron-down' : 'bi-chevron-up'"></i>
           </div>
-          <div class="d-flex flex-column gap-1" style="font-size: 0.72rem;">
+          <div v-show="showLegend" class="d-flex flex-column gap-1 mt-2 pt-2 border-top" style="font-size: 0.72rem;">
             <div class="d-flex align-items-center gap-2">
-              <svg width="18" height="22" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+              <svg width="18" height="22" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0; max-width: none;">
                 <path d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z" fill="#8E2435"/>
                 <circle cx="16" cy="15" r="10" fill="#ffffff"/>
                 <rect x="14" y="9" width="4" height="12" rx="1" fill="#8E2435"/>
@@ -162,7 +163,15 @@
               </svg>
               <span>En-Route Donor Marker (Live Location)</span>
             </div>
-            <div class="d-flex align-items-center gap-2">
+            <div v-if="!isGuest" class="d-flex align-items-center gap-2 mt-1">
+              <span style="display: inline-block; width: 14px; height: 14px; background-color: #198754; border: 2px solid white; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3); margin-left: 2px; margin-right: 2px;"></span>
+              <span>Compatible Donor (Ready)</span>
+            </div>
+            <div v-if="!isGuest" class="d-flex align-items-center gap-2">
+              <span style="display: inline-block; width: 14px; height: 14px; background-color: #6c757d; border: 2px solid white; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3); margin-left: 2px; margin-right: 2px;"></span>
+              <span>Compatible Donor (On Cooldown)</span>
+            </div>
+            <div class="d-flex align-items-center gap-2 mt-1">
               <span class="ll-legend-circle ll-legend-circle--3k"></span>
               <span>Inner Radar (3km — Priority Zone)</span>
             </div>
@@ -182,6 +191,27 @@
             {{ filteredResponders.length }} En-Route
           </span>
         </h2>
+
+        <!-- Radar Scan Telemetry Card in Sidebar (Admin Only) -->
+        <div v-if="isAdmin && selectedHospitalForRadar" class="p-3 bg-white border border-slate-200 rounded shadow-xs mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <h3 class="fw-bold mb-0 text-slate-800" style="font-size: 0.83rem;">
+              <i class="bi bi-broadcast me-1" style="color: #8E2435;"></i> Radar Donor Scan
+            </h3>
+            <span class="badge text-white" style="font-size: 0.65rem; background-color: #8E2435;">{{ selectedHospitalForRadar.bloodType }}</span>
+          </div>
+          <div class="small text-slate-500 mb-2" style="font-size: 0.73rem;">
+            {{ selectedHospitalForRadar.hospitalName }}
+          </div>
+          <div class="d-flex justify-content-between align-items-center py-1 border-bottom border-slate-100" style="font-size: 0.75rem;">
+            <span class="text-slate-600">Inner Radius (3 km):</span>
+            <strong class="text-success">{{ radarCounts.inner }} compatible</strong>
+          </div>
+          <div class="d-flex justify-content-between align-items-center py-1" style="font-size: 0.75rem;">
+            <span class="text-slate-600">Outer Radius (10 km):</span>
+            <strong class="text-slate-800">{{ radarCounts.outer }} compatible</strong>
+          </div>
+        </div>
 
         <!-- No responders state -->
         <div v-if="filteredResponders.length === 0" class="text-center py-4 px-3 bg-white rounded border border-slate-200 flex-grow-1 d-flex flex-column justify-content-center align-items-center">
@@ -260,10 +290,23 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import { useAuth } from '@/composables/useAuth.js'
 import { useActiveResponses } from '@/composables/useActiveResponses.js'
 import { useGeolocation } from '@/composables/useGeolocation.js'
 import { getHospitalCoordinates } from '@/data/hospitalCoordinates.js'
 import { calculateHaversineDistance, calculateRoadDistance, formatDistance } from '@/utils/haversine.js'
+import { canDonateTo } from '@/utils/bloodCompatibility.js'
+import mockDonors from '@/data/mockDonors.json'
+
+function escapeHtml(unsafe) {
+  if (typeof unsafe !== 'string') return String(unsafe || '')
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;")
+}
 
 const props = defineProps({
   emergencyRequests: {
@@ -297,6 +340,12 @@ const activityLogs = ref([])
 
 const showLayerDropdown = ref(false)
 const showFocusDropdown = ref(false)
+const showLegend = ref(true)
+const showRadarOverlay = ref(false)
+const selectedHospitalForRadar = ref(null)
+const radarCounts = ref({ inner: 0, outer: 0 })
+
+const { user, isGuest, isAdmin } = useAuth()
 
 let leafletMap = null
 let userLocationMarker = null
@@ -308,6 +357,8 @@ const hospitalCircles = new Map()
 const eventMarkers = new Map()
 const donorMarkers = new Map()
 const donorPolylines = new Map()
+const radarMarkers = new Map()
+let currentZoom = 6
 
 function cleanEventTitle(title) {
   if (!title) return ''
@@ -429,6 +480,13 @@ function getVietnamDomesticWaypoints(startLat, startLng, targetLat, targetLng) {
 }
 
 /**
+ * Ensures coords are strictly returned for map rendering
+ */
+function sanitizeVietnamCoordinates(coords) {
+  return coords
+}
+
+/**
  * Updates or clears the road route polylines connecting user location to target destination using OSRM Multi-Route API.
  * Uses domestic Vietnam coastal highway waypoints (National Highway 1A) to ensure 100% of route coordinates stay inside Vietnam.
  */
@@ -476,6 +534,11 @@ async function updateMeasurementPolyline(targetLat, targetLng, color = '#8E2435'
     dashArray: '6, 8',
     opacity: 0.75
   }).addTo(leafletMap)
+
+  // Do not use OSRM for very long distances to prevent crazy ferry routes (e.g. to China)
+  if (isLongDistance) {
+    return
+  }
 
   try {
     const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${osrmCoordString}?overview=full&geometries=geojson`
@@ -676,6 +739,11 @@ function initMapEngine() {
     }
   }
 
+  leafletMap.on('zoomend', () => {
+    currentZoom = leafletMap.getZoom()
+    renderRadarDonors()
+  })
+
   mapLoading.value = false
   logActivity('Live Network Map active.')
   renderUserLocationMarker()
@@ -741,17 +809,32 @@ function renderHospitalMarkers() {
     })
 
     const marker = L.marker(pos, { icon, zIndexOffset: 1000 }).addTo(leafletMap)
+    const innerRadius = 3000
+    const outerRadius = 10000
+    let innerCount = 0
+    let outerCount = 0
+
+    mockDonors.forEach(donor => {
+      if (canDonateTo(donor.bloodType, req.bloodType)) {
+        const dist = calculateHaversineDistance(donor.lat, donor.lng, coords.lat, coords.lng)
+        if (dist <= innerRadius) innerCount++
+        else if (dist <= outerRadius) outerCount++
+      }
+    })
+
     const phoneNum = extractPhoneNumber(req)
     marker.bindPopup(`
       <div style="font-family: system-ui, sans-serif; padding: 2px; width: 235px; min-width: 235px; box-sizing: border-box;">
-        <strong style="color: #8E2435; font-size: 0.9rem; display: block; line-height: 1.25; margin-bottom: 2px;">${req.hospitalName}</strong>
-        <span style="font-size: 0.78rem; display: block;">Blood Required: <strong style="color: #8E2435;">${req.bloodType}</strong> (${req.urgency})</span>
-        <span style="font-size: 0.75rem; display: block;">Confirmed: <strong>${req.confirmedCount || 0}/${req.unitsNeeded} units</strong></span>
+        <strong style="color: #8E2435; font-size: 0.9rem; display: block; line-height: 1.25; margin-bottom: 2px;">${escapeHtml(req.hospitalName)}</strong>
+        <span style="font-size: 0.78rem; display: block;">Blood Required: <strong style="color: #8E2435;">${escapeHtml(req.bloodType)}</strong> (${escapeHtml(req.urgency)})</span>
+        <span style="font-size: 0.75rem; display: block;">Confirmed: <strong>${escapeHtml(String(req.confirmedCount || 0))}/${escapeHtml(String(req.unitsNeeded))} units</strong></span>
+        
         <div class="small text-slate-600 mt-1 mb-1" style="font-size: 0.73rem;">
-          Hotline: <a href="tel:${phoneNum}" class="fw-bold text-decoration-none" style="color: #8E2435;">${phoneNum}</a>
+          Hotline: <a href="tel:${escapeHtml(phoneNum)}" class="fw-bold text-decoration-none" style="color: #8E2435;">${escapeHtml(phoneNum)}</a>
         </div>
         ${getDistanceBadgeHtml(coords.lat, coords.lng, '#8E2435')}
-        <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1" style="background-color: #8E2435; font-size: 0.72rem; border-radius: 6px;" onclick="window.handleHospitalPopupRespond('${req.id}')">
+
+        <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1" style="background-color: #8E2435; font-size: 0.72rem; border-radius: 6px;" onclick="window.handleHospitalPopupRespond('${escapeHtml(String(req.id))}')">
           <i class="bi bi-droplet-fill me-1"></i> Confirm Availability
         </button>
       </div>
@@ -823,15 +906,15 @@ function renderEventMarkers() {
     const phoneNum = extractPhoneNumber(ev)
     marker.bindPopup(`
       <div style="font-family: system-ui, sans-serif; padding: 2px; width: 235px; min-width: 235px; box-sizing: border-box;">
-        <strong style="color: #0D6EFD; font-size: 0.88rem; display: block; line-height: 1.25; margin-bottom: 2px;">${cleanEventTitle(ev.title)}</strong>
-        <span style="font-size: 0.76rem; color: #555; display: block;">Category: <strong>${ev.category || 'Drive'}</strong></span>
-        <span style="font-size: 0.75rem; color: #555; display: block;">Location: ${ev.location || ev.city}</span>
-        <span style="font-size: 0.75rem; color: #0D6EFD; font-weight: bold; display: block;">Date: ${ev.date || 'Upcoming'}</span>
+        <strong style="color: #0D6EFD; font-size: 0.88rem; display: block; line-height: 1.25; margin-bottom: 2px;">${escapeHtml(cleanEventTitle(ev.title))}</strong>
+        <span style="font-size: 0.76rem; color: #555; display: block;">Category: <strong>${escapeHtml(ev.category || 'Drive')}</strong></span>
+        <span style="font-size: 0.75rem; color: #555; display: block;">Location: ${escapeHtml(ev.location || ev.city)}</span>
+        <span style="font-size: 0.75rem; color: #0D6EFD; font-weight: bold; display: block;">Date: ${escapeHtml(ev.date || 'Upcoming')}</span>
         <div class="small text-slate-600 mt-1 mb-1" style="font-size: 0.73rem;">
-          Hotline: <a href="tel:${phoneNum}" class="fw-bold text-decoration-none" style="color: #0D6EFD;">${phoneNum}</a>
+          Hotline: <a href="tel:${escapeHtml(phoneNum)}" class="fw-bold text-decoration-none" style="color: #0D6EFD;">${escapeHtml(phoneNum)}</a>
         </div>
         ${getDistanceBadgeHtml(coords.lat, coords.lng, '#0D6EFD')}
-        <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1" style="background-color: #0D6EFD; font-size: 0.72rem; border-radius: 6px;" onclick="window.handleEventPopupRegister('${ev.id}')">
+        <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1" style="background-color: #0D6EFD; font-size: 0.72rem; border-radius: 6px;" onclick="window.handleEventPopupRegister('${escapeHtml(String(ev.id))}')">
           <i class="bi bi-heart-fill me-1"></i> Register Interest
         </button>
       </div>
@@ -897,9 +980,9 @@ function renderDonorMarkers() {
       const m = L.marker(pos, { icon }).addTo(leafletMap)
       m.bindPopup(`
         <div style="font-size: 0.78rem;">
-          <strong>${resp.donorName}</strong> (${resp.bloodType})<br>
-          Status: <strong>${resp.status}</strong><br>
-          ETA: <strong>~${resp.etaMins || 1} min</strong>
+          <strong>${escapeHtml(resp.donorName)}</strong> (${escapeHtml(resp.bloodType)})<br>
+          Status: <strong>${escapeHtml(resp.status)}</strong><br>
+          ETA: <strong>~${escapeHtml(String(resp.etaMins || 1))} min</strong>
         </div>
       `)
       donorMarkers.set(key, m)
@@ -915,6 +998,81 @@ function renderDonorMarkers() {
       }
     }
   })
+}
+
+function renderRadarDonors() {
+  if (!leafletMap) return
+
+  // Clear existing radar markers
+  radarMarkers.forEach(m => leafletMap.removeLayer(m))
+  radarMarkers.clear()
+  showRadarOverlay.value = false
+  selectedHospitalForRadar.value = null
+
+  // Only render if a hospital is selected
+  if (!selectedRequestId.value || selectedRequestId.value.startsWith('ev_')) {
+    return
+  }
+
+  const req = activeRequests.value.find(r => String(r.id) === String(selectedRequestId.value))
+  if (!req) return
+
+  const coords = (req.latitude && req.longitude)
+    ? { lat: Number(req.latitude), lng: Number(req.longitude) }
+    : getHospitalCoordinates(req.hospitalName, req.city)
+
+  const outerRadius = 10000
+  const innerRadius = 3000
+  let innerCount = 0
+  let outerCount = 0
+
+  // Calculate counts for the overlay card
+  mockDonors.forEach(donor => {
+    if (canDonateTo(donor.bloodType, req.bloodType)) {
+      const dist = calculateHaversineDistance(donor.lat, donor.lng, coords.lat, coords.lng)
+      if (dist <= innerRadius) innerCount++
+      else if (dist <= outerRadius) outerCount++
+      
+      // Render radar markers only for authenticated non-guest users and if zoomed in
+      if (!isGuest.value && currentZoom > 12 && dist <= outerRadius) {
+        const color = donor.canDonateNow ? '#198754' : '#6c757d'
+        
+        const icon = L.divIcon({
+          className: 'll-radar-donor-icon',
+          html: `
+            <div style="position: relative; width: 14px; height: 14px; background-color: ${color}; border: 2px solid white; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3);">
+            </div>
+          `,
+          iconSize: [14, 14],
+          iconAnchor: [7, 7]
+        })
+
+        const marker = L.marker([donor.lat, donor.lng], { icon, zIndexOffset: 50 }).addTo(leafletMap)
+        
+        const cooldownStatus = donor.canDonateNow ? '<strong class="text-success">Ready</strong>' : '<strong class="text-secondary">On Cooldown</strong>'
+        const phone = donor.phoneNumber || ('09' + String(Math.abs((donor.id || '').split('').reduce((a,b)=>a+b.charCodeAt(0),0)) % 10000000).padStart(8, '0'))
+        const phoneBtn = donor.canDonateNow
+          ? `<div class="mt-2 pt-1 border-top"><a href="tel:${phone}" class="btn btn-sm text-white w-100 py-1 d-inline-flex align-items-center justify-content-center gap-1 font-weight-700" style="background-color: #198754; font-size: 0.72rem; border-radius: 6px;"><i class="bi bi-telephone-fill me-1"></i> Call ${phone}</a></div>`
+          : `<div class="mt-2 pt-1 border-top text-slate-500" style="font-size: 0.7rem;"><i class="bi bi-telephone me-1"></i> Phone: <strong>${phone}</strong></div>`
+
+        marker.bindPopup(`
+          <div style="font-size: 0.78rem; font-family: system-ui, sans-serif; padding: 2px;">
+            <strong style="color: #198754; font-size: 0.85rem; display: block; margin-bottom: 2px;">Donor: ${escapeHtml(donor.displayName)}</strong>
+            Blood Type: <strong style="color: #8E2435;">${escapeHtml(donor.bloodType)}</strong><br>
+            Status: ${cooldownStatus}<br>
+            Distance: <strong>${escapeHtml(formatDistance(dist))}</strong>
+            ${phoneBtn}
+          </div>
+        `)
+        radarMarkers.set(donor.id, marker)
+      }
+    }
+  })
+
+  // Show Radar Overlay summary
+  radarCounts.value = { inner: innerCount, outer: outerCount }
+  selectedHospitalForRadar.value = req
+  showRadarOverlay.value = true
 }
 
 function centerMapOnSelected() {
@@ -976,6 +1134,8 @@ function centerMapOnSelected() {
     renderHospitalMarkers()
     renderEventMarkers()
   }
+  
+  renderRadarDonors()
 }
 
 function focusRequest(requestId) {
@@ -1188,5 +1348,13 @@ defineExpose({
   color: #8E2435 !important;
   background-color: #FAF5EF !important;
   transform: scale(1.1) !important;
+}
+
+:deep(.leaflet-overlay-pane svg) {
+  max-width: none !important;
+}
+
+:deep(.leaflet-marker-pane svg) {
+  max-width: none !important;
 }
 </style>

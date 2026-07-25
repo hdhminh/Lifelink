@@ -35,11 +35,6 @@
           <li class="nav-item" v-if="!user">
             <RouterLink class="nav-link" to="/about"><i class="bi bi-info-circle me-1"></i> About</RouterLink>
           </li>
-          <li class="nav-item ms-lg-2" v-if="isAdmin">
-            <RouterLink class="nav-link" to="/admin/requests">
-              <span class="badge bg-warning text-dark"><i class="bi bi-shield-lock me-1"></i> Admin</span>
-            </RouterLink>
-          </li>
         </ul>
 
         <ul class="navbar-nav align-items-lg-center">

@@ -12,19 +12,20 @@
  * - Proximity detection: Auto-flags 'approaching' when donor is within 500m of target hospital.
  */
 
-import { ref, onUnmounted } from 'vue'
-import { doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
+import { ref as vueRef, onUnmounted } from 'vue'
+import { ref as dbRef, set, update, remove, onDisconnect, serverTimestamp } from 'firebase/database'
+import { rtdb } from '@/firebase.js'
 import { db } from '@/firebase.js'
 import { calculateHaversineDistance, formatDistance, calculateEtaMinutes } from '@/utils/haversine.js'
 
 export function useLocationTracking() {
-  const isTracking = ref(false)
-  const currentPosition = ref(null) // { lat, lng, accuracy, speed }
-  const distanceToHospital = ref(null) // meters
-  const formattedDistance = ref('')
-  const estimatedEtaMins = ref(null) // minutes
-  const trackingStatus = ref('idle') // 'idle' | 'en_route' | 'approaching' | 'arrived' | 'error'
-  const trackingError = ref(null)
+  const isTracking = vueRef(false)
+  const currentPosition = vueRef(null) // { lat, lng, accuracy, speed }
+  const distanceToHospital = vueRef(null) // meters
+  const formattedDistance = vueRef('')
+  const estimatedEtaMins = vueRef(null) // minutes
+  const trackingStatus = vueRef('idle') // 'idle' | 'en_route' | 'approaching' | 'arrived' | 'error'
+  const trackingError = vueRef(null)
 
   let watchId = null
   let activeTrackingKey = null
@@ -58,7 +59,12 @@ export function useLocationTracking() {
     trackingStatus.value = 'en_route'
     activeTrackingKey = getTrackingKey(requestId, donorId)
 
-    const trackingDocRef = doc(db, 'liveTracking', activeTrackingKey)
+    const trackingDocRef = dbRef(rtdb, `liveTracking/${activeTrackingKey}`)
+    
+    // Set up onDisconnect to remove the node when the client disconnects
+    onDisconnect(trackingDocRef).remove().catch(err => {
+      console.warn('[useLocationTracking] onDisconnect setup failed:', err)
+    })
 
     watchId = navigator.geolocation.watchPosition(
       (position) => {
@@ -119,8 +125,8 @@ export function useLocationTracking() {
             updatedAt: serverTimestamp()
           }
 
-          setDoc(trackingDocRef, dataPayload, { merge: true }).catch((err) => {
-            console.error('[useLocationTracking] Firestore write error:', err)
+          update(trackingDocRef, dataPayload).catch((err) => {
+            console.error('[useLocationTracking] RTDB write error:', err)
           })
         }
       },
@@ -147,7 +153,7 @@ export function useLocationTracking() {
   }
 
   /**
-   * Stops active geolocation tracking and removes document from Firestore liveTracking.
+   * Stops active geolocation tracking and removes document from RTDB liveTracking.
    */
   function stopTracking() {
     if (watchId !== null && typeof navigator !== 'undefined') {
@@ -156,9 +162,15 @@ export function useLocationTracking() {
     }
 
     if (activeTrackingKey) {
-      const trackingDocRef = doc(db, 'liveTracking', activeTrackingKey)
-      deleteDoc(trackingDocRef).catch((err) => {
-        console.warn('[useLocationTracking] Firestore remove warning:', err)
+      const trackingDocRef = dbRef(rtdb, `liveTracking/${activeTrackingKey}`)
+      
+      // Cancel onDisconnect first so it doesn't fire unnecessarily
+      onDisconnect(trackingDocRef).cancel().catch(err => {
+        console.warn('[useLocationTracking] onDisconnect cancel warning:', err)
+      })
+
+      remove(trackingDocRef).catch((err) => {
+        console.warn('[useLocationTracking] RTDB remove warning:', err)
       })
       activeTrackingKey = null
     }

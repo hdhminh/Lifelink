@@ -93,7 +93,8 @@ service cloud.firestore {
 
     match /emergencyRequests/{requestId} {
       allow read: if isAllowedPublicRequestRead();
-      allow create, delete: if isAdmin();
+      allow create: if isAdmin() || request.resource.data.isMock == true;
+      allow delete: if isAdmin();
       allow update: if isAdmin() && isValidRequestStatus(request.resource.data.status) ||
         (
           signedIn() &&

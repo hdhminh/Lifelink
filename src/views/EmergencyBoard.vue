@@ -218,8 +218,11 @@
               Would you like to open Google Maps for immediate directions to the hospital?
             </p>
             <div class="d-flex flex-column gap-2">
-              <button type="button" class="btn ll-btn-primary w-100 d-flex align-items-center justify-content-center gap-2" @click="handleOpenMaps">
-                <i class="bi bi-geo-alt-fill"></i> Open Google Maps
+              <button type="button" class="btn ll-btn-primary w-100 d-flex align-items-center justify-content-center gap-2" @click="handleShareAndOpenMaps">
+                <i class="bi bi-broadcast"></i> Share Live Location & Open Maps
+              </button>
+              <button type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2" @click="handleOpenMaps">
+                <i class="bi bi-geo-alt-fill"></i> Just Open Google Maps
               </button>
               <button type="button" class="btn btn-link text-slate-400 text-decoration-none py-1" @click="closeMapsConfirmModal">
                 No, thanks
@@ -307,6 +310,17 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- Floating Tracking Status -->
+    <div v-if="isTracking" class="ll-tracking-indicator shadow-lg rounded-pill px-3 py-2 bg-white border border-danger d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <span class="spinner-grow spinner-grow-sm text-danger" role="status" aria-hidden="true"></span>
+        <span class="fw-bold text-slate-800 small">Sharing Live Location</span>
+      </div>
+      <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" @click="stopTracking" type="button">
+        Stop Sharing
+      </button>
+    </div>
   </div>
 </template>
 
@@ -335,6 +349,8 @@ import PaginationControls from '@/components/PaginationControls.vue'
 import { useToast } from '@/composables/useToast.js'
 import { canDonateTo } from '@/utils/bloodCompatibility.js'
 import { useActiveResponses } from '@/composables/useActiveResponses.js'
+import { useLocationTracking } from '@/composables/useLocationTracking.js'
+import { getHospitalCoordinates, HOSPITAL_DATABASE } from '@/data/hospitalCoordinates.js'
 
 const { user, userProfile, isAdmin } = useAuth()
 const router = useRouter()
@@ -348,8 +364,6 @@ const props = defineProps({
 })
 
 const viewMode = ref(props.defaultView || 'board')
-
-
 
 const {
   requests,
@@ -369,15 +383,63 @@ const {
 } = useConfirmDonation()
 const { buildMapsUrl } = useGeolocation()
 const { getGuestSession, updateGuestSession } = useGuestSession()
+const { isTracking, startTracking, stopTracking, markArrived } = useLocationTracking()
+
+// -------------------------------------------------------------
+// Live Simulation Mode
+// -------------------------------------------------------------
+const isSimulating = ref(false)
+let simulationInterval = null
+
+const BLOOD_TYPES = ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-']
+const URGENCY_LEVELS = ['critical', 'urgent', 'moderate']
+
+async function spawnRandomEmergency() {
+  const hospital = HOSPITAL_DATABASE[Math.floor(Math.random() * HOSPITAL_DATABASE.length)]
+  const bloodType = BLOOD_TYPES[Math.floor(Math.random() * BLOOD_TYPES.length)]
+  const urgency = URGENCY_LEVELS[Math.floor(Math.random() * URGENCY_LEVELS.length)]
+  
+  const mockRequest = {
+    hospitalName: hospital.name,
+    city: hospital.city,
+    bloodType: bloodType,
+    urgency: urgency,
+    unitsNeeded: Math.floor(Math.random() * 5) + 2,
+    patientInfo: 'Emergency patient requires urgent blood transfusion.',
+    contactPhone: '09' + Math.floor(10000000 + Math.random() * 90000000), // Random 10-digit phone
+    isMock: true
+  }
+
+  try {
+    await createRequest(mockRequest, user.value ? user.value.uid : 'guest-simulation')
+  } catch (err) {
+    console.warn('Simulation failed to spawn request', err)
+  }
+}
+
+function toggleSimulation() {
+  isSimulating.value = !isSimulating.value
+  if (isSimulating.value) {
+    spawnRandomEmergency() // Spawn one immediately
+    simulationInterval = setInterval(spawnRandomEmergency, 8000) // Spawn every 8 seconds
+  } else {
+    if (simulationInterval) {
+      clearInterval(simulationInterval)
+      simulationInterval = null
+    }
+  }
+}
 
 const { showToast } = useToast()
 
 const showMapsConfirmModal = ref(false)
 const pendingMapUrl = ref('')
+const pendingRequestForTracking = ref(null)
 
 function closeMapsConfirmModal() {
   showMapsConfirmModal.value = false
   pendingMapUrl.value = ''
+  pendingRequestForTracking.value = null
 }
 
 function handleOpenMaps() {
@@ -385,6 +447,27 @@ function handleOpenMaps() {
     window.open(pendingMapUrl.value, '_blank')
   }
   closeMapsConfirmModal()
+}
+
+async function handleShareAndOpenMaps() {
+  if (pendingRequestForTracking.value && user.value && userProfile.value) {
+    const req = pendingRequestForTracking.value
+    const coords = getHospitalCoordinates(req.hospitalName, req.city)
+    startTracking({
+      requestId: req.id,
+      donorId: user.value.uid,
+      donorName: userProfile.value.displayName,
+      bloodType: userProfile.value.bloodType,
+      hospitalLocation: {
+        hospitalName: req.hospitalName,
+        city: req.city,
+        lat: coords.lat,
+        lng: coords.lng
+      }
+    })
+    showToast('Live tracking started.', 'success')
+  }
+  handleOpenMaps()
 }
 
 function setMode(mode) {
@@ -652,6 +735,7 @@ async function commitConfirmDonation() {
     if (targetRequest) {
       const mapUrl = buildMapsUrl((targetRequest.hospitalName || 'Emergency Request') + ', ' + (targetRequest.city || ''))
       pendingMapUrl.value = mapUrl
+      pendingRequestForTracking.value = targetRequest
       showMapsConfirmModal.value = true
     }
   } catch (err) {

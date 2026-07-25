@@ -57,6 +57,7 @@ onAuthStateChanged(auth, async (firebaseUser) => {
 export function useAuth() {
   const isAdmin = computed(() => userProfile.value?.role === 'admin')
   const isDonor = computed(() => !!user.value && userProfile.value?.role === 'donor')
+  const isGuest = computed(() => !user.value)
 
   /**
    * Signs in with email and password.
@@ -121,6 +122,7 @@ export function useAuth() {
     userProfile,
     isAdmin,
     isDonor,
+    isGuest,
     authLoading,
     login,
     register,

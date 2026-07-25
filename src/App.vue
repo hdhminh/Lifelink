@@ -144,6 +144,7 @@ import { useAuth } from '@/composables/useAuth.js'
 import { useGeolocation } from '@/composables/useGeolocation.js'
 import { useGuestSession } from '@/composables/useGuestSession.js'
 import { useSupportChat } from '@/composables/useSupportChat.js'
+import { useLiveSimulation } from '@/composables/useLiveSimulation.js'
 import AppNavbar from '@/components/AppNavbar.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import { useToast } from '@/composables/useToast.js'
@@ -429,6 +430,10 @@ function processLocalBotReply(userText, chatId) {
 
 onMounted(async () => {
   if (typeof window !== 'undefined') {
+    // Initialize simulation engine
+    const { initSimulation } = useLiveSimulation()
+    initSimulation()
+    
     const geoPrompted = localStorage.getItem('ll_geo_prompted')
     const geoGranted = localStorage.getItem('ll_geo_granted')
     if (!geoPrompted && geoGranted !== 'true') {

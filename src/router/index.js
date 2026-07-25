@@ -68,9 +68,7 @@ const routes = [
   },
   {
     path: '/admin/requests',
-    name: 'AdminRequests',
-    component: AdminRequests,
-    meta: { title: 'LifeLink - Admin Operations', requiresAuth: true, requiresAdmin: true }
+    redirect: '/dashboard'
   },
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ]

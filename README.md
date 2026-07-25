@@ -28,12 +28,13 @@ The application is styled with a warm beige and deep crimson wine theme, focusin
 ## Features
 
 - **Real-Time Request Board**: Driven by Firestore real-time listeners (`onSnapshot`) to sync active requests across screens in under 1 second.
+- **Live Location Tracking & Radar**: Uses Firebase Realtime Database for ephemeral, high-frequency location data. Features a Haversine-based radar map to coordinate donors in 3km and 10km radii.
+- **Decentralized Demo Simulation**: An integrated live simulation engine that automatically spawns and tracks mock responders navigating toward emergency requests across Vietnam.
 - **Vietnamese Cooldown Verification**: Enforces a 56-day (8 weeks) medical cooldown between full blood donations, calculating eligibility dynamically.
 - **Live Support Chat**: An integrated communication widget available for both authenticated users and guests.
-- **Dynamic Maps Routing**: Resolves coordinates and location strings to generate direct maps search queries.
 - **Access Control Roles**: Provides customized views and capabilities based on session authentication:
   - **Guests**: Browse active requests, view blood type compatibility matrix, register for events, and confirm availability.
-  - **Donors**: Track donation history, view cooldown countdowns, update personal profile data, and cancel availability bookings.
+  - **Donors**: Track donation history, view cooldown countdowns, update personal profile data, and share live location to hospitals.
   - **Admins**: View dashboard analytics cards, execute CRUD operations on active requests and outreach events, and moderate system users.
 
 ---
@@ -42,10 +43,10 @@ The application is styled with a warm beige and deep crimson wine theme, focusin
 
 - **Frontend Core**: Vue 3 (Composition API, `<script setup>`)
 - **Styling**: Bootstrap 5 (Custom CSS overrides)
-- **Database & Auth**: Google Firebase (Firestore Database, Firebase Authentication)
+- **Database & Auth**: Google Firebase (Firestore for core business logic, RTDB for high-frequency tracking, Firebase Authentication)
+- **Map Engine**: Leaflet (OpenStreetMap) with OSRM routing and Map clustering.
 - **Router**: Vue Router 4 (Lazy-loaded views, navigation route guards)
-- **Testing**: Vitest (Unit testing suite, Mock DOM environment)
-- **Animation**: Motion One & GSAP (Subtle transition animations)
+- **Testing**: Vitest (Unit testing suite), Playwright (E2E testing suite)
 
 ---
 
@@ -54,26 +55,25 @@ The application is styled with a warm beige and deep crimson wine theme, focusin
 ```text
 LifeLink/
 ├── docs/                     # Documentation assets and screenshots
-│   └── screenshots/
 ├── public/                   # Static assets (images, icons)
 ├── scripts/                  # Data seeding and RSS fetching utilities
 ├── src/
-│   ├── components/           # Reusable UI widgets
-│   ├── composables/          # Modularized state hook functions (Auth, Chat)
-│   ├── data/                 # Local data models and news fallbacks
-│   ├── directives/           # Global directives (v-highlight-urgency)
+│   ├── components/           # Reusable UI widgets (EmergencyMap, Chat, etc.)
+│   ├── composables/          # Modularized state hooks (useLocationTracking, useLiveSimulation)
+│   ├── data/                 # Local data models and hospital coordinates
 │   ├── router/               # Route setup and access control guards
-│   ├── utils/                # Pure logic helpers (blood compatibility)
+│   ├── utils/                # Pure logic helpers (Haversine, Blood compatibility)
 │   ├── views/                # Full page views
 │   ├── App.vue               # Entry component
 │   └── main.js               # Entry script
 ├── tests/                    # Testing suite
 │   ├── unit/                 # Unit testing code
 │   ├── rules/                # Firestore rules compliance tests
-│   └── e2e/                  # Integration testing code
+│   └── e2e/                  # Playwright Integration testing code
+├── database.rules.json       # Realtime Database rules (Tracking access)
 ├── firestore.rules           # Firestore security rule definitions
 ├── package.json              # NPM dependencies & test scripts
-└── vitest.config.js          # Vitest build configurations
+└── playwright.config.js      # Playwright E2E configurations
 ```
 
 ---
@@ -101,7 +101,7 @@ Node.js (v18+) and npm.
    ```bash
    cp .env.example .env
    ```
-   Fill in the created `.env` with your Google Firebase project keys.
+   Fill in the created `.env` with your Google Firebase project keys (including `VITE_FIREBASE_DATABASE_URL`).
 
 4. Run local dev server:
    ```bash
@@ -117,25 +117,34 @@ Node.js (v18+) and npm.
 
 ## Testing Suite
 
-LifeLink includes unit and integration tests using Vitest.
+LifeLink includes comprehensive testing suites using Vitest for unit tests and Playwright for End-to-End tests.
 
-### Execute all tests:
+### Unit & Integration (Vitest):
 ```bash
-npm test
+npm run test:unit
 ```
 
-### Execute tests with coverage:
+### End-to-End (Playwright):
+To run browser tests (Chromium, Firefox, Webkit):
 ```bash
-npm run test:coverage
+npx playwright install
+npm run test:e2e
+```
+To open the Playwright UI mode:
+```bash
+npm run test:e2e:ui
 ```
 
 ### Firestore Security Rules Testing:
-Make sure the local Firestore Emulator is running on port 8080:
+Make sure the local Firestore Emulator is running:
 ```bash
-firebase emulators:start --only firestore
-npm test
+npm run test:rules
 ```
-*(If the emulator is not running, the rules tests will be skipped automatically to prevent connection timeout).*
+
+### Execute All Tests:
+```bash
+npm run test:all
+```
 
 ---
 

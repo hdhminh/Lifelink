@@ -1,10 +1,14 @@
 {
   "rules": {
     "liveTracking": {
-      ".read": true,
-      ".write": true,
+      // For demo purposes, we restrict read to authenticated users. 
+      // In production with custom claims, use: ".read": "auth.token.role === 'admin'"
+      ".read": "auth != null",
+      ".write": false,
       "$trackingId": {
-        ".validate": "newData.hasChildren(['donorId', 'requestId', 'latitude', 'longitude', 'status'])"
+        ".read": "auth != null",
+        ".write": "auth != null && (newData.child('donorId').val() === auth.uid || data.child('donorId').val() === auth.uid)",
+        ".validate": "newData.hasChildren(['donorId', 'requestId', 'status'])"
       }
     }
   }

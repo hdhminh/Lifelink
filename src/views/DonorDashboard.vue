@@ -208,53 +208,81 @@
 
           <!-- User Management Panel -->
           <div v-if="activeAdminTab === 'users'">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+              <h5 class="fw-bold mb-0 text-slate-900"><i class="bi bi-people-fill text-wine me-2"></i>System Users</h5>
+              <div class="ll-search-wrapper" style="max-width: 320px; width: 100%;">
+                <i class="bi bi-search ll-search-icon"></i>
+                <input
+                  v-model="userSearchQuery"
+                  class="form-control form-control-sm"
+                  type="text"
+                  :placeholder="`Search ${allSystemUsers.length} users (Name, Phone, City)...`"
+                />
+              </div>
+            </div>
+
             <div v-if="usersLoading" class="text-center py-4">
               <div class="spinner-border spinner-border-sm text-danger" role="status"></div>
             </div>
-            <div v-else class="ll-card ll-table-card">
-              <div class="table-responsive">
-                <table class="table align-middle mb-0 ll-admin-table">
-                  <thead>
+
+            <!-- Single Unified User Accounts Table -->
+            <div v-else class="ll-card ll-table-card shadow-sm border rounded-3 overflow-hidden">
+              <div class="table-responsive" style="max-height: 540px; overflow-y: auto;">
+                <table class="table align-middle mb-0 ll-admin-table" style="table-layout: fixed; width: 100%;">
+                  <thead class="sticky-top bg-slate-50 border-bottom border-slate-200" style="z-index: 10;">
                     <tr>
-                      <th scope="col">Name</th>
-                      <th scope="col">Email</th>
-                      <th scope="col">Phone</th>
-                      <th scope="col">City</th>
-                      <th scope="col">Blood</th>
-                      <th scope="col">Role</th>
-                      <th scope="col">Actions</th>
+                      <th scope="col" style="width: 5%; padding: 0.9rem 0.5rem; text-align: center;">No.</th>
+                      <th scope="col" style="width: 20%; padding: 0.9rem 0.8rem;">User Info</th>
+                      <th scope="col" style="width: 14%; padding: 0.9rem 0.65rem;">Phone</th>
+                      <th scope="col" style="width: 13%; padding: 0.9rem 0.65rem;">City</th>
+                      <th scope="col" style="width: 10%; padding: 0.9rem 0.4rem; text-align: center;">Blood</th>
+                      <th scope="col" style="width: 11%; padding: 0.9rem 0.4rem; text-align: center;">Status</th>
+                      <th scope="col" style="width: 13%; padding: 0.9rem 0.4rem; text-align: center;">Role</th>
+                      <th scope="col" style="width: 14%; padding: 0.9rem 1rem; text-align: right;">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="u in usersList" :key="u.id">
-                      <td><strong>{{ u.displayName }}</strong></td>
-                      <td>{{ u.email }}</td>
-                      <td>
-                        <a v-if="u.phoneNumber" :href="`tel:${u.phoneNumber}`" class="text-wine text-decoration-none fw-bold">
+                    <tr v-for="(u, index) in allSystemUsers.slice(0, userDisplayLimit)" :key="u.id">
+                      <td style="padding: 0.75rem 0.5rem; text-align: center; vertical-align: middle; font-weight: 600; color: var(--ll-slate-500); font-size: 0.8rem;">
+                        {{ index + 1 }}
+                      </td>
+                      <td style="padding: 0.75rem 0.8rem;">
+                        <div class="d-flex flex-column">
+                          <strong class="text-slate-900 text-truncate" style="max-width: 180px;" :title="u.displayName">{{ u.displayName }}</strong>
+                          <span class="text-slate-500 text-truncate" style="font-size: 0.78rem; max-width: 180px;" :title="u.email">{{ u.email }}</span>
+                        </div>
+                      </td>
+                      <td class="text-truncate" style="padding: 0.75rem 0.65rem;">
+                        <a v-if="u.phoneNumber" :href="`tel:${u.phoneNumber}`" class="text-wine text-decoration-none fw-bold" style="font-size: 0.82rem;">
                           <i class="bi bi-telephone-fill me-1"></i>{{ u.phoneNumber }}
                         </a>
-                        <span v-else class="text-muted">-</span>
+                        <span v-else class="text-muted small">-</span>
                       </td>
-                      <td>{{ u.city }}</td>
-                      <td><span class="ll-badge-blood">{{ u.bloodType || 'N/A' }}</span></td>
-                      <td>
+                      <td class="text-truncate" style="padding: 0.75rem 0.65rem;" :title="u.city">{{ u.city }}</td>
+                      <td style="padding: 0.5rem 0.4rem; text-align: center; vertical-align: middle;"><span class="ll-badge-blood">{{ u.bloodType || 'N/A' }}</span></td>
+                      <td style="padding: 0.5rem 0.4rem; text-align: center; vertical-align: middle;">
+                        <span :class="u.canDonateNow !== false ? 'badge bg-success text-white' : 'badge bg-secondary text-white'" style="font-size: 0.74rem; height: 28px !important; min-height: 28px !important; max-height: 28px !important; line-height: 28px !important; padding: 0 0.55rem; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center;">
+                          {{ u.canDonateNow !== false ? 'Ready' : 'Cooldown' }}
+                        </span>
+                      </td>
+                      <td style="padding: 0.5rem 0.4rem; text-align: center; vertical-align: middle;">
                         <select
-                          class="form-select form-select-sm"
-                          style="max-width: 120px;"
-                          :value="u.role"
+                          class="form-select form-select-sm d-inline-block shadow-xs ll-select-button"
+                          style="font-size: 0.75rem; padding: 0 1.25rem 0 0.45rem !important; height: 28px !important; min-height: 28px !important; max-height: 28px !important; line-height: 26px !important; width: 82px; border-radius: 4px !important; border: 1px solid #CBD5E1; vertical-align: middle; background-position: right 0.25rem center; background-size: 10px 10px; cursor: pointer !important;"
+                          :value="u.role || 'donor'"
                           :disabled="u.uid === userProfile.uid"
                           :title="`Change role for ${u.displayName}`"
-                          @change="updateUserRole(u.id, $event.target.value)"
+                          @change="promptRoleChange(u, $event.target.value, $event)"
                         >
                           <option value="donor">Donor</option>
                           <option value="admin">Admin</option>
                         </select>
                       </td>
-                      <td>
-                        <div class="d-flex gap-2">
+                      <td style="text-align: right; padding: 0.5rem 1rem 0.5rem 0; vertical-align: middle;">
+                        <div class="d-flex justify-content-end align-items-center" style="gap: 0.65rem;">
                           <button
-                            class="ll-btn-secondary btn-sm py-1 px-2"
-                            style="font-size: 0.75rem;"
+                            class="ll-btn-secondary btn-sm px-2 py-0 d-inline-flex align-items-center justify-content-center"
+                            style="font-size: 0.73rem; border-radius: 4px; height: 28px !important; min-height: 28px !important; max-height: 28px !important; line-height: 26px !important; vertical-align: middle;"
                             type="button"
                             title="View participation history"
                             @click="viewUserHistory(u)"
@@ -262,22 +290,37 @@
                             <i class="bi bi-clock-history me-1"></i>History
                           </button>
                           <button
-                            class="ll-icon-button ll-icon-button--danger"
+                            class="ll-icon-button ll-icon-button--danger d-inline-flex align-items-center justify-content-center"
+                            style="width: 28px !important; height: 28px !important; min-width: 28px !important; min-height: 28px !important; max-height: 28px !important; border-radius: 4px; padding: 0; line-height: 26px !important; vertical-align: middle;"
                             type="button"
                             title="Delete user"
                             :disabled="u.uid === userProfile.uid"
                             @click="handleDeleteUser(u.id)"
                           >
-                            <i class="bi bi-trash-fill"></i>
+                            <i class="bi bi-trash-fill" style="font-size: 0.7rem;"></i>
                           </button>
                         </div>
                       </td>
                     </tr>
-                    <tr v-if="usersList.length === 0">
-                      <td colspan="6" class="text-center py-4 text-slate-500">No users found in database.</td>
+                    <tr v-if="allSystemUsers.length === 0">
+                      <td colspan="8" class="text-center py-4 text-slate-500">No matching users found.</td>
                     </tr>
                   </tbody>
                 </table>
+              </div>
+              <div v-if="allSystemUsers.length > 0" class="card-footer bg-slate-50 py-2 px-3 d-flex flex-wrap justify-content-between align-items-center border-top border-slate-200">
+                <span class="small text-slate-500 font-weight-500">
+                  Showing <strong>{{ Math.min(userDisplayLimit, allSystemUsers.length) }}</strong> of <strong>{{ allSystemUsers.length }}</strong> system users
+                </span>
+                <button
+                  v-if="userDisplayLimit < allSystemUsers.length"
+                  type="button"
+                  class="btn btn-link text-wine text-decoration-none btn-sm p-0 font-weight-600"
+                  style="font-size: 0.78rem;"
+                  @click="userDisplayLimit += 100"
+                >
+                  Load More <i class="bi bi-chevron-down ms-1"></i>
+                </button>
               </div>
             </div>
           </div>
@@ -285,7 +328,7 @@
           <!-- Emergency Board Management Panel -->
           <div v-else-if="activeAdminTab === 'requests'">
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <h5 class="fw-bold mb-0 text-slate-900">Emergency Requests</h5>
+              <h5 class="fw-bold mb-0 text-slate-900"><i class="bi bi-exclamation-triangle-fill text-wine me-2"></i>Emergency Requests</h5>
               <button class="ll-btn-primary btn-sm px-3" type="button" @click="openCreateRequestForm">
                 <i class="bi bi-plus-lg me-1"></i> New Request
               </button>
@@ -400,8 +443,8 @@
                                     <td>{{ formatDateTime(c.createdAt) }}</td>
                                     <td>
                                       <select
-                                        class="form-select form-select-sm"
-                                        style="max-width: 120px; font-size: 0.78rem;"
+                                        class="form-select form-select-sm ll-select-button"
+                                        style="max-width: 120px; font-size: 0.78rem; cursor: pointer !important;"
                                         :value="c.status || 'confirmed'"
                                         @change="changeConfirmationStatus(c.id, $event.target.value)"
                                       >
@@ -441,7 +484,7 @@
           <!-- Event Management Panel -->
           <div v-else-if="activeAdminTab === 'events'">
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <h5 class="fw-bold mb-0 text-slate-900">Campaigns & Drives</h5>
+              <h5 class="fw-bold mb-0 text-slate-900"><i class="bi bi-calendar-event-fill text-wine me-2"></i>Campaigns & Drives</h5>
               <button class="ll-btn-primary btn-sm px-3" type="button" @click="openCreateEventForm">
                 <i class="bi bi-plus-lg me-1"></i> New Event
               </button>
@@ -780,6 +823,16 @@
       @cancel="showUserDeleteModal = false"
     />
 
+    <!-- Confirm Modal for User Role Change -->
+    <ConfirmModal
+      :show="showRoleConfirmModal"
+      title="Confirm Role Change"
+      :message="`Are you sure you want to change the role of '${pendingRoleChange?.userName}' from ${pendingRoleChange?.oldRole?.toUpperCase()} to ${pendingRoleChange?.newRole?.toUpperCase()}?`"
+      confirm-label="Change Role"
+      @confirm="confirmRoleChange"
+      @cancel="cancelRoleChange"
+    />
+
     <!-- Confirm Modal for Deleting Request -->
     <ConfirmModal
       :show="showRequestDeleteModal"
@@ -820,6 +873,9 @@ import RequestForm from '@/components/RequestForm.vue'
 import { useConfirmDonation } from '@/composables/useConfirmDonation.js'
 import { useToast } from '@/composables/useToast.js'
 import { useEligibility } from '@/composables/useEligibility.js'
+import mockDonors from '@/data/mockDonors.json'
+
+const userSubTab = ref('registered')
 
 // -----------------------------------------------------------------------------
 // SECTION 1: AUTH & ELIGIBILITY STATE
@@ -897,7 +953,7 @@ const stats = reactive({
 })
 
 function updateAdminStatsFromLists() {
-  stats.usersCount = usersList.value.length
+  stats.usersCount = usersList.value.length + mockDonors.length
   stats.activeRequestsCount = requestList.value.filter(req => req.status === 'active').length
   stats.totalConfirmationsCount = allConfirmationsList.value.length
   stats.eventsCount = eventsList.value.length
@@ -999,6 +1055,42 @@ const confirmationsLoadingState = ref(false)
 // -----------------------------------------------------------------------------
 // SECTION 3: USER MANAGEMENT & PERMISSIONS
 // -----------------------------------------------------------------------------
+const userSearchQuery = ref('')
+const userDisplayLimit = ref(100)
+
+watch(userSearchQuery, () => {
+  userDisplayLimit.value = 100
+})
+
+const allSystemUsers = computed(() => {
+  const list = [
+    ...usersList.value.map(u => ({ ...u, isMock: false })),
+    ...mockDonors.map(m => ({
+      id: m.id,
+      displayName: m.displayName,
+      email: m.email,
+      phoneNumber: m.phoneNumber,
+      city: m.city,
+      bloodType: m.bloodType,
+      canDonateNow: m.canDonateNow,
+      role: 'donor',
+      isMock: true
+    }))
+  ]
+
+  if (!userSearchQuery.value.trim()) {
+    return list
+  }
+  const q = userSearchQuery.value.toLowerCase()
+  return list.filter(u =>
+    (u.displayName || '').toLowerCase().includes(q) ||
+    (u.email || '').toLowerCase().includes(q) ||
+    (u.phoneNumber || '').toLowerCase().includes(q) ||
+    (u.city || '').toLowerCase().includes(q) ||
+    (u.bloodType || '').toLowerCase().includes(q)
+  )
+})
+
 async function fetchUsers(isSilent = false) {
   if (!isSilent) usersLoading.value = true
   try {
@@ -1038,10 +1130,47 @@ async function fetchAllConfirmations(isSilent = false) {
   }
 }
 
+const showRoleConfirmModal = ref(false)
+const pendingRoleChange = ref(null)
+
+function promptRoleChange(u, newRole, event) {
+  if (u.role === newRole) return
+  pendingRoleChange.value = {
+    userId: u.id,
+    userName: u.displayName,
+    oldRole: u.role,
+    newRole,
+    selectElement: event.target
+  }
+  showRoleConfirmModal.value = true
+}
+
+function cancelRoleChange() {
+  if (pendingRoleChange.value?.selectElement) {
+    pendingRoleChange.value.selectElement.value = pendingRoleChange.value.oldRole
+  }
+  showRoleConfirmModal.value = false
+  pendingRoleChange.value = null
+}
+
+async function confirmRoleChange() {
+  if (!pendingRoleChange.value) return
+  const { userId, newRole } = pendingRoleChange.value
+  showRoleConfirmModal.value = false
+  await updateUserRole(userId, newRole)
+  pendingRoleChange.value = null
+}
+
 async function updateUserRole(userId, newRole) {
   try {
-    await updateDoc(doc(db, 'users', userId), { role: newRole })
-    showToast(`User role successfully changed to ${newRole}.`, 'success')
+    const isMockUser = String(userId).startsWith('mock_')
+    if (isMockUser) {
+      const found = mockDonors.find(m => m.id === userId)
+      if (found) found.role = newRole
+    } else {
+      await updateDoc(doc(db, 'users', userId), { role: newRole })
+    }
+    showToast(`User role successfully changed to ${newRole.toUpperCase()}.`, 'success')
     await fetchUsers(true)
     await loadAdminStats(true)
   } catch (err) {
@@ -1061,8 +1190,14 @@ function handleDeleteUser(userId) {
 async function confirmDeleteUser() {
   if (!userToDelete.value) return
   try {
-    await deleteDoc(doc(db, 'users', userToDelete.value))
-    showToast('User profile deleted successfully.', 'success')
+    const userId = userToDelete.value
+    if (String(userId).startsWith('mock_')) {
+      const idx = mockDonors.findIndex(m => m.id === userId)
+      if (idx !== -1) mockDonors.splice(idx, 1)
+    } else {
+      await deleteDoc(doc(db, 'users', userId))
+    }
+    showToast('User account deleted successfully.', 'success')
     await fetchUsers(true)
     await loadAdminStats(true)
   } catch (err) {
@@ -1777,17 +1912,46 @@ onUnmounted(() => {
   overflow: visible;
 }
 
+.ll-table-card {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  border: 1px solid var(--ll-slate-200) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+}
+
 .ll-admin-table th {
   color: var(--ll-slate-700);
-  font-size: 0.8125rem;
+  font-size: 0.78rem !important;
   font-weight: 700;
-  background: var(--ll-surface-alt);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #F8FAFC !important;
+  padding: 0.85rem 0.9rem !important;
   white-space: nowrap;
 }
 
 .ll-admin-table td {
   color: var(--ll-slate-700);
-  font-size: 0.875rem;
+  font-size: 0.85rem;
+  padding: 0.7rem 0.9rem !important;
+  white-space: nowrap;
+}
+
+.ll-badge-blood {
+  background-color: var(--ll-wine-red) !important;
+  color: #fff !important;
+  font-size: 0.74rem !important;
+  padding: 0 0.5rem !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  line-height: 28px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 4px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 1px 3px rgba(142, 36, 53, 0.2);
 }
 
 .ll-icon-button {
@@ -1816,6 +1980,33 @@ onUnmounted(() => {
   max-width: 720px;
   padding-top: 3rem;
   padding-bottom: 3rem;
+}
+
+.ll-select-button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: #CBD5E1 !important;
+}
+
+/* Custom scrollbar for tables to look elegant and not touch borders */
+.ll-table-card .table-responsive {
+  overflow-y: auto;
+  background: linear-gradient(to bottom, #F8FAFC 0%, #F8FAFC 52px, #E2E8F0 52px, #E2E8F0 53px, transparent 53px, transparent 100%);
+}
+.ll-table-card .table-responsive::-webkit-scrollbar {
+  width: 6px;
+}
+.ll-table-card .table-responsive::-webkit-scrollbar-track {
+  background: transparent;
+  margin-top: 53px;
+  margin-bottom: 8px;
+}
+.ll-table-card .table-responsive::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+.ll-table-card .table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
 }
 
 .ll-expanded-row td {

@@ -193,15 +193,8 @@ function updateTimeAgo() {
   const createdSecs = props.request.createdAt.seconds || (new Date(props.request.createdAt).getTime() / 1000)
   const diffMs = Date.now() - (createdSecs * 1000)
   
-  // Expiry thresholds: 24h Critical, 48h Urgent, 72h Moderate
-  let thresholdHours = 72
-  if (props.request.urgency === 'critical') thresholdHours = 24
-  else if (props.request.urgency === 'urgent') thresholdHours = 48
-  
-  // Extend threshold in development so that demo data doesn't expire
-  if (import.meta.env.DEV) {
-    thresholdHours = 720 // 30 days
-  }
+  // Expiry threshold: 720 hours (30 days) to keep demo & live requests active
+  let thresholdHours = 720
   
   const thresholdMs = thresholdHours * 60 * 60 * 1000
   if (diffMs >= thresholdMs) {

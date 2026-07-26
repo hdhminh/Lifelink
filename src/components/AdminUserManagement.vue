@@ -22,7 +22,7 @@
 
     <!-- Single Unified User Accounts Table -->
     <div v-else class="ll-card ll-table-card shadow-sm border rounded-3 overflow-hidden">
-      <div class="table-responsive dashboard-style-5">
+      <div class="table-responsive dashboard-style-5" style="max-height: 600px; overflow-y: auto;">
         <table class="table table-sm align-middle mb-0 ll-admin-table dashboard-style-6">
           <thead class="sticky-top bg-slate-50 border-bottom border-slate-200 dashboard-style-7">
             <tr>

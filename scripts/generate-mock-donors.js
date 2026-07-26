@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { HOSPITAL_DATABASE } from '../src/data/hospitalCoordinates.js'
+import { HOSPITAL_DATABASE, EVENT_VENUES_DATABASE } from '../src/data/hospitalCoordinates.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -105,16 +105,18 @@ function getRandomLocation() {
     }
   }
 
-  const cityHospitals = HOSPITAL_DATABASE.filter((h) => h.city === selectedCityName)
+  const allLocations = [...HOSPITAL_DATABASE, ...EVENT_VENUES_DATABASE]
+  const cityLocations = allLocations.filter((l) => l.city === selectedCityName)
   const baseHospital =
-    cityHospitals.length > 0
-      ? cityHospitals[Math.floor(Math.random() * cityHospitals.length)]
-      : HOSPITAL_DATABASE[0]
+    cityLocations.length > 0
+      ? cityLocations[Math.floor(Math.random() * cityLocations.length)]
+      : allLocations[0]
 
-  // Add small random spread (max 0.005 degrees ~ 500m) to stay on land
-  // Reduced from 0.015 to avoid placing donors in rivers
+  // Spread donors out ~1km (0.01 degrees)
   const angle = Math.random() * Math.PI * 2
-  const distance = Math.random() * 0.005
+  // We use a slightly constrained distance for FV Hospital (near river) to avoid water
+  const maxDist = baseHospital.name.includes('FV Hospital') ? 0.003 : 0.01
+  const distance = Math.random() * maxDist
   const latOffset = Math.sin(angle) * distance
   const lngOffset = Math.cos(angle) * distance
 

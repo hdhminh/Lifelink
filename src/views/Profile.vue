@@ -49,7 +49,7 @@
  * Profile.vue
  * Donor profile display and edit form with validation and async state.
  */
-import { ref, computed } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { Timestamp } from 'firebase/firestore'
 import { useAuth } from '@/composables/useAuth.js'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'

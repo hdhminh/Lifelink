@@ -65,7 +65,7 @@
             ></i>
           </div>
           <div
-            v-show="showLegend"
+            v-if="showLegend"
             class="d-flex flex-column gap-1 mt-2 pt-2 border-top map-style-23"
            
           >
@@ -925,6 +925,7 @@ function renderRadarDonors() {
   let outerCount = 0
 
   // Calculate counts for the overlay card
+  let renderedCount = 0
   mockDonors.forEach((donor) => {
     if (canDonateTo(donor.bloodType, req.bloodType)) {
       const dist = calculateHaversineDistance(donor.lat, donor.lng, coords.lat, coords.lng)
@@ -932,7 +933,8 @@ function renderRadarDonors() {
       else if (dist <= outerRadius) outerCount++
 
       // Render radar markers only for authenticated non-guest users and if zoomed in
-      if (!isGuest.value && currentZoom > 12 && dist <= outerRadius) {
+      if (!isGuest.value && currentZoom > 12 && dist <= outerRadius && renderedCount < 100) {
+        renderedCount++
         const color = donor.canDonateNow ? '#198754' : '#6c757d'
 
         const icon = L.divIcon({

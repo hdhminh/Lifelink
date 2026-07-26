@@ -26,7 +26,7 @@
         <table class="table align-middle mb-0 ll-admin-table dashboard-style-6">
           <thead class="sticky-top bg-slate-50 border-bottom border-slate-200 dashboard-style-7">
             <tr>
-              <th class="dashboard-style-8" scope="col">No.</th>
+              <th class="dashboard-style-8 text-center" scope="col" style="width: 60px;">No.</th>
               <th class="dashboard-style-9" scope="col">User Info</th>
               <th class="dashboard-style-10" scope="col">Phone</th>
               <th class="dashboard-style-11" scope="col">City</th>
@@ -38,7 +38,7 @@
           </thead>
           <tbody>
             <tr v-for="(u, index) in allSystemUsers.slice(0, userDisplayLimit)" :key="u.id">
-              <td class="dashboard-style-16">{{ index + 1 }}</td>
+              <td class="dashboard-style-16 text-center">{{ index + 1 }}</td>
               <td class="dashboard-style-17">
                 <div class="d-flex flex-column">
                   <strong class="text-slate-900 text-truncate dashboard-style-18" :title="u.displayName">{{ u.displayName }}</strong>
@@ -76,6 +76,7 @@
               <td class="dashboard-style-22">
                 <select
                   class="form-select form-select-sm d-inline-block shadow-xs ll-select-button dashboard-style-24"
+                  style="height: 32px; padding-top: 0; padding-bottom: 0;"
                   :value="u.role || 'donor'"
                   :disabled="u.uid === userProfile.uid"
                   :title="`Change role for ${u.displayName}`"
@@ -86,9 +87,10 @@
                 </select>
               </td>
               <td class="dashboard-style-25">
-                <div class="d-flex justify-content-end align-items-center dashboard-style-26">
+                <div class="d-flex justify-content-end align-items-center gap-2 dashboard-style-26">
                   <button
                     class="ll-btn-secondary btn-sm px-2 py-0 d-inline-flex align-items-center justify-content-center dashboard-style-27"
+                    style="height: 32px;"
                     type="button"
                     title="View participation history"
                     @click="$emit('view-user-history', u)"
@@ -97,12 +99,13 @@
                   </button>
                   <button
                     class="ll-icon-button ll-icon-button--danger d-inline-flex align-items-center justify-content-center dashboard-style-28"
+                    style="height: 32px; width: 32px;"
                     type="button"
                     title="Delete user"
                     :disabled="u.uid === userProfile.uid"
                     @click="$emit('handle-delete-user', u.id)"
                   >
-                    <i class="bi bi-trash-fill dashboard-style-3"></i>
+                    <i class="bi bi-trash-fill"></i>
                   </button>
                 </div>
               </td>

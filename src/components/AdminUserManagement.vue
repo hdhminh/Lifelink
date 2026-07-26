@@ -59,7 +59,7 @@
                 {{ u.city }}
               </td>
               <td class="dashboard-style-22">
-                <span class="ll-badge-blood">{{ u.bloodType || 'N/A' }}</span>
+                <span class="ll-badge-blood d-inline-flex align-items-center justify-content-center" style="height: 32px; min-width: 48px;">{{ u.bloodType || 'N/A' }}</span>
               </td>
               <td class="dashboard-style-22">
                 <span
@@ -68,7 +68,8 @@
                       ? 'badge bg-success text-white'
                       : 'badge bg-secondary text-white'
                   "
-                  class="dashboard-style-23"
+                  class="dashboard-style-23 d-inline-flex align-items-center justify-content-center"
+                  style="height: 32px; min-width: 80px; font-size: 0.85rem;"
                 >
                   {{ u.canDonateNow !== false ? 'Ready' : 'Cooldown' }}
                 </span>

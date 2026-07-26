@@ -21,22 +21,23 @@ import {
   calculateEtaMinutes
 } from '@/utils/haversine.js'
 
+const isTracking = vueRef(false)
+const currentPosition = vueRef(null) // { lat, lng, accuracy, speed }
+const distanceToHospital = vueRef(null) // meters
+const formattedDistance = vueRef('')
+const estimatedEtaMins = vueRef(null) // minutes
+const trackingStatus = vueRef('idle') // 'idle' | 'en_route' | 'approaching' | 'arrived' | 'error'
+const trackingError = vueRef(null)
+
+let watchId = null
+let activeTrackingKey = null
+let lastRecordedPos = null
+let lastWriteTimestamp = 0
+
+const MIN_WRITE_INTERVAL_MS = 5000 // 5 seconds
+const MIN_WRITE_DISTANCE_METERS = 30 // 30 meters
+
 export function useLocationTracking() {
-  const isTracking = vueRef(false)
-  const currentPosition = vueRef(null) // { lat, lng, accuracy, speed }
-  const distanceToHospital = vueRef(null) // meters
-  const formattedDistance = vueRef('')
-  const estimatedEtaMins = vueRef(null) // minutes
-  const trackingStatus = vueRef('idle') // 'idle' | 'en_route' | 'approaching' | 'arrived' | 'error'
-  const trackingError = vueRef(null)
-
-  let watchId = null
-  let activeTrackingKey = null
-  let lastRecordedPos = null
-  let lastWriteTimestamp = 0
-
-  const MIN_WRITE_INTERVAL_MS = 5000 // 5 seconds
-  const MIN_WRITE_DISTANCE_METERS = 30 // 30 meters
 
   /**
    * Helper to format tracking key.
@@ -212,10 +213,6 @@ export function useLocationTracking() {
     trackingStatus.value = 'arrived'
     stopTracking()
   }
-
-  onUnmounted(() => {
-    stopTracking()
-  })
 
   return {
     isTracking,

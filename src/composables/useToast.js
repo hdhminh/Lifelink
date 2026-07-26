@@ -8,6 +8,7 @@ import { ref } from 'vue'
 
 const toasts = ref([])
 let toastCount = 0
+const activeTimers = new Map()
 
 export function useToast() {
   /**
@@ -21,9 +22,12 @@ export function useToast() {
     const newToast = { id, message, type }
     toasts.value.push(newToast)
 
-    setTimeout(() => {
+    const timerId = setTimeout(() => {
       removeToast(id)
+      activeTimers.delete(id)
     }, duration)
+
+    activeTimers.set(id, timerId)
   }
 
   /**
@@ -31,12 +35,28 @@ export function useToast() {
    * @param {number} id - Toast ID.
    */
   function removeToast(id) {
-    toasts.value = toasts.value.filter(t => t.id !== id)
+    if (activeTimers.has(id)) {
+      clearTimeout(activeTimers.get(id))
+      activeTimers.delete(id)
+    }
+    toasts.value = toasts.value.filter((t) => t.id !== id)
+  }
+
+  /**
+   * Clears all active toasts and cancels their timers.
+   */
+  function clearAllToasts() {
+    for (const timerId of activeTimers.values()) {
+      clearTimeout(timerId)
+    }
+    activeTimers.clear()
+    toasts.value = []
   }
 
   return {
     toasts,
     showToast,
-    removeToast
+    removeToast,
+    clearAllToasts
   }
 }

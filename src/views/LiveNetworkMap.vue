@@ -1,17 +1,22 @@
 <template>
-  <div class="ll-page-container" style="min-height: 85vh;">
+  <div class="ll-page-container" style="min-height: 85vh">
     <div class="ll-section-header mb-3">
       <div>
         <h1 class="ll-section-title">
-          <i class="bi bi-geo-alt-fill me-2" style="color: #8E2435;"></i> Live Network Map
+          <i class="bi bi-geo-alt-fill me-2" style="color: #8e2435"></i> Live Network Map
         </h1>
         <p class="ll-text-meta mb-0">
-          Interactive map displaying active hospital emergency requests, live responder tracking, and upcoming donation drives across Vietnam.
+          Interactive map displaying active hospital emergency requests, live responder tracking,
+          and upcoming donation drives across Vietnam.
         </p>
       </div>
     </div>
 
-    <AlertMessage v-if="requestsError || eventsError" type="danger" :message="requestsError || eventsError" />
+    <AlertMessage
+      v-if="requestsError || eventsError"
+      type="danger"
+      :message="requestsError || eventsError"
+    />
 
     <div>
       <EmergencyMap

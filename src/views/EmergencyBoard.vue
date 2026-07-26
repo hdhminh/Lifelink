@@ -3,7 +3,10 @@
     <div class="ll-section-header">
       <div>
         <div class="d-flex flex-wrap align-items-center gap-3 mb-1">
-          <h1 class="ll-section-title mb-0"><i class="bi bi-exclamation-triangle-fill me-2" style="color: #8E2435;"></i> Emergency Requests</h1>
+          <h1 class="ll-section-title mb-0">
+            <i class="bi bi-exclamation-triangle-fill me-2" style="color: #8e2435"></i> Emergency
+            Requests
+          </h1>
 
           <span class="ll-live-badge">
             <span class="ll-live-dot" aria-hidden="true"></span>
@@ -11,24 +14,27 @@
           </span>
           <span class="ll-text-meta">{{ filteredRequests.length }} active requests</span>
         </div>
-        <p class="ll-text-meta mb-0 mt-1">Browse and respond to urgent real-time blood donation needs.</p>
+        <p class="ll-text-meta mb-0 mt-1">
+          Browse and respond to urgent real-time blood donation needs.
+        </p>
       </div>
 
       <div class="d-flex align-items-center gap-2">
-        <button v-if="isAdmin" class="ll-btn-primary" type="button" @click="openCreateForm"><i class="bi bi-plus-lg me-1"></i> New Request</button>
+        <button v-if="isAdmin" class="ll-btn-primary" type="button" @click="openCreateForm">
+          <i class="bi bi-plus-lg me-1"></i> New Request
+        </button>
       </div>
     </div>
-
-
-
 
     <div aria-live="polite" aria-atomic="true" class="visually-hidden">
       {{ requests.length }} active emergency requests loaded.
     </div>
 
     <section class="ll-toolbar p-4 bg-white border rounded-lg shadow-sm mb-4">
-      <h2 class="fw-bold mb-3 text-slate-800" style="font-size: 1.05rem;"><i class="bi bi-funnel-fill text-wine me-2"></i>Filter Requests</h2>
-      
+      <h2 class="fw-bold mb-3 text-slate-800" style="font-size: 1.05rem">
+        <i class="bi bi-funnel-fill text-wine me-2"></i>Filter Requests
+      </h2>
+
       <div class="row g-4">
         <!-- Blood Type Chips -->
         <div class="col-12">
@@ -39,8 +45,11 @@
               :key="bt"
               type="button"
               :aria-label="`Filter by blood type ${bt}`"
-              :class="['ll-chip', { 'll-chip--active': (bt === 'Any' && !filterBloodType) || (filterBloodType === bt) }]"
-              @click="filterBloodType = (bt === 'Any' ? '' : bt)"
+              :class="[
+                'll-chip',
+                { 'll-chip--active': (bt === 'Any' && !filterBloodType) || filterBloodType === bt }
+              ]"
+              @click="filterBloodType = bt === 'Any' ? '' : bt"
             >
               {{ bt }}
             </button>
@@ -52,7 +61,15 @@
           <label for="filter-city" class="ll-text-label mb-2 d-block">City Location</label>
           <div class="ll-search-wrapper">
             <i class="bi bi-search ll-search-icon"></i>
-            <input id="filter-city" v-model="filterCity" class="form-control" type="text" placeholder="Search by city..." aria-label="Search by city" autocomplete="address-level2">
+            <input
+              id="filter-city"
+              v-model="filterCity"
+              class="form-control"
+              type="text"
+              placeholder="Search by city..."
+              aria-label="Search by city"
+              autocomplete="address-level2"
+            />
           </div>
         </div>
 
@@ -64,8 +81,14 @@
               :key="level"
               type="button"
               :aria-label="`Filter by urgency level ${level}`"
-              :class="['ll-chip', { 'll-chip--active': (level === 'All' && !filterUrgency) || (filterUrgency === level.toLowerCase()) }]"
-              @click="filterUrgency = (level === 'All' ? '' : level.toLowerCase())"
+              :class="[
+                'll-chip',
+                {
+                  'll-chip--active':
+                    (level === 'All' && !filterUrgency) || filterUrgency === level.toLowerCase()
+                }
+              ]"
+              @click="filterUrgency = level === 'All' ? '' : level.toLowerCase()"
             >
               {{ level }}
             </button>
@@ -95,78 +118,100 @@
 
     <LoadingSpinner v-if="loading" message="Loading emergency requests..." />
     <AlertMessage v-else-if="error" type="danger" :message="error" :dismissible="false" />
-    
+
     <div v-else>
       <!-- Board Grid View -->
       <div class="row g-4">
-
-      <!-- Left Column: Live requests grid -->
-      <div class="col-lg-8 col-12">
-
-        <div v-if="filteredRequests.length === 0" class="ll-empty-state">
-          <div class="ll-empty-state__icon"><i class="bi bi-droplet-fill text-danger"></i></div>
-          <div class="ll-empty-state__title">No active emergency requests</div>
-          <p class="ll-empty-state__body">{{ hasFilters ? 'Try clearing your filters.' : 'Check back soon.' }}</p>
-        </div>
-        <div v-else class="row g-4" ref="requestListContainer">
-          <div v-for="request in paginatedRequests" :key="request.id" class="col-md-6 col-12 emergency-grid-item">
-            <RequestCard
-              :request="request"
-              :is-admin="isAdmin"
-              :confirming="confirmLoading"
-              :en-route-count="getEnRouteCountForRequest(request.id)"
-              @confirm="handleConfirm(request.id)"
-              @edit="openEditForm(request)"
-              @delete="handleDelete(request.id)"
-              @status-change="handleStatusChange(request)"
-              @focus-map="handleFocusMap"
-            />
+        <!-- Left Column: Live requests grid -->
+        <div class="col-lg-8 col-12">
+          <div v-if="filteredRequests.length === 0" class="ll-empty-state">
+            <div class="ll-empty-state__icon"><i class="bi bi-droplet-fill text-danger"></i></div>
+            <div class="ll-empty-state__title">No active emergency requests</div>
+            <p class="ll-empty-state__body">
+              {{ hasFilters ? 'Try clearing your filters.' : 'Check back soon.' }}
+            </p>
+          </div>
+          <div v-else ref="requestListContainer" class="row g-4">
+            <div
+              v-for="request in paginatedRequests"
+              :key="request.id"
+              class="col-md-6 col-12 emergency-grid-item"
+            >
+              <RequestCard
+                :request="request"
+                :is-admin="isAdmin"
+                :confirming="confirmLoading"
+                :en-route-count="getEnRouteCountForRequest(request.id)"
+                @confirm="handleConfirm(request.id)"
+                @edit="openEditForm(request)"
+                @delete="handleDelete(request.id)"
+                @status-change="handleStatusChange(request)"
+                @focus-map="handleFocusMap"
+              />
+            </div>
           </div>
         </div>
 
+        <!-- Right Column: Hotline directory sidebar -->
+        <div class="col-lg-4 col-12">
+          <aside class="ll-card p-4 mb-4">
+            <h5 class="fw-bold mb-2 text-wine">
+              <i class="bi bi-telephone-fill me-2"></i>Emergency Hotlines
+            </h5>
+            <p class="small text-slate-500 mb-4">
+              Vietnam local emergency coordinators and medical rescue networks.
+            </p>
+
+            <div class="ll-hotline-list">
+              <div class="ll-hotline-item d-flex justify-content-between align-items-center">
+                <div>
+                  <span class="fw-bold d-block text-slate-900">Medical Service</span>
+                  <span class="small text-slate-500">Ambulance & Red Cross</span>
+                </div>
+                <a
+                  href="tel:115"
+                  class="ll-btn-primary ll-btn-sm text-decoration-none px-3 font-weight-700"
+                  >115</a
+                >
+              </div>
+
+              <div
+                class="ll-hotline-item d-flex justify-content-between align-items-center border-top pt-3 mt-3"
+              >
+                <div>
+                  <span class="fw-bold d-block text-slate-900">Police Dispatch</span>
+                  <span class="small text-slate-500">Local emergency reporting</span>
+                </div>
+                <a
+                  href="tel:113"
+                  class="ll-btn-secondary ll-btn-sm text-decoration-none px-3 font-weight-700"
+                  >113</a
+                >
+              </div>
+
+              <div
+                class="ll-hotline-item d-flex justify-content-between align-items-center border-top pt-3 mt-3"
+              >
+                <div>
+                  <span class="fw-bold d-block text-slate-900">Fire & Rescue</span>
+                  <span class="small text-slate-500">Rapid physical support</span>
+                </div>
+                <a
+                  href="tel:114"
+                  class="ll-btn-secondary ll-btn-sm text-decoration-none px-3 font-weight-700"
+                  >114</a
+                >
+              </div>
+            </div>
+          </aside>
+
+          <PaginationControls
+            :current-page="currentPage"
+            :total-pages="totalPages"
+            @page-change="handlePageChange"
+          />
+        </div>
       </div>
-
-
-      <!-- Right Column: Hotline directory sidebar -->
-      <div class="col-lg-4 col-12">
-        <aside class="ll-card p-4 mb-4">
-          <h5 class="fw-bold mb-2 text-wine"><i class="bi bi-telephone-fill me-2"></i>Emergency Hotlines</h5>
-          <p class="small text-slate-500 mb-4">Vietnam local emergency coordinators and medical rescue networks.</p>
-          
-          <div class="ll-hotline-list">
-            <div class="ll-hotline-item d-flex justify-content-between align-items-center">
-              <div>
-                <span class="fw-bold d-block text-slate-900">Medical Service</span>
-                <span class="small text-slate-500">Ambulance & Red Cross</span>
-              </div>
-              <a href="tel:115" class="ll-btn-primary ll-btn-sm text-decoration-none px-3 font-weight-700">115</a>
-            </div>
-            
-            <div class="ll-hotline-item d-flex justify-content-between align-items-center border-top pt-3 mt-3">
-              <div>
-                <span class="fw-bold d-block text-slate-900">Police Dispatch</span>
-                <span class="small text-slate-500">Local emergency reporting</span>
-              </div>
-              <a href="tel:113" class="ll-btn-secondary ll-btn-sm text-decoration-none px-3 font-weight-700">113</a>
-            </div>
-            
-            <div class="ll-hotline-item d-flex justify-content-between align-items-center border-top pt-3 mt-3">
-              <div>
-                <span class="fw-bold d-block text-slate-900">Fire & Rescue</span>
-                <span class="small text-slate-500">Rapid physical support</span>
-              </div>
-              <a href="tel:114" class="ll-btn-secondary ll-btn-sm text-decoration-none px-3 font-weight-700">114</a>
-            </div>
-          </div>
-        </aside>
-
-        <PaginationControls
-          :current-page="currentPage"
-          :total-pages="totalPages"
-          @page-change="handlePageChange"
-        />
-      </div>
-    </div>
     </div>
 
     <!-- Modals -->
@@ -204,27 +249,52 @@
 
     <!-- Maps Confirmation Modal (In-app Success + Navigation Request) -->
     <Teleport to="body">
-      <div v-if="showMapsConfirmModal" class="ll-modal-backdrop" @click="closeMapsConfirmModal"></div>
-      <div v-if="showMapsConfirmModal" class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+      <div
+        v-if="showMapsConfirmModal"
+        class="ll-modal-backdrop"
+        @click="closeMapsConfirmModal"
+      ></div>
+      <div
+        v-if="showMapsConfirmModal"
+        class="modal d-block"
+        tabindex="-1"
+        role="dialog"
+        aria-modal="true"
+      >
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content ll-modal-content text-center p-4">
             <div class="mb-3">
-              <div class="mx-auto d-flex align-items-center justify-content-center rounded-circle bg-success-bg text-success" style="width: 64px; height: 64px;">
-                <i class="bi bi-check-circle-fill" style="font-size: 2.5rem;"></i>
+              <div
+                class="mx-auto d-flex align-items-center justify-content-center rounded-circle bg-success-bg text-success"
+                style="width: 64px; height: 64px"
+              >
+                <i class="bi bi-check-circle-fill" style="font-size: 2.5rem"></i>
               </div>
             </div>
             <h5 class="fw-bold text-slate-900 mb-2">Confirmation Successful!</h5>
-            <p class="text-slate-500 mb-4 px-2" style="font-size: 0.95rem;">
+            <p class="text-slate-500 mb-4 px-2" style="font-size: 0.95rem">
               Would you like to open Google Maps for immediate directions to the hospital?
             </p>
             <div class="d-flex flex-column gap-2">
-              <button type="button" class="btn ll-btn-primary w-100 d-flex align-items-center justify-content-center gap-2" @click="handleShareAndOpenMaps">
+              <button
+                type="button"
+                class="btn ll-btn-primary w-100 d-flex align-items-center justify-content-center gap-2"
+                @click="handleShareAndOpenMaps"
+              >
                 <i class="bi bi-broadcast"></i> Share Live Location & Open Maps
               </button>
-              <button type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2" @click="handleOpenMaps">
+              <button
+                type="button"
+                class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2"
+                @click="handleOpenMaps"
+              >
                 <i class="bi bi-geo-alt-fill"></i> Just Open Google Maps
               </button>
-              <button type="button" class="btn btn-link text-slate-400 text-decoration-none py-1" @click="closeMapsConfirmModal">
+              <button
+                type="button"
+                class="btn btn-link text-slate-400 text-decoration-none py-1"
+                @click="closeMapsConfirmModal"
+              >
                 No, thanks
               </button>
             </div>
@@ -235,32 +305,61 @@
 
     <!-- Guest One-Time Confirmation Modal -->
     <Teleport to="body">
-      <div v-if="showGuestConfirmModal" class="ll-modal-backdrop" @click="showGuestConfirmModal = false"></div>
-      <div v-if="showGuestConfirmModal" class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+      <div
+        v-if="showGuestConfirmModal"
+        class="ll-modal-backdrop"
+        @click="showGuestConfirmModal = false"
+      ></div>
+      <div
+        v-if="showGuestConfirmModal"
+        class="modal d-block"
+        tabindex="-1"
+        role="dialog"
+        aria-modal="true"
+      >
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content ll-modal-content p-4">
             <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <h5 class="fw-bold text-slate-900 m-0"><i class="bi bi-heart-fill text-danger me-2"></i>One-Time Confirmation</h5>
-              <button type="button" class="btn-close" @click="showGuestConfirmModal = false" aria-label="Close"></button>
+              <h5 class="fw-bold text-slate-900 m-0">
+                <i class="bi bi-heart-fill text-danger me-2"></i>One-Time Confirmation
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                aria-label="Close"
+                @click="showGuestConfirmModal = false"
+              ></button>
             </div>
-            
+
             <!-- Success Screen -->
             <div v-if="guestConfirmSuccess" class="text-center">
               <div class="mb-3">
-                <div class="mx-auto d-flex align-items-center justify-content-center rounded-circle bg-success-bg text-success" style="width: 64px; height: 64px;">
-                  <i class="bi bi-check-circle-fill" style="font-size: 2.5rem;"></i>
+                <div
+                  class="mx-auto d-flex align-items-center justify-content-center rounded-circle bg-success-bg text-success"
+                  style="width: 64px; height: 64px"
+                >
+                  <i class="bi bi-check-circle-fill" style="font-size: 2.5rem"></i>
                 </div>
               </div>
               <h5 class="fw-bold text-slate-900 mb-2">Confirmation Successful!</h5>
-              <p class="text-slate-500 mb-4 px-2" style="font-size: 0.95rem;">
-                Thank you for your life-saving contribution. Would you like to open Google Maps for immediate directions to {{ guestConfirmHospital }}?
+              <p class="text-slate-500 mb-4 px-2" style="font-size: 0.95rem">
+                Thank you for your life-saving contribution. Would you like to open Google Maps for
+                immediate directions to {{ guestConfirmHospital }}?
               </p>
               <div class="d-flex flex-column gap-2">
-                <button type="button" class="btn ll-btn-primary w-100 d-flex align-items-center justify-content-center gap-2" @click="handleOpenGuestMaps">
+                <button
+                  type="button"
+                  class="btn ll-btn-primary w-100 d-flex align-items-center justify-content-center gap-2"
+                  @click="handleOpenGuestMaps"
+                >
                   <i class="bi bi-geo-alt-fill"></i> Open Google Maps
                 </button>
-                <button type="button" class="btn btn-link text-slate-400 text-decoration-none py-1" @click="showGuestConfirmModal = false">
+                <button
+                  type="button"
+                  class="btn btn-link text-slate-400 text-decoration-none py-1"
+                  @click="showGuestConfirmModal = false"
+                >
                   No, thanks
                 </button>
               </div>
@@ -269,15 +368,18 @@
             <!-- Form Screen -->
             <div v-else>
               <p class="text-slate-500 mb-3 small">
-                Confirm your availability for <strong>{{ guestConfirmHospital }}</strong> in {{ guestConfirmCity }}. No registration is required.
+                Confirm your availability for <strong>{{ guestConfirmHospital }}</strong> in
+                {{ guestConfirmCity }}. No registration is required.
               </p>
-              
+
               <div v-if="guestConfirmError" class="alert alert-danger py-2 px-3 small mb-3">
                 {{ guestConfirmError }}
               </div>
 
               <div class="mb-3">
-                <label for="guest-name" class="form-label fw-bold small text-slate-700">Full Name *</label>
+                <label for="guest-name" class="form-label fw-bold small text-slate-700"
+                  >Full Name *</label
+                >
                 <input
                   id="guest-name"
                   v-model="guestConfirmName"
@@ -286,11 +388,13 @@
                   placeholder="e.g. John Doe"
                   autocomplete="name"
                   required
-                >
+                />
               </div>
 
               <div class="mb-3">
-                <label for="guest-phone" class="form-label fw-bold small text-slate-700">Phone Number (Optional)</label>
+                <label for="guest-phone" class="form-label fw-bold small text-slate-700"
+                  >Phone Number (Optional)</label
+                >
                 <input
                   id="guest-phone"
                   v-model="guestConfirmPhone"
@@ -298,12 +402,20 @@
                   class="form-control"
                   placeholder="e.g. +84 901234567"
                   autocomplete="tel"
-                >
+                />
               </div>
 
               <div class="d-flex gap-2 mt-4">
-                <button type="button" class="ll-btn-secondary w-50" @click="showGuestConfirmModal = false">Cancel</button>
-                <button type="button" class="ll-btn-primary w-50" @click="commitGuestConfirm">Confirm</button>
+                <button
+                  type="button"
+                  class="ll-btn-secondary w-50"
+                  @click="showGuestConfirmModal = false"
+                >
+                  Cancel
+                </button>
+                <button type="button" class="ll-btn-primary w-50" @click="commitGuestConfirm">
+                  Confirm
+                </button>
               </div>
             </div>
           </div>
@@ -312,12 +424,23 @@
     </Teleport>
 
     <!-- Floating Tracking Status -->
-    <div v-if="isTracking" class="ll-tracking-indicator shadow-lg rounded-pill px-3 py-2 bg-white border border-danger d-flex align-items-center gap-3">
+    <div
+      v-if="isTracking"
+      class="ll-tracking-indicator shadow-lg rounded-pill px-3 py-2 bg-white border border-danger d-flex align-items-center gap-3"
+    >
       <div class="d-flex align-items-center gap-2">
-        <span class="spinner-grow spinner-grow-sm text-danger" role="status" aria-hidden="true"></span>
+        <span
+          class="spinner-grow spinner-grow-sm text-danger"
+          role="status"
+          aria-hidden="true"
+        ></span>
         <span class="fw-bold text-slate-800 small">Sharing Live Location</span>
       </div>
-      <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" @click="stopTracking" type="button">
+      <button
+        class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold"
+        type="button"
+        @click="stopTracking"
+      >
         Stop Sharing
       </button>
     </div>
@@ -398,7 +521,7 @@ async function spawnRandomEmergency() {
   const hospital = HOSPITAL_DATABASE[Math.floor(Math.random() * HOSPITAL_DATABASE.length)]
   const bloodType = BLOOD_TYPES[Math.floor(Math.random() * BLOOD_TYPES.length)]
   const urgency = URGENCY_LEVELS[Math.floor(Math.random() * URGENCY_LEVELS.length)]
-  
+
   const mockRequest = {
     hospitalName: hospital.name,
     city: hospital.city,
@@ -485,32 +608,34 @@ function handleFocusMap(requestId) {
   router.push({ path: '/map', query: { request: requestId } })
 }
 
-
 const confirmedRequestIds = ref([])
-
-
 
 let unsubscribeConfirmations = null
 
-watch(user, (newUser) => {
-  if (unsubscribeConfirmations) {
-    unsubscribeConfirmations()
-    unsubscribeConfirmations = null
-  }
-  if (newUser) {
-    const q = query(
-      collection(db, 'confirmations'),
-      where('donorId', '==', newUser.uid)
-    )
-    unsubscribeConfirmations = onSnapshot(q, (snap) => {
-      confirmedRequestIds.value = snap.docs.map(doc => doc.data().requestId)
-    }, (err) => {
-      console.error('[EmergencyBoard] Error listening to user confirmations:', err)
-    })
-  } else {
-    confirmedRequestIds.value = []
-  }
-}, { immediate: true })
+watch(
+  user,
+  (newUser) => {
+    if (unsubscribeConfirmations) {
+      unsubscribeConfirmations()
+      unsubscribeConfirmations = null
+    }
+    if (newUser) {
+      const q = query(collection(db, 'confirmations'), where('donorId', '==', newUser.uid))
+      unsubscribeConfirmations = onSnapshot(
+        q,
+        (snap) => {
+          confirmedRequestIds.value = snap.docs.map((doc) => doc.data().requestId)
+        },
+        (err) => {
+          console.error('[EmergencyBoard] Error listening to user confirmations:', err)
+        }
+      )
+    } else {
+      confirmedRequestIds.value = []
+    }
+  },
+  { immediate: true }
+)
 
 const filterBloodType = ref('')
 const filterCity = ref('')
@@ -544,15 +669,15 @@ watch([filterBloodType, filterCity, filterUrgency], () => {
 const filteredRequests = computed(() => {
   const urgencyOrder = { critical: 0, urgent: 1, moderate: 2 }
   let list = filterRequests(filterBloodType.value, filterCity.value, filterUrgency.value)
-  
+
   // Apply compatible only filter if active
   if (userProfile.value && filterCompatibleOnly.value) {
-    list = list.filter(req => canDonateTo(userProfile.value.bloodType, req.bloodType))
+    list = list.filter((req) => canDonateTo(userProfile.value.bloodType, req.bloodType))
   }
-  
+
   // Hide already confirmed requests for the current user
-  const unconfirmed = list.filter(req => !confirmedRequestIds.value.includes(req.id))
-  
+  const unconfirmed = list.filter((req) => !confirmedRequestIds.value.includes(req.id))
+
   return unconfirmed.sort((a, b) => {
     // 1. Sort compatible requests to top for logged-in donors
     if (userProfile.value && !isAdmin.value) {
@@ -567,7 +692,9 @@ const filteredRequests = computed(() => {
   })
 })
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredRequests.value.length / ITEMS_PER_PAGE)))
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(filteredRequests.value.length / ITEMS_PER_PAGE))
+)
 const paginatedRequests = computed(() => {
   const start = (currentPage.value - 1) * ITEMS_PER_PAGE
   return filteredRequests.value.slice(start, start + ITEMS_PER_PAGE)
@@ -580,7 +707,10 @@ function handlePageChange(newPage) {
   }
 }
 
-const hasFilters = computed(() => filterBloodType.value || filterCity.value || filterUrgency.value || filterCompatibleOnly.value)
+const hasFilters = computed(
+  () =>
+    filterBloodType.value || filterCity.value || filterUrgency.value || filterCompatibleOnly.value
+)
 
 function clearFilters() {
   filterBloodType.value = ''
@@ -671,7 +801,7 @@ const guestConfirmSuccess = ref(false)
  * @param {string} requestId - Request ID to confirm.
  */
 async function handleConfirm(requestId) {
-  const req = requests.value.find(r => r.id === requestId)
+  const req = requests.value.find((r) => r.id === requestId)
   if (!req) return
 
   if (!user.value) {
@@ -722,7 +852,7 @@ function handleOpenGuestMaps() {
 async function commitConfirmDonation() {
   if (!confirmingRequestId.value || !user.value || !userProfile.value) return
   const reqId = confirmingRequestId.value
-  const targetRequest = requests.value.find(r => r.id === reqId)
+  const targetRequest = requests.value.find((r) => r.id === reqId)
   try {
     await confirmAvailability(reqId, {
       donorId: user.value.uid,
@@ -730,10 +860,12 @@ async function commitConfirmDonation() {
       donorPhone: userProfile.value.phoneNumber || 'N/A',
       bloodType: userProfile.value.bloodType
     })
-    
+
     showToast('Availability confirmed successfully! The board will update live.', 'success')
     if (targetRequest) {
-      const mapUrl = buildMapsUrl((targetRequest.hospitalName || 'Emergency Request') + ', ' + (targetRequest.city || ''))
+      const mapUrl = buildMapsUrl(
+        (targetRequest.hospitalName || 'Emergency Request') + ', ' + (targetRequest.city || '')
+      )
       pendingMapUrl.value = mapUrl
       pendingRequestForTracking.value = targetRequest
       showMapsConfirmModal.value = true
@@ -766,7 +898,7 @@ watch(loading, (newLoading) => {
       animateCards()
     } else {
       nextTick(() => {
-        document.querySelectorAll('.emergency-grid-item').forEach(el => {
+        document.querySelectorAll('.emergency-grid-item').forEach((el) => {
           el.style.opacity = '1'
         })
       })
@@ -774,20 +906,22 @@ watch(loading, (newLoading) => {
   }
 })
 
-watch([filterBloodType, filterCity, filterUrgency, filterCompatibleOnly, currentPage, viewMode], () => {
-  if (viewMode.value === 'board') {
-    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      animateCards()
-    } else {
-      nextTick(() => {
-        document.querySelectorAll('.emergency-grid-item').forEach(el => {
-          el.style.opacity = '1'
+watch(
+  [filterBloodType, filterCity, filterUrgency, filterCompatibleOnly, currentPage, viewMode],
+  () => {
+    if (viewMode.value === 'board') {
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        animateCards()
+      } else {
+        nextTick(() => {
+          document.querySelectorAll('.emergency-grid-item').forEach((el) => {
+            el.style.opacity = '1'
+          })
         })
-      })
+      }
     }
   }
-})
-
+)
 
 onMounted(() => {
   startListening()
@@ -802,13 +936,13 @@ onMounted(() => {
       filterBloodType.value = session.preferredBloodType
     }
   }
-  
+
   if (!loading.value) {
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       animateCards()
     } else {
       nextTick(() => {
-        document.querySelectorAll('.emergency-grid-item').forEach(el => {
+        document.querySelectorAll('.emergency-grid-item').forEach((el) => {
           el.style.opacity = '1'
         })
       })
@@ -894,7 +1028,7 @@ onUnmounted(() => {
 }
 
 .ll-btn-wine-active {
-  background-color: var(--ll-wine-red, #8E2435) !important;
+  background-color: var(--ll-wine-red, #8e2435) !important;
   color: #ffffff !important;
   box-shadow: 0 2px 6px rgba(142, 36, 53, 0.25);
 }
@@ -902,5 +1036,4 @@ onUnmounted(() => {
 .emergency-grid-item {
   opacity: 1;
 }
-
 </style>

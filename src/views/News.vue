@@ -3,8 +3,12 @@
     <section class="mb-4 reveal-header">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
-          <h1 class="ll-text-heading mb-2"><i class="bi bi-newspaper me-2" style="color: #8E2435;"></i> Blood Donation News</h1>
-          <p class="ll-text-meta mb-0">Updates, campaigns, policy notes, and donor guidance for Vietnam.</p>
+          <h1 class="ll-text-heading mb-2">
+            <i class="bi bi-newspaper me-2" style="color: #8e2435"></i> Blood Donation News
+          </h1>
+          <p class="ll-text-meta mb-0">
+            Updates, campaigns, policy notes, and donor guidance for Vietnam.
+          </p>
         </div>
 
         <span v-if="loadingLive" class="ll-live-badge">
@@ -19,10 +23,20 @@
         <label for="news-search">Search News</label>
         <div class="ll-search-wrapper">
           <i class="bi bi-search ll-search-icon" aria-hidden="true"></i>
-          <input id="news-search" v-model="searchQuery" class="form-control" type="search" placeholder="Search news date, title, content, or category" aria-label="Search news date, title, content, or category" autocomplete="off">
+          <input
+            id="news-search"
+            v-model="searchQuery"
+            class="form-control"
+            type="search"
+            placeholder="Search news date, title, content, or category"
+            aria-label="Search news date, title, content, or category"
+            autocomplete="off"
+          />
         </div>
       </div>
-      <p class="ll-text-meta mb-0">Showing {{ paginatedNews.length }} of {{ filteredNews.length }} articles</p>
+      <p class="ll-text-meta mb-0">
+        Showing {{ paginatedNews.length }} of {{ filteredNews.length }} articles
+      </p>
     </section>
 
     <section v-if="paginatedNews.length > 0" class="d-grid gap-3">
@@ -35,16 +49,22 @@
           <h2>{{ item.title }}</h2>
           <p>{{ truncate(item.content) }}</p>
           <div class="d-flex justify-content-between align-items-center w-100 mt-3 flex-wrap gap-2">
-            <a v-if="item.link" :href="item.link" target="_blank" rel="noopener" class="text-wine small d-inline-block fw-bold text-decoration-none">
+            <a
+              v-if="item.link"
+              :href="item.link"
+              target="_blank"
+              rel="noopener"
+              class="text-wine small d-inline-block fw-bold text-decoration-none"
+            >
               Read full article <i class="bi bi-box-arrow-up-right ms-1"></i>
             </a>
             <button
               type="button"
               class="btn btn-sm d-inline-flex align-items-center gap-1 ll-like-btn"
               :class="isLiked(item.id) ? 'll-like-btn--active' : 'll-like-btn--inactive'"
-              @click="toggleLike(item.id)"
               :title="isLiked(item.id) ? 'Unlike this article' : 'Like this article'"
               :aria-label="isLiked(item.id) ? 'Unlike this article' : 'Like this article'"
+              @click="toggleLike(item.id)"
             >
               <i class="bi" :class="isLiked(item.id) ? 'bi-heart-fill' : 'bi-heart'"></i>
               <span>{{ getLikesCount(item) }}</span>
@@ -150,25 +170,29 @@ function setupLikesListener() {
   }
 
   const q = query(collection(db, 'newsLikes'))
-  unsubscribeLikes = onSnapshot(q, (snapshot) => {
-    const counts = {}
-    const userLikesSet = new Set()
+  unsubscribeLikes = onSnapshot(
+    q,
+    (snapshot) => {
+      const counts = {}
+      const userLikesSet = new Set()
 
-    snapshot.docs.forEach((docSnap) => {
-      const data = docSnap.data()
-      const nId = String(data.newsId)
-      counts[nId] = (counts[nId] || 0) + 1
+      snapshot.docs.forEach((docSnap) => {
+        const data = docSnap.data()
+        const nId = String(data.newsId)
+        counts[nId] = (counts[nId] || 0) + 1
 
-      if (user.value && data.userId === user.value.uid) {
-        userLikesSet.add(nId)
-      }
-    })
+        if (user.value && data.userId === user.value.uid) {
+          userLikesSet.add(nId)
+        }
+      })
 
-    dbLikes.value = counts
-    dbUserLikes.value = userLikesSet
-  }, (err) => {
-    console.error('Firestore newsLikes listener error:', err)
-  })
+      dbLikes.value = counts
+      dbUserLikes.value = userLikesSet
+    },
+    (err) => {
+      console.error('Firestore newsLikes listener error:', err)
+    }
+  )
 }
 
 // Like check / count helpers
@@ -228,15 +252,18 @@ async function toggleLike(newsId) {
 const filteredNews = computed(() => {
   const q = searchQuery.value.toLowerCase().trim()
   if (!q) return allNews.value
-  return allNews.value.filter(item =>
-    item.date.includes(q) ||
-    item.title.toLowerCase().includes(q) ||
-    item.content.toLowerCase().includes(q) ||
-    item.category.toLowerCase().includes(q)
+  return allNews.value.filter(
+    (item) =>
+      item.date.includes(q) ||
+      item.title.toLowerCase().includes(q) ||
+      item.content.toLowerCase().includes(q) ||
+      item.category.toLowerCase().includes(q)
   )
 })
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredNews.value.length / ITEMS_PER_PAGE)))
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(filteredNews.value.length / ITEMS_PER_PAGE))
+)
 const paginatedNews = computed(() => {
   const start = (currentPage.value - 1) * ITEMS_PER_PAGE
   return filteredNews.value.slice(start, start + ITEMS_PER_PAGE)
@@ -245,7 +272,8 @@ const paginatedNews = computed(() => {
 function handlePageChange(newPage) {
   if (newPage >= 1 && newPage <= totalPages.value) {
     currentPage.value = newPage
-    const target = document.querySelector('.ll-toolbar') || document.querySelector('.ll-page-header')
+    const target =
+      document.querySelector('.ll-toolbar') || document.querySelector('.ll-page-header')
     if (target) {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
@@ -268,13 +296,17 @@ watch(user, () => {
   setupLikesListener()
 })
 
-watch([loadingLive, paginatedNews], ([newLoading, newNews]) => {
-  if (!newLoading && newNews.length > 0) {
-    setTimeout(() => {
-      reveal('.reveal-item', 60)
-    }, 50)
-  }
-}, { immediate: true })
+watch(
+  [loadingLive, paginatedNews],
+  ([newLoading, newNews]) => {
+    if (!newLoading && newNews.length > 0) {
+      setTimeout(() => {
+        reveal('.reveal-item', 60)
+      }, 50)
+    }
+  },
+  { immediate: true }
+)
 
 onMounted(() => {
   reveal('.reveal-header', 60)

@@ -6,14 +6,10 @@
  */
 
 import { ref } from 'vue'
-import {
-  doc,
-  getDoc,
-  runTransaction,
-  serverTimestamp
-} from 'firebase/firestore'
+import { doc, getDoc, runTransaction, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/firebase.js'
 import { canDonateTo } from '@/utils/bloodCompatibility.js'
+import { COOLDOWN_MS } from '@/composables/useEligibility.js'
 
 function getConfirmationId(requestId, donorId) {
   return `${requestId}_${donorId}`
@@ -62,18 +58,22 @@ export function useConfirmDonation() {
           const donorProfileData = donorSnap.data()
           const lastDonationDate = donorProfileData.lastDonationDate
           if (lastDonationDate) {
-            const lastDate = lastDonationDate.toDate ? lastDonationDate.toDate() : new Date(lastDonationDate)
-            const DONATION_COOLDOWN_DAYS = 56
-            const COOLDOWN_MS = DONATION_COOLDOWN_DAYS * 24 * 60 * 60 * 1000
+            const lastDate = lastDonationDate.toDate
+              ? lastDonationDate.toDate()
+              : new Date(lastDonationDate)
             if (Date.now() - lastDate.getTime() < COOLDOWN_MS) {
-              throw new Error('Eligibility cooldown active. You cannot confirm availability at this time.')
+              throw new Error(
+                'Eligibility cooldown active. You cannot confirm availability at this time.'
+              )
             }
           }
         }
 
         const requestData = requestSnap.data()
         if (!canDonateTo(donorData.bloodType, requestData.bloodType)) {
-          throw new Error(`Incompatible blood types: Donor ${donorData.bloodType} cannot donate to Recipient ${requestData.bloodType}.`)
+          throw new Error(
+            `Incompatible blood types: Donor ${donorData.bloodType} cannot donate to Recipient ${requestData.bloodType}.`
+          )
         }
         const currentCount = requestData.confirmedCount || 0
         const unitsNeeded = requestData.unitsNeeded || 0
@@ -138,7 +138,9 @@ export function useConfirmDonation() {
 
         const requestData = requestSnap.data()
         if (!canDonateTo(guestData.bloodType || 'Any', requestData.bloodType)) {
-          throw new Error(`Incompatible blood types: Guest donor type ${guestData.bloodType || 'Any'} cannot donate to Recipient ${requestData.bloodType}.`)
+          throw new Error(
+            `Incompatible blood types: Guest donor type ${guestData.bloodType || 'Any'} cannot donate to Recipient ${requestData.bloodType}.`
+          )
         }
         const currentCount = requestData.confirmedCount || 0
         const unitsNeeded = requestData.unitsNeeded || 0
@@ -204,7 +206,7 @@ export function useConfirmDonation() {
             confirmedCount: Math.max(0, currentCount - 1),
             updatedAt: serverTimestamp()
           }
-          
+
           if (status === 'arrived') {
             updates.arrivedCount = Math.max(0, (reqData.arrivedCount || 0) - 1)
           } else if (status === 'donated') {
@@ -212,7 +214,7 @@ export function useConfirmDonation() {
           } else if (status === 'completed') {
             updates.completedCount = Math.max(0, (reqData.completedCount || 0) - 1)
           }
-          
+
           transaction.update(requestRef, updates)
         }
 
@@ -239,7 +241,7 @@ export function useConfirmDonation() {
       }
 
       const confirmationRef = doc(db, 'confirmations', confirmationId)
-      
+
       await runTransaction(db, async (transaction) => {
         // 1. Perform all reads first inside transaction
         const confSnap = await transaction.get(confirmationRef)
@@ -262,7 +264,7 @@ export function useConfirmDonation() {
           status: newStatus,
           updatedAt: serverTimestamp()
         })
-        
+
         if (newStatus === 'completed' && confData.donorId) {
           const donorRef = doc(db, 'users', confData.donorId)
           transaction.update(donorRef, {
@@ -273,7 +275,7 @@ export function useConfirmDonation() {
         if (requestSnap.exists()) {
           const reqData = requestSnap.data()
           const updates = {}
-          
+
           // Decrement old status count
           if (oldStatus === 'arrived') {
             updates.arrivedCount = Math.max(0, (reqData.arrivedCount || 0) - 1)
@@ -282,7 +284,7 @@ export function useConfirmDonation() {
           } else if (oldStatus === 'completed') {
             updates.completedCount = Math.max(0, (reqData.completedCount || 0) - 1)
           }
-          
+
           // Increment new status count
           if (newStatus === 'arrived') {
             updates.arrivedCount = (reqData.arrivedCount || 0) + 1
@@ -291,7 +293,7 @@ export function useConfirmDonation() {
           } else if (newStatus === 'completed') {
             updates.completedCount = (reqData.completedCount || 0) + 1
           }
-          
+
           if (Object.keys(updates).length > 0) {
             transaction.update(requestRef, updates)
           }

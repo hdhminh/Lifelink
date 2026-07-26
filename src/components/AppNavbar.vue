@@ -1,6 +1,6 @@
 <template>
   <nav class="navbar navbar-dark navbar-expand-lg ll-navbar sticky-top">
-    <div class="container-fluid px-4 px-lg-5" style="max-width: 1440px; margin: 0 auto;">
+    <div class="container-fluid px-4 px-lg-5" style="max-width: 1440px; margin: 0 auto">
       <RouterLink to="/" class="navbar-brand ll-navbar-brand" aria-label="LifeLink Homepage">
         <i class="bi bi-droplet-fill text-danger me-1"></i> LifeLink
       </RouterLink>
@@ -17,44 +17,64 @@
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div class="collapse navbar-collapse" id="navbarMain">
+      <div id="navbarMain" class="collapse navbar-collapse">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <RouterLink class="nav-link" to="/emergency-board"><i class="bi bi-hospital me-1"></i> Emergency</RouterLink>
+            <RouterLink class="nav-link" to="/emergency-board"
+              ><i class="bi bi-hospital me-1"></i> Emergency</RouterLink
+            >
           </li>
           <li class="nav-item">
-            <RouterLink class="nav-link" to="/events"><i class="bi bi-calendar-event me-1"></i> Events</RouterLink>
+            <RouterLink class="nav-link" to="/events"
+              ><i class="bi bi-calendar-event me-1"></i> Events</RouterLink
+            >
           </li>
           <li class="nav-item">
-            <RouterLink class="nav-link" to="/map"><i class="bi bi-geo-alt-fill me-1"></i> Map</RouterLink>
+            <RouterLink class="nav-link" to="/map"
+              ><i class="bi bi-geo-alt-fill me-1"></i> Map</RouterLink
+            >
           </li>
 
-          <li class="nav-item" v-if="!user">
-            <RouterLink class="nav-link" to="/news"><i class="bi bi-newspaper me-1"></i> News</RouterLink>
+          <li v-if="!user" class="nav-item">
+            <RouterLink class="nav-link" to="/news"
+              ><i class="bi bi-newspaper me-1"></i> News</RouterLink
+            >
           </li>
-          <li class="nav-item" v-if="!user">
-            <RouterLink class="nav-link" to="/about"><i class="bi bi-info-circle me-1"></i> About</RouterLink>
+          <li v-if="!user" class="nav-item">
+            <RouterLink class="nav-link" to="/about"
+              ><i class="bi bi-info-circle me-1"></i> About</RouterLink
+            >
           </li>
         </ul>
 
         <ul class="navbar-nav align-items-lg-center">
           <template v-if="!user">
             <li class="nav-item">
-              <RouterLink class="btn btn-nav-ghost btn-sm" to="/login"><i class="bi bi-box-arrow-in-right me-1"></i> Login</RouterLink>
+              <RouterLink class="btn btn-nav-ghost btn-sm" to="/login"
+                ><i class="bi bi-box-arrow-in-right me-1"></i> Login</RouterLink
+              >
             </li>
             <li class="nav-item ms-lg-2">
-              <RouterLink class="btn btn-nav-primary btn-sm" to="/register"><i class="bi bi-person-plus me-1"></i> Register</RouterLink>
+              <RouterLink class="btn btn-nav-primary btn-sm" to="/register"
+                ><i class="bi bi-person-plus me-1"></i> Register</RouterLink
+              >
             </li>
           </template>
           <template v-else>
             <li class="nav-item">
-              <RouterLink class="nav-link" to="/dashboard"><i class="bi bi-speedometer2 me-1"></i> {{ userBadgeLabel }}</RouterLink>
+              <RouterLink class="nav-link" to="/dashboard"
+                ><i class="bi bi-speedometer2 me-1"></i> {{ userBadgeLabel }}</RouterLink
+              >
             </li>
             <li class="nav-item">
-              <RouterLink class="nav-link" to="/profile"><i class="bi bi-person me-1"></i> Profile</RouterLink>
+              <RouterLink class="nav-link" to="/profile"
+                ><i class="bi bi-person me-1"></i> Profile</RouterLink
+              >
             </li>
             <li class="nav-item ms-lg-2">
-              <button class="btn btn-nav-ghost btn-sm" @click="handleLogout"><i class="bi bi-box-arrow-right me-1"></i> Logout</button>
+              <button class="btn btn-nav-ghost btn-sm" @click="handleLogout">
+                <i class="bi bi-box-arrow-right me-1"></i> Logout
+              </button>
             </li>
           </template>
         </ul>
@@ -112,23 +132,29 @@ async function handleLogout() {
     margin-left: 0 !important;
     padding: 0.6rem 1rem !important;
   }
-  
+
   .navbar-collapse {
     max-height: 0;
     opacity: 0;
     overflow: hidden;
-    transition: max-height 0.25s var(--ease-drawer), opacity 0.2s var(--ease-out);
+    transition:
+      max-height 0.25s var(--ease-drawer),
+      opacity 0.2s var(--ease-out);
     display: block !important;
   }
   .navbar-collapse.collapsing {
     max-height: 0;
     opacity: 0;
-    transition: max-height 0.25s var(--ease-drawer), opacity 0.2s var(--ease-out);
+    transition:
+      max-height 0.25s var(--ease-drawer),
+      opacity 0.2s var(--ease-out);
   }
   .navbar-collapse.show {
     max-height: 450px;
     opacity: 1;
-    transition: max-height 0.3s var(--ease-drawer), opacity 0.25s var(--ease-out);
+    transition:
+      max-height 0.3s var(--ease-drawer),
+      opacity 0.25s var(--ease-out);
   }
 }
 </style>

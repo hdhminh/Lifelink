@@ -1,6 +1,6 @@
 <template>
   <div class="ll-auth-page">
-    <form ref="loginCard" class="ll-auth-card" @submit.prevent="handleLogin" novalidate>
+    <form ref="loginCard" class="ll-auth-card" novalidate @submit.prevent="handleLogin">
       <div class="ll-auth-card__logo">
         <h2>LifeLink Login</h2>
         <p class="ll-text-meta mb-0">Access your donor dashboard and emergency board.</p>
@@ -9,15 +9,15 @@
       <div class="ll-form-group">
         <label for="login-email" class="form-label">Email</label>
         <div class="position-relative">
-          <input 
-            id="login-email" 
-            v-model.trim="formEmail" 
-            class="form-control" 
-            :class="{ 'is-invalid': errors.email }" 
-            type="email" 
+          <input
+            id="login-email"
+            v-model.trim="formEmail"
+            class="form-control"
+            :class="{ 'is-invalid': errors.email }"
+            type="email"
             placeholder="Enter your email"
             autocomplete="email"
-          >
+          />
         </div>
         <div v-if="errors.email" class="invalid-feedback d-block">{{ errors.email }}</div>
       </div>
@@ -25,20 +25,20 @@
       <div class="ll-form-group">
         <label for="login-password" class="form-label">Password</label>
         <div class="position-relative">
-          <input 
-            id="login-password" 
-            v-model="formPassword" 
-            class="form-control pe-5" 
-            :class="{ 'is-invalid': errors.password }" 
-            :type="showPassword ? 'text' : 'password'" 
+          <input
+            id="login-password"
+            v-model="formPassword"
+            class="form-control pe-5"
+            :class="{ 'is-invalid': errors.password }"
+            :type="showPassword ? 'text' : 'password'"
             placeholder="Enter your password"
             autocomplete="current-password"
-          >
-          <button 
-            type="button" 
+          />
+          <button
+            type="button"
             class="ll-password-toggle-btn"
-            @click="showPassword = !showPassword"
             title="Toggle password visibility"
+            @click="showPassword = !showPassword"
           >
             <i :class="showPassword ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'"></i>
           </button>
@@ -136,7 +136,12 @@ async function handleLogin() {
     await login(formEmail.value, formPassword.value)
     showToast('Signed in successfully.', 'success')
     const redirect = route.query.redirect || '/dashboard'
-    router.push(redirect)
+    // Validate redirect URL to prevent open redirect attacks
+    if (!redirect.startsWith('/') || redirect.startsWith('//') || redirect.includes('://')) {
+      router.push('/dashboard')
+    } else {
+      router.push(redirect)
+    }
   } catch (err) {
     console.error('[Login] handleLogin error:', err)
     const friendlyError = mapFirebaseError(err.code)

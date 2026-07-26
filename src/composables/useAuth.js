@@ -12,13 +12,7 @@ import {
   signOut,
   onAuthStateChanged
 } from 'firebase/auth'
-import {
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  serverTimestamp
-} from 'firebase/firestore'
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from '@/firebase.js'
 import { useGuestSession } from '@/composables/useGuestSession.js'
 
@@ -45,6 +39,14 @@ onAuthStateChanged(auth, async (firebaseUser) => {
       userProfile.value = profile
     } catch (err) {
       console.error('Failed to fetch user profile:', err)
+      // Auth state race condition fix: sign out and clear user if profile fetch fails
+      try {
+        await signOut(auth)
+      } catch (signOutErr) {
+        console.error('Failed to sign out after profile fetch error:', signOutErr)
+      }
+      user.value = null
+      userProfile.value = null
     } finally {
       authLoading.value = false
     }
@@ -113,7 +115,22 @@ export function useAuth() {
    */
   async function updateProfile(updates) {
     if (!user.value) throw new Error('Not authenticated')
-    await updateDoc(doc(db, 'users', user.value.uid), updates)
+    // Filter updateProfile fields to prevent unauthorized field modifications
+    const allowedFields = [
+      'displayName',
+      'bloodType',
+      'city',
+      'phoneNumber',
+      'canDonateNow',
+      'lastDonationDate'
+    ]
+    const filteredUpdates = {}
+    for (const key of Object.keys(updates)) {
+      if (allowedFields.includes(key)) {
+        filteredUpdates[key] = updates[key]
+      }
+    }
+    await updateDoc(doc(db, 'users', user.value.uid), filteredUpdates)
     userProfile.value = await fetchUserProfile(user.value.uid)
   }
 

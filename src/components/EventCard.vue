@@ -15,7 +15,6 @@
         >
           <i class="bi bi-geo-alt-fill"></i> Map
         </RouterLink>
-
       </div>
       <p class="ll-text-meta mb-1"><i class="bi bi-building me-1"></i> {{ event.city }}</p>
       <p class="ll-text-meta mb-3">{{ event.location }}</p>
@@ -24,8 +23,12 @@
     <footer class="ll-card__footer">
       <p class="ll-text-meta mb-3">{{ event.interestedCount || 0 }} people interested</p>
       <div v-if="isAdmin" class="d-flex gap-2">
-        <button type="button" class="ll-btn-secondary ll-btn-sm flex-fill" @click="emit('edit')"><i class="bi bi-pencil me-1"></i> Edit</button>
-        <button type="button" class="ll-btn-danger ll-btn-sm flex-fill" @click="emit('delete')"><i class="bi bi-trash me-1"></i> Delete</button>
+        <button type="button" class="ll-btn-secondary ll-btn-sm flex-fill" @click="emit('edit')">
+          <i class="bi bi-pencil me-1"></i> Edit
+        </button>
+        <button type="button" class="ll-btn-danger ll-btn-sm flex-fill" @click="emit('delete')">
+          <i class="bi bi-trash me-1"></i> Delete
+        </button>
       </div>
       <button
         v-else
@@ -65,8 +68,6 @@ const displayTitle = computed(() => {
   if (!title) return ''
   return title.split(' — ')[0].trim()
 })
-
-
 
 const formattedDate = computed(() => {
   if (!props.event.date) return 'Date TBC'

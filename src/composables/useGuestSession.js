@@ -39,7 +39,7 @@ export function useGuestSession() {
     try {
       const dataStr = localStorage.getItem('ll_guest_session')
       let session = null
-      
+
       if (dataStr) {
         session = JSON.parse(dataStr)
         const now = Date.now()
@@ -48,16 +48,19 @@ export function useGuestSession() {
           session = null
         }
       }
-      
+
       if (!session) {
         session = { ...defaultSession }
       }
-      
+
       if (!session.guestId) {
-        session.guestId = 'guest_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now()
+        const randomBytes = new Uint8Array(18)
+        crypto.getRandomValues(randomBytes)
+        const randomStr = Array.from(randomBytes, (b) => b.toString(16).padStart(2, '0')).join('')
+        session.guestId = 'guest_' + randomStr + '_' + Date.now()
         localStorage.setItem('ll_guest_session', JSON.stringify(session))
       }
-      
+
       return { ...defaultSession, ...session }
     } catch (e) {
       console.error('Error reading guest session', e)

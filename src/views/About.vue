@@ -2,19 +2,27 @@
   <div class="ll-page-container">
     <div class="row g-5">
       <div class="col-lg-6 reveal-item">
-        <h1 class="ll-text-heading mb-3"><i class="bi bi-info-circle text-wine me-2"></i> About LifeLink</h1>
+        <h1 class="ll-text-heading mb-3">
+          <i class="bi bi-info-circle text-wine me-2"></i> About LifeLink
+        </h1>
         <p class="text-slate-700 mb-4 leading-relaxed">
-          LifeLink is an emergency donor coordination network built to connect hospitals and voluntary donors faster during critical shortages. We believe that by synchronizing data instantly, we can help save lives when every minute counts.
+          LifeLink is an emergency donor coordination network built to connect hospitals and
+          voluntary donors faster during critical shortages. We believe that by synchronizing data
+          instantly, we can help save lives when every minute counts.
         </p>
 
         <!-- Dynamic Welcome Block -->
         <div v-if="welcomeMessage" class="ll-welcome-banner p-3 rounded-lg mb-4">
-          <h2 class="m-0 text-wine" style="font-size: 1.1rem;"><i class="bi bi-balloon-heart-fill me-2"></i>{{ welcomeMessage }}</h2>
+          <h2 class="m-0 text-wine" style="font-size: 1.1rem">
+            <i class="bi bi-balloon-heart-fill me-2"></i>{{ welcomeMessage }}
+          </h2>
         </div>
 
         <div class="row g-3 mb-4">
           <div class="col-sm-6">
-            <label for="first-name" class="form-label fw-bold small text-slate-700">First Name</label>
+            <label for="first-name" class="form-label fw-bold small text-slate-700"
+              >First Name</label
+            >
             <input
               id="first-name"
               v-model="firstName"
@@ -22,7 +30,7 @@
               class="form-control"
               placeholder="e.g. Anh"
               autocomplete="given-name"
-            >
+            />
           </div>
           <div class="col-sm-6">
             <label for="last-name" class="form-label fw-bold small text-slate-700">Last Name</label>
@@ -33,11 +41,11 @@
               class="form-control"
               placeholder="e.g. Nguyen"
               autocomplete="family-name"
-            >
+            />
           </div>
         </div>
         <!-- Premium Choosing Cards Layout (Implemented as Radio Buttons for Rubric Compliance) -->
-        <h2 class="fw-bold mb-3" style="font-size: 1.15rem;">Explore Roles</h2>
+        <h2 class="fw-bold mb-3" style="font-size: 1.15rem">Explore Roles</h2>
         <div class="row g-3 mb-4">
           <div class="col-6">
             <label for="role-donors" class="ll-role-label">
@@ -49,9 +57,12 @@
                 name="roleSelector"
                 value="donors"
                 class="ll-radio-input"
-              >
+              />
               <div
-                :class="['ll-chooser-card', { 'll-chooser-card--active': selectedView === 'donors' }]"
+                :class="[
+                  'll-chooser-card',
+                  { 'll-chooser-card--active': selectedView === 'donors' }
+                ]"
               >
                 <div class="ll-chooser-card__icon">
                   <i class="bi bi-person-heart" aria-hidden="true"></i>
@@ -71,9 +82,12 @@
                 name="roleSelector"
                 value="hospital"
                 class="ll-radio-input"
-              >
+              />
               <div
-                :class="['ll-chooser-card', { 'll-chooser-card--active': selectedView === 'hospital' }]"
+                :class="[
+                  'll-chooser-card',
+                  { 'll-chooser-card--active': selectedView === 'hospital' }
+                ]"
               >
                 <div class="ll-chooser-card__icon">
                   <i class="bi bi-hospital" aria-hidden="true"></i>
@@ -86,37 +100,56 @@
         </div>
       </div>
 
-      <div class="col-lg-6 d-flex align-items-center justify-content-center reveal-item" data-delay="150ms">
+      <div
+        class="col-lg-6 d-flex align-items-center justify-content-center reveal-item"
+        data-delay="150ms"
+      >
         <div class="ll-image-container">
           <transition name="fade-slide" mode="out-in">
-            <img :key="selectedView" :src="selectedImage" :alt="selectedView + ' image'" class="img-fluid rounded-lg ll-about-image shadow-lg">
+            <picture :key="selectedView">
+              <source :srcset="selectedImage.webp" type="image/webp">
+              <img
+                :src="selectedImage.jpg"
+                :alt="selectedView + ' image'"
+                class="img-fluid rounded-lg ll-about-image shadow-lg"
+              />
+            </picture>
           </transition>
         </div>
       </div>
     </div>
     <!-- Expanded FAQ Accordion Section to fill the page -->
-    <hr class="my-5 border-slate-200" style="opacity: 0.15;" />
+    <hr class="my-5 border-slate-200" style="opacity: 0.15" />
 
     <section class="mb-5">
-      <h3 class="fw-bold text-slate-900 mb-4 text-center font-outfit reveal-item">Frequently Asked Questions (FAQs)</h3>
+      <h3 class="fw-bold text-slate-900 mb-4 text-center font-outfit reveal-item">
+        Frequently Asked Questions (FAQs)
+      </h3>
       <div class="ll-faq-accordion d-flex flex-column gap-3">
-        <div 
-          v-for="q in faqs" 
-          :key="q.id" 
+        <div
+          v-for="q in faqs"
+          :key="q.id"
           class="ll-faq-item bg-white rounded-lg border border-slate-100 shadow-xs overflow-hidden reveal-item"
         >
-          <button 
-            type="button" 
+          <button
+            type="button"
             class="ll-faq-header w-100 text-start d-flex justify-content-between align-items-center p-3 fw-bold text-slate-800"
             @click="toggleFaq(q.id)"
           >
             <span><i class="bi bi-question-circle-fill text-wine me-2"></i>{{ q.question }}</span>
-            <i :class="['bi', activeFaqId === q.id ? 'bi-chevron-up text-wine' : 'bi-chevron-down text-slate-400']"></i>
+            <i
+              :class="[
+                'bi',
+                activeFaqId === q.id ? 'bi-chevron-up text-wine' : 'bi-chevron-down text-slate-400'
+              ]"
+            ></i>
           </button>
-          
+
           <div :class="['ll-faq-content-wrapper', { open: activeFaqId === q.id }]">
-            <div style="min-height: 0;">
-              <div class="ll-faq-body p-3 border-top border-slate-50 bg-slate-50 text-slate-600 small leading-relaxed">
+            <div style="min-height: 0">
+              <div
+                class="ll-faq-body p-3 border-top border-slate-50 bg-slate-50 text-slate-600 small leading-relaxed"
+              >
                 {{ q.answer }}
               </div>
             </div>
@@ -143,12 +176,42 @@ const selectedView = ref('donors')
 
 const activeFaqId = ref(null)
 const faqs = [
-  { id: 1, question: 'How do I register to become a donor?', answer: 'Simply click "Register" on the top right, fill in your basic details (blood type and city), and create your account to start receiving alerts.' },
-  { id: 2, question: 'How does confirmation work?', answer: 'When you see an emergency request on the board, click "Confirm Availability". Hospital staff will be notified to contact you directly.' },
-  { id: 3, question: 'What if I accidentally click confirm?', answer: 'Don\'t worry! Open the Support Chat widget on the bottom right and message us to cancel your confirmation immediately.' },
-  { id: 4, question: 'Are there any requirements to donate blood?', answer: 'Generally, donors must be in good health, at least 18 years old, weigh at least 45kg, and have not had tattoos or piercings within the last 6 months.' },
-  { id: 5, question: 'How often can I donate blood?', answer: 'The minimum interval between whole blood donations is typically 12 weeks for male donors and 16 weeks for female donors.' },
-  { id: 6, question: 'Can I change my registered blood type later?', answer: 'Yes, you can update your blood type, location, and contact information anytime under your Profile settings after logging in.' }
+  {
+    id: 1,
+    question: 'How do I register to become a donor?',
+    answer:
+      'Simply click "Register" on the top right, fill in your basic details (blood type and city), and create your account to start receiving alerts.'
+  },
+  {
+    id: 2,
+    question: 'How does confirmation work?',
+    answer:
+      'When you see an emergency request on the board, click "Confirm Availability". Hospital staff will be notified to contact you directly.'
+  },
+  {
+    id: 3,
+    question: 'What if I accidentally click confirm?',
+    answer:
+      "Don't worry! Open the Support Chat widget on the bottom right and message us to cancel your confirmation immediately."
+  },
+  {
+    id: 4,
+    question: 'Are there any requirements to donate blood?',
+    answer:
+      'Generally, donors must be in good health, at least 18 years old, weigh at least 45kg, and have not had tattoos or piercings within the last 6 months.'
+  },
+  {
+    id: 5,
+    question: 'How often can I donate blood?',
+    answer:
+      'The minimum interval between whole blood donations is typically 12 weeks for male donors and 16 weeks for female donors.'
+  },
+  {
+    id: 6,
+    question: 'Can I change my registered blood type later?',
+    answer:
+      'Yes, you can update your blood type, location, and contact information anytime under your Profile settings after logging in.'
+  }
 ]
 
 function toggleFaq(id) {
@@ -164,10 +227,12 @@ const welcomeMessage = computed(() => {
 
 const selectedImage = computed(() => {
   const base = import.meta.env.BASE_URL || './'
-  const path = selectedView.value === 'donors'
-    ? 'images/about-donors.jpg'
-    : 'images/about-hospital.jpg'
-  return base.endsWith('/') ? `${base}${path}` : `${base}/${path}`
+  const baseImg = selectedView.value === 'donors' ? 'about-donors' : 'about-hospital'
+  const jpgPath = `images/${baseImg}.jpg`
+  const webpPath = `images/${baseImg}.webp`
+  const jpgUrl = base.endsWith('/') ? `${base}${jpgPath}` : `${base}/${jpgPath}`
+  const webpUrl = base.endsWith('/') ? `${base}${webpPath}` : `${base}/${webpPath}`
+  return { jpg: jpgUrl, webp: webpUrl }
 })
 
 onMounted(() => {
@@ -199,8 +264,14 @@ onMounted(() => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Premium Chooser Cards */

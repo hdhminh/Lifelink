@@ -5,7 +5,7 @@
  * Each caller receives an instance-level listener and cleanup function.
  */
 
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import {
   collection,
   query,
@@ -19,7 +19,8 @@ import {
   doc,
   serverTimestamp
 } from 'firebase/firestore'
-import { db } from '@/firebase.js'
+import { ref as dbRef, get as rtdbGet, update as rtdbUpdate } from 'firebase/database'
+import { db, rtdb } from '@/firebase.js'
 
 const cachedRequests = ref([])
 
@@ -52,13 +53,17 @@ export function useEmergencyRequests() {
     unsubscribeFn = onSnapshot(
       q,
       (snapshot) => {
-        const list = snapshot.docs.map(docSnap => {
+        const list = snapshot.docs.map((docSnap) => {
           const data = docSnap.data()
           // Map O- to common blood types for HCMC demo hospitals cleanly client-side
           let bloodType = data.bloodType
           if (data.hospitalName === 'Cho Ray Hospital' && bloodType === 'O-') {
             bloodType = 'O+'
-          } else if ((data.hospitalName === 'Gia Dinh People Hospital' || data.hospitalName === "Gia Dinh People's Hospital") && bloodType === 'O-') {
+          } else if (
+            (data.hospitalName === 'Gia Dinh People Hospital' ||
+              data.hospitalName === "Gia Dinh People's Hospital") &&
+            bloodType === 'O-'
+          ) {
             bloodType = 'A+'
           }
 
@@ -101,7 +106,7 @@ export function useEmergencyRequests() {
     try {
       const q = query(collection(db, 'emergencyRequests'), orderBy('createdAt', 'desc'))
       const snap = await getDocs(q)
-      requests.value = snap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
+      requests.value = snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
     } catch (err) {
       error.value = 'Could not load requests for the admin panel.'
       console.error('[useEmergencyRequests] fetchAllRequests error:', err)
@@ -118,7 +123,7 @@ export function useEmergencyRequests() {
    * @returns {Array<Object>} Filtered requests.
    */
   function filterRequests(bloodType, city, urgency) {
-    return requests.value.filter(req => {
+    return requests.value.filter((req) => {
       const matchBloodType = !bloodType || req.bloodType === bloodType || req.bloodType === 'Any'
       const requestCity = req.city || ''
       const matchCity = !city || requestCity.toLowerCase().includes(city.toLowerCase())
@@ -190,6 +195,41 @@ export function useEmergencyRequests() {
     loading.value = true
     error.value = null
     try {
+      // 1. Delete associated confirmations
+      const confSnap = await getDocs(
+        query(collection(db, 'confirmations'), where('requestId', '==', requestId))
+      )
+      for (const confDoc of confSnap.docs) {
+        await deleteDoc(confDoc.ref)
+      }
+
+      // 2. Delete associated guest confirmations
+      const guestSnap = await getDocs(
+        query(collection(db, 'guestConfirmations'), where('requestId', '==', requestId))
+      )
+      for (const guestDoc of guestSnap.docs) {
+        await deleteDoc(guestDoc.ref)
+      }
+
+      // 3. Remove RTDB liveTracking nodes for this request
+      if (rtdb) {
+        const liveTrackingRef = dbRef(rtdb, 'liveTracking')
+        const rtdbSnap = await rtdbGet(liveTrackingRef)
+        if (rtdbSnap.exists()) {
+          const updates = {}
+          rtdbSnap.forEach((child) => {
+            const val = child.val()
+            if (val && val.requestId === requestId) {
+              updates[child.key] = null
+            }
+          })
+          if (Object.keys(updates).length > 0) {
+            await rtdbUpdate(liveTrackingRef, updates)
+          }
+        }
+      }
+
+      // 4. Delete the request document itself
       await deleteDoc(doc(db, 'emergencyRequests', requestId))
     } catch (err) {
       error.value = 'Could not delete the emergency request.'
@@ -199,6 +239,10 @@ export function useEmergencyRequests() {
       loading.value = false
     }
   }
+
+  onUnmounted(() => {
+    stopListening()
+  })
 
   return {
     requests,

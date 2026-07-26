@@ -1,174 +1,145 @@
 <template>
   <!-- Outer Shell: Unified 16px Rounded Container with Brand Shadow -->
-  <div class="ll-emergency-map-container overflow-hidden rounded-16 border shadow-sm" style="position: relative; z-index: 1; border-color: #EAE2DF !important; border-radius: 16px !important; box-shadow: 0 10px 30px rgba(142, 36, 53, 0.06) !important;">
-    <!-- Map Header Status Toolbar (LifeLink Brand Wine Red Surface with Rounded 16px Top Corners) -->
-    <div class="ll-map-toolbar d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 px-4 border-bottom bg-white" style="border-color: #EAE2DF; position: relative; z-index: 1050; border-top-left-radius: 16px; border-top-right-radius: 16px;">
-      <div class="d-flex align-items-center">
-        <!-- Unified Sleek Wine-Red LIVE Pill Badge -->
-        <span class="badge rounded-pill d-inline-flex align-items-center gap-2 shadow-xs" style="font-size: 0.76rem; padding: 0.48rem 0.95rem; line-height: 1; background-color: #8E2435; color: #ffffff; font-weight: 700; letter-spacing: 0.5px;">
-          <span class="ll-white-dot-pulse"></span>
-          <span>LIVE</span>
-          <span style="opacity: 0.4; font-weight: 300;">|</span>
-          <span>{{ filteredResponders.length }} ACTIVE RESPONDERS</span>
-        </span>
-      </div>
-
-      <div class="d-flex align-items-center gap-2 ms-auto">
-        <!-- Custom Layer Filter Dropdown -->
-        <div class="dropdown position-relative">
-          <button
-            class="btn btn-sm d-inline-flex align-items-center justify-content-between gap-2 shadow-xs"
-            style="min-width: 140px; min-height: 38px; font-size: 0.82rem; background-color: #FAF5EF; color: #2B2225; border: 1px solid #EAE2DF; border-radius: 8px;"
-            type="button"
-            aria-label="Filter map layers by hospitals or events"
-            @click.stop="toggleLayerDropdown"
-          >
-            <span class="d-inline-flex align-items-center text-truncate">
-              <i v-if="activeLayerFilter === 'all'" class="bi bi-layers-fill text-slate-600 me-2"></i>
-              <i v-else-if="activeLayerFilter === 'hospitals'" class="bi bi-hospital me-2" style="color: #8E2435;"></i>
-              <i v-else class="bi bi-calendar-event me-2" style="color: #0D6EFD;"></i>
-              {{ activeLayerFilterLabel }}
-            </span>
-            <i class="bi bi-chevron-down text-slate-400 ms-1" style="font-size: 0.72rem; flex-shrink: 0;"></i>
-          </button>
-          <ul v-if="showLayerDropdown" class="dropdown-menu show shadow-md p-1 mt-1 position-absolute end-0" style="min-width: 165px; z-index: 2000;">
-            <li>
-              <button type="button" class="dropdown-item small d-flex align-items-center py-2" aria-label="Show all location layers" @click="setLayerFilter('all')">
-                <i class="bi bi-layers-fill text-slate-600 me-2"></i> All Locations
-              </button>
-            </li>
-            <li>
-              <button type="button" class="dropdown-item small d-flex align-items-center py-2" aria-label="Filter by emergency hospitals" @click="setLayerFilter('hospitals')">
-                <i class="bi bi-hospital me-2" style="color: #8E2435;"></i> Hospitals ({{ activeRequests.length }})
-              </button>
-            </li>
-            <li>
-              <button type="button" class="dropdown-item small d-flex align-items-center py-2" aria-label="Filter by donation events" @click="setLayerFilter('events')">
-                <i class="bi bi-calendar-event me-2" style="color: #0D6EFD;"></i> Events ({{ activeEvents.length }})
-              </button>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Custom Location Focus Dropdown -->
-        <div class="dropdown position-relative">
-          <button
-            class="btn btn-sm d-inline-flex align-items-center justify-content-between gap-2 shadow-xs"
-            style="min-width: 170px; max-width: 220px; min-height: 38px; font-size: 0.82rem; background-color: #FAF5EF; color: #2B2225; border: 1px solid #EAE2DF; border-radius: 8px;"
-            type="button"
-            aria-label="Select focus location on map"
-            @click.stop="toggleFocusDropdown"
-          >
-            <span class="d-inline-flex align-items-center text-truncate" style="max-width: 170px;">
-              <i v-if="selectedFocusType === 'hospital'" class="bi bi-hospital me-2" style="color: #8E2435; flex-shrink: 0;"></i>
-              <i v-else-if="selectedFocusType === 'event'" class="bi bi-calendar-event me-2" style="color: #0D6EFD; flex-shrink: 0;"></i>
-              <i v-else class="bi bi-geo-alt me-2 text-slate-400" style="flex-shrink: 0;"></i>
-              <span class="text-truncate">{{ selectedFocusText }}</span>
-            </span>
-            <i class="bi bi-chevron-down text-slate-400 ms-1" style="font-size: 0.72rem; flex-shrink: 0;"></i>
-          </button>
-          
-          <div v-if="showFocusDropdown" class="dropdown-menu show shadow-md p-1 mt-1 position-absolute end-0" style="min-width: 260px; max-height: 340px; overflow-y: auto; z-index: 2000;">
-            <button type="button" class="dropdown-item small py-2 text-slate-600 border-bottom" aria-label="Show all locations" @click="selectFocus('')">
-              <i class="bi bi-geo-alt me-2"></i> All Locations (Default View)
-            </button>
-
-            <div class="dropdown-header text-uppercase font-weight-700 mt-1 mb-1" style="font-size: 0.68rem; color: #8E2435;">
-              <i class="bi bi-hospital me-1"></i> EMERGENCY HOSPITALS
-            </div>
-            <button
-              v-for="req in activeRequests"
-              :key="req.id"
-              type="button"
-              class="dropdown-item small py-1 px-2 d-flex align-items-center"
-              :aria-label="`Focus on hospital ${req.hospitalName}`"
-              @click="selectFocus(req.id)"
-            >
-              <i class="bi bi-hospital me-2" style="color: #8E2435; flex-shrink: 0;"></i>
-              <span class="text-truncate">[{{ req.bloodType }}] {{ req.hospitalName }}</span>
-            </button>
-
-            <div class="dropdown-header text-uppercase font-weight-700 mt-2 mb-1" style="font-size: 0.68rem; color: #0D6EFD;">
-              <i class="bi bi-calendar-event me-1"></i> DONATION EVENTS
-            </div>
-            <button
-              v-for="ev in activeEvents"
-              :key="'ev_' + ev.id"
-              type="button"
-              class="dropdown-item small py-1 px-2 d-flex align-items-center"
-              :aria-label="`Focus on event ${cleanEventTitle(ev.title)}`"
-              @click="selectFocus('ev_' + ev.id)"
-            >
-              <i class="bi bi-calendar-event me-2" style="color: #0D6EFD; flex-shrink: 0;"></i>
-              <span class="text-truncate">{{ cleanEventTitle(ev.title) }}</span>
-            </button>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          class="btn btn-sm d-inline-flex align-items-center gap-1 font-weight-600 shadow-xs"
-          style="min-height: 38px; padding: 0 0.9rem; font-size: 0.82rem; background-color: #FAF5EF; color: #8E2435; border: 1px solid #EAE2DF; border-radius: 8px;"
-          title="Recenter map"
-          aria-label="Recenter map view"
-          @click="centerMapOnSelected"
-        >
-          <i class="bi bi-crosshair me-1"></i> Recenter
-        </button>
-      </div>
-    </div>
+  <div
+    class="ll-emergency-map-container overflow-hidden rounded-16 border shadow-sm map-style-1"
+   
+  >
+    <EmergencyMapToolbar
+      :filtered-responders-length="filteredResponders.length"
+      :active-layer-filter="activeLayerFilter"
+      :active-layer-filter-label="activeLayerFilterLabel"
+      :active-requests="activeRequests"
+      :active-events="activeEvents"
+      :selected-focus-type="selectedFocusType"
+      :selected-focus-text="selectedFocusText"
+      @set-layer-filter="setLayerFilter"
+      @select-focus="selectFocus"
+      @center-map-on-selected="centerMapOnSelected"
+    />
 
     <!-- Main Grid: Left Map Surface, Right Live Activity Panel (Tall 660px canvas, rounded bottom) -->
-    <div class="row g-0 ll-map-body-grid overflow-hidden bg-white" style="position: relative; z-index: 1; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+    <div
+      class="row g-0 ll-map-body-grid overflow-hidden bg-white map-style-19"
+     
+    >
       <!-- Map View Surface (Tall 660px) -->
-      <div class="col-lg-8 col-12 position-relative" style="height: 660px; min-height: 660px; border-bottom-left-radius: 16px; overflow: hidden;">
+      <div
+        class="col-lg-8 col-12 position-relative map-style-20"
+       
+      >
         <!-- Loading overlay -->
-        <div v-if="mapLoading" class="ll-map-loader-overlay d-flex flex-column justify-content-center align-items-center">
-          <div class="spinner-border mb-2" style="color: #8E2435;" role="status"></div>
-          <span class="small text-slate-600 font-weight-500">Initializing Live Response Map...</span>
+        <div
+          v-if="mapLoading"
+          class="ll-map-loader-overlay d-flex flex-column justify-content-center align-items-center"
+        >
+          <div class="spinner-border mb-2 map-style-6" role="status"></div>
+          <span class="small text-slate-600 font-weight-500"
+            >Initializing Live Response Map...</span
+          >
         </div>
 
         <!-- Map Container Div (Height: 660px) -->
-        <div id="emergency-map-surface" ref="mapElement" style="width: 100%; height: 660px; min-height: 660px; position: relative; z-index: 1; background-color: #f8f9fa;"></div>
+        <div class="map-style-21"
+          id="emergency-map-surface"
+          ref="mapElement"
+         
+        ></div>
 
         <!-- Floating Map Legend Overlay -->
-        <div class="ll-map-legend p-2 px-3 bg-white border rounded shadow-sm position-absolute bottom-0 start-0 m-3" style="z-index: 1000; max-width: 290px;">
-          <div class="small fw-bold text-slate-800 d-flex justify-content-between align-items-center cursor-pointer" style="font-size: 0.72rem;" @click.stop.prevent="showLegend = !showLegend" aria-label="Toggle Legend">
-            <span><i class="bi bi-info-circle-fill me-1" style="color: #8E2435;"></i> RADAR LEGEND</span>
-            <i class="bi text-slate-400" :class="showLegend ? 'bi-chevron-down' : 'bi-chevron-up'"></i>
+        <div
+          class="ll-map-legend p-2 px-3 bg-white border rounded shadow-sm position-absolute bottom-0 start-0 m-3 map-style-22"
+         
+        >
+          <div
+            class="small fw-bold text-slate-800 d-flex justify-content-between align-items-center cursor-pointer map-style-23"
+           
+            aria-label="Toggle Legend"
+            @click.stop.prevent="showLegend = !showLegend"
+          >
+            <span
+              ><i class="bi bi-info-circle-fill me-1 map-style-6"></i> RADAR LEGEND</span
+            >
+            <i
+              class="bi text-slate-400"
+              :class="showLegend ? 'bi-chevron-down' : 'bi-chevron-up'"
+            ></i>
           </div>
-          <div v-show="showLegend" class="d-flex flex-column gap-1 mt-2 pt-2 border-top" style="font-size: 0.72rem;">
+          <div
+            v-show="showLegend"
+            class="d-flex flex-column gap-1 mt-2 pt-2 border-top map-style-23"
+           
+          >
             <div class="d-flex align-items-center gap-2">
-              <svg width="18" height="22" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0; max-width: none;">
-                <path d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z" fill="#8E2435"/>
-                <circle cx="16" cy="15" r="10" fill="#ffffff"/>
-                <rect x="14" y="9" width="4" height="12" rx="1" fill="#8E2435"/>
-                <rect x="10" y="13" width="12" height="4" rx="1" fill="#8E2435"/>
+              <svg class="map-style-24"
+                width="18"
+                height="22"
+                viewBox="0 0 32 38"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+               
+              >
+                <path
+                  d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z"
+                  fill="#8E2435"
+                />
+                <circle cx="16" cy="15" r="10" fill="#ffffff" />
+                <rect x="14" y="9" width="4" height="12" rx="1" fill="#8E2435" />
+                <rect x="10" y="13" width="12" height="4" rx="1" fill="#8E2435" />
               </svg>
               <span>Emergency Hospital & Priority Radar</span>
             </div>
             <div class="d-flex align-items-center gap-2">
-              <svg width="18" height="22" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
-                <path d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z" fill="#0D6EFD"/>
-                <circle cx="16" cy="15" r="9" fill="#ffffff"/>
-                <path d="M16 10C14.5 10 13 11.2 13 12.8C13 15 16 18 16 18C16 18 19 15 19 12.8C19 11.2 17.5 10 16 10Z" fill="#0D6EFD"/>
+              <svg class="map-style-14"
+                width="18"
+                height="22"
+                viewBox="0 0 32 38"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+               
+              >
+                <path
+                  d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z"
+                  fill="#0D6EFD"
+                />
+                <circle cx="16" cy="15" r="9" fill="#ffffff" />
+                <path
+                  d="M16 10C14.5 10 13 11.2 13 12.8C13 15 16 18 16 18C16 18 19 15 19 12.8C19 11.2 17.5 10 16 10Z"
+                  fill="#0D6EFD"
+                />
               </svg>
               <span>Donation Drive Event Marker</span>
             </div>
             <div class="d-flex align-items-center gap-2">
-              <svg width="18" height="22" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
-                <path d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z" fill="#198754"/>
-                <circle cx="16" cy="15" r="9" fill="#ffffff"/>
-                <path d="M11 17.5C10.5 17.5 10.1 17.1 10.1 16.6V15.3C10.1 14.8 10.4 14.3 10.8 14.1L13 13C13.5 12.7 14.2 12.5 14.8 12.5H17.2C17.8 12.5 18.5 12.7 19 13L21.2 14.1C21.6 14.3 21.9 14.8 21.9 15.3V16.6C21.9 17.1 21.5 17.5 21 17.5H11Z" fill="#198754"/>
+              <svg class="map-style-14"
+                width="18"
+                height="22"
+                viewBox="0 0 32 38"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+               
+              >
+                <path
+                  d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z"
+                  fill="#198754"
+                />
+                <circle cx="16" cy="15" r="9" fill="#ffffff" />
+                <path
+                  d="M11 17.5C10.5 17.5 10.1 17.1 10.1 16.6V15.3C10.1 14.8 10.4 14.3 10.8 14.1L13 13C13.5 12.7 14.2 12.5 14.8 12.5H17.2C17.8 12.5 18.5 12.7 19 13L21.2 14.1C21.6 14.3 21.9 14.8 21.9 15.3V16.6C21.9 17.1 21.5 17.5 21 17.5H11Z"
+                  fill="#198754"
+                />
               </svg>
               <span>En-Route Donor Marker (Live Location)</span>
             </div>
             <div v-if="!isGuest" class="d-flex align-items-center gap-2 mt-1">
-              <span style="display: inline-block; width: 14px; height: 14px; background-color: #198754; border: 2px solid white; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3); margin-left: 2px; margin-right: 2px;"></span>
+              <span class="map-style-25"
+               
+              ></span>
               <span>Compatible Donor (Ready)</span>
             </div>
             <div v-if="!isGuest" class="d-flex align-items-center gap-2">
-              <span style="display: inline-block; width: 14px; height: 14px; background-color: #6c757d; border: 2px solid white; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3); margin-left: 2px; margin-right: 2px;"></span>
+              <span class="map-style-26"
+               
+              ></span>
               <span>Compatible Donor (On Cooldown)</span>
             </div>
             <div class="d-flex align-items-center gap-2 mt-1">
@@ -183,99 +154,15 @@
         </div>
       </div>
 
-      <!-- Right Side Live Activity Stream Panel (Tall 660px) -->
-      <div class="col-lg-4 col-12 border-start border-slate-200 p-3 bg-slate-50 d-flex flex-column" style="height: 660px; overflow-y: auto; border-bottom-right-radius: 16px;">
-        <h2 class="fw-bold mb-3 d-flex justify-content-between align-items-center" style="font-size: 0.9rem; color: #8E2435;">
-          <span><i class="bi bi-radar me-1"></i> RESPONSE STATUS</span>
-          <span class="badge bg-slate-200 text-slate-700" style="font-size: 0.68rem;">
-            {{ filteredResponders.length }} En-Route
-          </span>
-        </h2>
-
-        <!-- Radar Scan Telemetry Card in Sidebar (Admin Only) -->
-        <div v-if="isAdmin && selectedHospitalForRadar" class="p-3 bg-white border border-slate-200 rounded shadow-xs mb-3">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <h3 class="fw-bold mb-0 text-slate-800" style="font-size: 0.83rem;">
-              <i class="bi bi-broadcast me-1" style="color: #8E2435;"></i> Radar Donor Scan
-            </h3>
-            <span class="badge text-white" style="font-size: 0.65rem; background-color: #8E2435;">{{ selectedHospitalForRadar.bloodType }}</span>
-          </div>
-          <div class="small text-slate-500 mb-2" style="font-size: 0.73rem;">
-            {{ selectedHospitalForRadar.hospitalName }}
-          </div>
-          <div class="d-flex justify-content-between align-items-center py-1 border-bottom border-slate-100" style="font-size: 0.75rem;">
-            <span class="text-slate-600">Inner Radius (3 km):</span>
-            <strong class="text-success">{{ radarCounts.inner }} compatible</strong>
-          </div>
-          <div class="d-flex justify-content-between align-items-center py-1" style="font-size: 0.75rem;">
-            <span class="text-slate-600">Outer Radius (10 km):</span>
-            <strong class="text-slate-800">{{ radarCounts.outer }} compatible</strong>
-          </div>
-        </div>
-
-        <!-- No responders state -->
-        <div v-if="filteredResponders.length === 0" class="text-center py-4 px-3 bg-white rounded border border-slate-200 flex-grow-1 d-flex flex-column justify-content-center align-items-center">
-          <div class="mb-2 text-slate-300 fs-1"><i class="bi bi-geo-alt"></i></div>
-          <h3 class="fw-bold text-slate-700 mb-1" style="font-size: 0.88rem;">Searching for Active Responders</h3>
-          <p class="small text-slate-500 mb-0" style="font-size: 0.78rem;">
-            Radar active across 10 km radius. Responders will appear here live when they accept emergency requests and share location.
-          </p>
-        </div>
-
-        <!-- Responders list cards -->
-        <div v-else class="d-flex flex-column gap-2 flex-grow-1">
-          <div
-            v-for="resp in filteredResponders"
-            :key="resp.trackingKey"
-            class="p-3 bg-white border border-slate-200 rounded shadow-xs position-relative hover-lift cursor-pointer"
-            @click="focusResponder(resp)"
-          >
-            <div class="d-flex justify-content-between align-items-start mb-1">
-              <div>
-                <strong class="text-slate-900 font-weight-700" style="font-size: 0.85rem;">{{ resp.donorName }}</strong>
-                <span class="badge ms-1 text-white" style="font-size: 0.65rem; background-color: #8E2435;">{{ resp.bloodType }}</span>
-              </div>
-              <span
-                :class="resp.status === 'approaching' ? 'badge bg-success' : 'badge bg-primary'"
-                style="font-size: 0.65rem; text-transform: uppercase;"
-              >
-                {{ resp.status === 'approaching' ? 'Approaching' : 'En Route' }}
-              </span>
-            </div>
-
-            <div class="small text-slate-600 mb-1" style="font-size: 0.78rem;">
-              <i class="bi bi-hospital me-1" style="color: #8E2435;"></i> {{ resp.hospitalName }}
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-slate-100" style="font-size: 0.75rem;">
-              <span class="text-slate-500">
-                <i class="bi bi-geo-alt me-1" style="color: #8E2435;"></i> Distance: <strong>{{ formatMeters(resp.distanceMeters) }}</strong>
-              </span>
-              <span class="font-weight-700" style="color: #8E2435;">
-                <i class="bi bi-clock-history me-1"></i> ETA: <strong>~{{ resp.etaMins || 1 }} min</strong>
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Live Activity Log Ticker -->
-        <div class="mt-3 pt-3 border-top border-slate-200">
-          <div class="small font-weight-700 text-slate-700 mb-2" style="font-size: 0.75rem;">
-            <i class="bi bi-broadcast me-1" style="color: #8E2435;"></i> RECENT ACTIVITY LOG
-          </div>
-          <ul class="list-unstyled mb-0" style="font-size: 0.72rem;">
-            <li
-              v-for="(log, idx) in activityLogs"
-              :key="idx"
-              class="mb-1 text-slate-600 d-flex align-items-center gap-1 cursor-pointer hover-text-wine"
-              @click="centerMapOnSelected"
-            >
-              <span class="text-slate-400 font-monospace">[{{ log.time }}]</span>
-              <span>{{ log.text }}</span>
-            </li>
-          </ul>
-        </div>
-      </div>
+      <EmergencyMapSidebar
+        :filtered-responders="filteredResponders"
+        :is-admin="isAdmin"
+        :selected-hospital-for-radar="selectedHospitalForRadar"
+        :radar-counts="radarCounts"
+        :activity-logs="activityLogs"
+        @focus-responder="focusResponder"
+        @center-map-on-selected="centerMapOnSelected"
+      />
     </div>
   </div>
 </template>
@@ -290,22 +177,28 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import EmergencyMapToolbar from './EmergencyMapToolbar.vue'
+import EmergencyMapSidebar from './EmergencyMapSidebar.vue'
 import { useAuth } from '@/composables/useAuth.js'
 import { useActiveResponses } from '@/composables/useActiveResponses.js'
 import { useGeolocation } from '@/composables/useGeolocation.js'
 import { getHospitalCoordinates } from '@/data/hospitalCoordinates.js'
-import { calculateHaversineDistance, calculateRoadDistance, formatDistance } from '@/utils/haversine.js'
+import {
+  calculateHaversineDistance,
+  calculateRoadDistance,
+  formatDistance
+} from '@/utils/haversine.js'
 import { canDonateTo } from '@/utils/bloodCompatibility.js'
 import mockDonors from '@/data/mockDonors.json'
 
 function escapeHtml(unsafe) {
   if (typeof unsafe !== 'string') return String(unsafe || '')
   return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;")
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
 }
 
 const props = defineProps({
@@ -338,8 +231,6 @@ const selectedRequestId = ref('')
 const activeLayerFilter = ref('all') // 'all' | 'hospitals' | 'events'
 const activityLogs = ref([])
 
-const showLayerDropdown = ref(false)
-const showFocusDropdown = ref(false)
 const showLegend = ref(true)
 const showRadarOverlay = ref(false)
 const selectedHospitalForRadar = ref(null)
@@ -370,7 +261,8 @@ function cleanEventTitle(title) {
  */
 function extractPhoneNumber(entity) {
   if (!entity) return '115'
-  if (entity.contactPhone && String(entity.contactPhone).trim()) return String(entity.contactPhone).trim()
+  if (entity.contactPhone && String(entity.contactPhone).trim())
+    return String(entity.contactPhone).trim()
   if (entity.phone && String(entity.phone).trim()) return String(entity.phone).trim()
 
   const info = entity.contactInfo ? String(entity.contactInfo).trim() : ''
@@ -396,10 +288,10 @@ function renderUserLocationMarker() {
   const userIcon = L.divIcon({
     className: 'll-user-location-icon',
     html: `
-      <div style="position: relative; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; filter: drop-shadow(0 3px 6px rgba(25,135,84,0.4));">
-        <span style="position: absolute; width: 38px; height: 38px; border-radius: 50%; background-color: rgba(25, 135, 84, 0.25); animation: pulse-white-dot 2s infinite;"></span>
-        <div style="width: 24px; height: 24px; border-radius: 50%; background-color: #198754; border: 3px solid #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
-          <i class="bi bi-person-fill text-white" style="font-size: 13px;"></i>
+      <div class="map-style-38">
+        <span class="map-style-39"></span>
+        <div class="map-style-40">
+          <i class="bi bi-person-fill text-white map-style-41"></i>
         </div>
       </div>
     `,
@@ -410,8 +302,8 @@ function renderUserLocationMarker() {
   const pos = [userLocation.value.lat, userLocation.value.lng]
   userLocationMarker = L.marker(pos, { icon: userIcon, zIndexOffset: 2000 }).addTo(leafletMap)
   userLocationMarker.bindPopup(`
-    <div style="font-family: system-ui, sans-serif; padding: 4px; font-size: 0.8rem;">
-      <strong style="color: #198754;"><i class="bi bi-geo-alt-fill me-1"></i> Your Location (Donor)</strong><br>
+    <div class="map-style-42">
+      <strong class="map-style-43"><i class="bi bi-geo-alt-fill me-1"></i> Your Location (Donor)</strong><br>
       <span class="text-slate-600">Active position signal for distance measurement.</span>
     </div>
   `)
@@ -426,12 +318,22 @@ function getTrafficDensityInfo() {
   const now = new Date()
   const hour = now.getHours()
   if ((hour >= 7 && hour < 9) || (hour >= 16 && hour < 19)) {
-    return { factor: 1.45, text: 'Heavy Traffic (Peak)', color: '#DC2626', icon: 'bi-exclamation-circle-fill' }
+    return {
+      factor: 1.45,
+      text: 'Heavy Traffic (Peak)',
+      color: '#DC2626',
+      icon: 'bi-exclamation-circle-fill'
+    }
   }
   if ((hour >= 11 && hour <= 13) || hour === 17) {
     return { factor: 1.25, text: 'Moderate Traffic', color: '#D97706', icon: 'bi-info-circle-fill' }
   }
-  return { factor: 1.05, text: 'Smooth Traffic Flow', color: '#16A34A', icon: 'bi-check-circle-fill' }
+  return {
+    factor: 1.05,
+    text: 'Smooth Traffic Flow',
+    color: '#16A34A',
+    icon: 'bi-check-circle-fill'
+  }
 }
 
 /**
@@ -439,16 +341,16 @@ function getTrafficDensityInfo() {
  * Used to force OSRM routing to stay 100% inside Vietnam territory when routing across regions (e.g. HCMC to Hanoi).
  */
 const VIETNAM_COASTAL_WAYPOINTS = [
-  { name: 'Phan Thiet', lat: 10.9333, lng: 108.1000 },
+  { name: 'Phan Thiet', lat: 10.9333, lng: 108.1 },
   { name: 'Nha Trang', lat: 12.2451, lng: 109.1943 },
-  { name: 'Quy Nhon', lat: 13.7820, lng: 109.2194 },
+  { name: 'Quy Nhon', lat: 13.782, lng: 109.2194 },
   { name: 'Quang Ngai', lat: 15.1205, lng: 108.7924 },
   { name: 'Da Nang', lat: 16.0544, lng: 108.2022 },
   { name: 'Hue', lat: 16.4637, lng: 107.5909 },
-  { name: 'Dong Hoi', lat: 17.4764, lng: 106.6020 },
+  { name: 'Dong Hoi', lat: 17.4764, lng: 106.602 },
   { name: 'Vinh', lat: 18.6734, lng: 105.6813 },
   { name: 'Thanh Hoa', lat: 19.8067, lng: 105.7851 },
-  { name: 'Ninh Binh', lat: 20.2539, lng: 105.9750 }
+  { name: 'Ninh Binh', lat: 20.2539, lng: 105.975 }
 ]
 
 /**
@@ -457,10 +359,10 @@ const VIETNAM_COASTAL_WAYPOINTS = [
 function getVietnamDomesticWaypoints(startLat, startLng, targetLat, targetLng) {
   const minLat = Math.min(startLat, targetLat)
   const maxLat = Math.max(startLat, targetLat)
-  
+
   // Find all Vietnam coastal highway cities between start and target latitudes
   let waypoints = VIETNAM_COASTAL_WAYPOINTS.filter(
-    w => w.lat > minLat + 0.5 && w.lat < maxLat - 0.5
+    (w) => w.lat > minLat + 0.5 && w.lat < maxLat - 0.5
   )
 
   // If going South to North, sort ascending latitude; if North to South, sort descending
@@ -497,7 +399,7 @@ async function updateMeasurementPolyline(targetLat, targetLng, color = '#8E2435'
     leafletMap.removeLayer(measurementPolyline)
     measurementPolyline = null
   }
-  alternativePolylines.forEach(p => leafletMap.removeLayer(p))
+  alternativePolylines.forEach((p) => leafletMap.removeLayer(p))
   alternativePolylines = []
 
   if (!userLocation.value || !targetLat || !targetLng) return
@@ -516,7 +418,7 @@ async function updateMeasurementPolyline(targetLat, targetLng, color = '#8E2435'
     : []
 
   let osrmCoordString = `${startLng},${startLat}`
-  domesticWaypoints.forEach(w => {
+  domesticWaypoints.forEach((w) => {
     osrmCoordString += `;${w.lng},${w.lat}`
   })
   osrmCoordString += `;${endLng},${endLat}`
@@ -524,7 +426,7 @@ async function updateMeasurementPolyline(targetLat, targetLng, color = '#8E2435'
   // Initial fallback line constrained to Vietnam territory
   const fallbackPoints = [
     [startLat, startLng],
-    ...domesticWaypoints.map(w => [w.lat, w.lng]),
+    ...domesticWaypoints.map((w) => [w.lat, w.lng]),
     [endLat, endLng]
   ]
 
@@ -551,7 +453,7 @@ async function updateMeasurementPolyline(targetLat, targetLng, color = '#8E2435'
         }
 
         // Render driving route strictly constrained to domestic Vietnam territory
-        const rawCoords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]])
+        const rawCoords = data.routes[0].geometry.coordinates.map((c) => [c[1], c[0]])
         const roadCoordinates = sanitizeVietnamCoordinates(rawCoords)
 
         measurementPolyline = L.polyline(roadCoordinates, {
@@ -581,10 +483,15 @@ function getDistanceBadgeHtml(targetLat, targetLng, themeColor = '#8E2435') {
       </button>
     `
   }
-  const roadMeters = calculateRoadDistance(userLocation.value.lat, userLocation.value.lng, Number(targetLat), Number(targetLng))
+  const roadMeters = calculateRoadDistance(
+    userLocation.value.lat,
+    userLocation.value.lng,
+    Number(targetLat),
+    Number(targetLng)
+  )
   const formatted = formatDistance(roadMeters)
   const traffic = getTrafficDensityInfo()
-  const estMins = Math.max(1, Math.round(((roadMeters / 1000) / 25) * 60 * traffic.factor))
+  const estMins = Math.max(1, Math.round((roadMeters / 1000 / 25) * 60 * traffic.factor))
   const navUrl = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.value.lat},${userLocation.value.lng}&destination=${targetLat},${targetLng}`
 
   return `
@@ -609,7 +516,7 @@ function getDistanceBadgeHtml(targetLat, targetLng, themeColor = '#8E2435') {
 }
 
 const activeRequests = computed(() => {
-  return props.emergencyRequests.filter(r => r.status === 'active')
+  return props.emergencyRequests.filter((r) => r.status === 'active')
 })
 
 const activeEvents = computed(() => {
@@ -618,7 +525,9 @@ const activeEvents = computed(() => {
 
 const filteredResponders = computed(() => {
   if (!selectedRequestId.value) return activeResponses.value
-  return activeResponses.value.filter(r => String(r.requestId) === String(selectedRequestId.value))
+  return activeResponses.value.filter(
+    (r) => String(r.requestId) === String(selectedRequestId.value)
+  )
 })
 
 const activeLayerFilterLabel = computed(() => {
@@ -636,41 +545,22 @@ const selectedFocusText = computed(() => {
   if (!selectedRequestId.value) return 'Select Location Focus'
   if (selectedRequestId.value.startsWith('ev_')) {
     const rawId = selectedRequestId.value.replace('ev_', '')
-    const ev = activeEvents.value.find(e => String(e.id) === String(rawId))
+    const ev = activeEvents.value.find((e) => String(e.id) === String(rawId))
     return ev ? cleanEventTitle(ev.title) : 'Selected Event'
   }
-  const req = activeRequests.value.find(r => String(r.id) === String(selectedRequestId.value))
+  const req = activeRequests.value.find((r) => String(r.id) === String(selectedRequestId.value))
   return req ? `[${req.bloodType}] ${req.hospitalName}` : 'Selected Hospital'
 })
 
-function toggleLayerDropdown() {
-  showLayerDropdown.value = !showLayerDropdown.value
-  showFocusDropdown.value = false
-}
-
-function toggleFocusDropdown() {
-  showFocusDropdown.value = !showFocusDropdown.value
-  showLayerDropdown.value = false
-}
-
 function setLayerFilter(val) {
   activeLayerFilter.value = val
-  showLayerDropdown.value = false
   renderHospitalMarkers()
   renderEventMarkers()
 }
 
 function selectFocus(val) {
   selectedRequestId.value = val
-  showFocusDropdown.value = false
   centerMapOnSelected()
-}
-
-function closeDropdownsOnClickOutside(e) {
-  if (!e.target.closest('.dropdown')) {
-    showLayerDropdown.value = false
-    showFocusDropdown.value = false
-  }
 }
 
 function formatMeters(meters) {
@@ -678,7 +568,11 @@ function formatMeters(meters) {
 }
 
 function logActivity(text) {
-  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  const time = new Date().toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  })
   activityLogs.value.unshift({ time, text })
   if (activityLogs.value.length > 5) activityLogs.value.pop()
 }
@@ -771,8 +665,8 @@ function initMapEngine() {
 function renderHospitalMarkers() {
   if (!leafletMap) return
 
-  hospitalMarkers.forEach(m => leafletMap.removeLayer(m))
-  hospitalCircles.forEach(cArray => cArray.forEach(c => leafletMap.removeLayer(c)))
+  hospitalMarkers.forEach((m) => leafletMap.removeLayer(m))
+  hospitalCircles.forEach((cArray) => cArray.forEach((c) => leafletMap.removeLayer(c)))
   hospitalMarkers.clear()
   hospitalCircles.clear()
 
@@ -782,20 +676,22 @@ function renderHospitalMarkers() {
   let count = 0
 
   activeRequests.value.forEach((req) => {
-    const coords = (req.latitude && req.longitude)
-      ? { lat: Number(req.latitude), lng: Number(req.longitude) }
-      : getHospitalCoordinates(req.hospitalName, req.city)
+    const coords =
+      req.latitude && req.longitude
+        ? { lat: Number(req.latitude), lng: Number(req.longitude) }
+        : getHospitalCoordinates(req.hospitalName, req.city)
 
     const pos = [coords.lat, coords.lng]
     bounds.extend(pos)
     count++
 
-    const urgencyColor = req.urgency === 'critical' ? '#8E2435' : (req.urgency === 'urgent' ? '#B45309' : '#D99B26')
+    const urgencyColor =
+      req.urgency === 'critical' ? '#8E2435' : req.urgency === 'urgent' ? '#B45309' : '#D99B26'
 
     const icon = L.divIcon({
       className: 'll-hospital-leaflet-icon',
       html: `
-        <div style="position: relative; width: 32px; height: 38px; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3)); cursor: pointer;">
+        <div class="map-style-50">
           <svg width="32" height="38" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z" fill="${urgencyColor}"/>
             <circle cx="16" cy="15" r="10" fill="#ffffff"/>
@@ -814,7 +710,7 @@ function renderHospitalMarkers() {
     let innerCount = 0
     let outerCount = 0
 
-    mockDonors.forEach(donor => {
+    mockDonors.forEach((donor) => {
       if (canDonateTo(donor.bloodType, req.bloodType)) {
         const dist = calculateHaversineDistance(donor.lat, donor.lng, coords.lat, coords.lng)
         if (dist <= innerRadius) innerCount++
@@ -824,17 +720,17 @@ function renderHospitalMarkers() {
 
     const phoneNum = extractPhoneNumber(req)
     marker.bindPopup(`
-      <div style="font-family: system-ui, sans-serif; padding: 2px; width: 235px; min-width: 235px; box-sizing: border-box;">
-        <strong style="color: #8E2435; font-size: 0.9rem; display: block; line-height: 1.25; margin-bottom: 2px;">${escapeHtml(req.hospitalName)}</strong>
-        <span style="font-size: 0.78rem; display: block;">Blood Required: <strong style="color: #8E2435;">${escapeHtml(req.bloodType)}</strong> (${escapeHtml(req.urgency)})</span>
-        <span style="font-size: 0.75rem; display: block;">Confirmed: <strong>${escapeHtml(String(req.confirmedCount || 0))}/${escapeHtml(String(req.unitsNeeded))} units</strong></span>
+      <div class="map-style-51">
+        <strong class="map-style-52">${escapeHtml(req.hospitalName)}</strong>
+        <span class="map-style-53">Blood Required: <strong class="map-style-54">${escapeHtml(req.bloodType)}</strong> (${escapeHtml(req.urgency)})</span>
+        <span class="map-style-55">Confirmed: <strong>${escapeHtml(String(req.confirmedCount || 0))}/${escapeHtml(String(req.unitsNeeded))} units</strong></span>
         
-        <div class="small text-slate-600 mt-1 mb-1" style="font-size: 0.73rem;">
-          Hotline: <a href="tel:${escapeHtml(phoneNum)}" class="fw-bold text-decoration-none" style="color: #8E2435;">${escapeHtml(phoneNum)}</a>
+        <div class="small text-slate-600 mt-1 mb-1 map-style-56">
+          Hotline: <a href="tel:${escapeHtml(phoneNum)}" class="fw-bold text-decoration-none map-style-54">${escapeHtml(phoneNum)}</a>
         </div>
         ${getDistanceBadgeHtml(coords.lat, coords.lng, '#8E2435')}
 
-        <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1" style="background-color: #8E2435; font-size: 0.72rem; border-radius: 6px;" onclick="window.handleHospitalPopupRespond('${escapeHtml(String(req.id))}')">
+        <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1 map-style-57" onclick="window.handleHospitalPopupRespond('${escapeHtml(String(req.id))}')">
           <i class="bi bi-droplet-fill me-1"></i> Confirm Availability
         </button>
       </div>
@@ -875,22 +771,23 @@ function renderHospitalMarkers() {
 function renderEventMarkers() {
   if (!leafletMap) return
 
-  eventMarkers.forEach(m => leafletMap.removeLayer(m))
+  eventMarkers.forEach((m) => leafletMap.removeLayer(m))
   eventMarkers.clear()
 
   if (activeLayerFilter.value === 'hospitals') return
 
   activeEvents.value.forEach((ev) => {
-    const coords = (ev.latitude && ev.longitude)
-      ? { lat: Number(ev.latitude), lng: Number(ev.longitude) }
-      : getHospitalCoordinates(ev.location || ev.title, ev.city)
+    const coords =
+      ev.latitude && ev.longitude
+        ? { lat: Number(ev.latitude), lng: Number(ev.longitude) }
+        : getHospitalCoordinates(ev.location || ev.title, ev.city)
 
     const pos = [coords.lat, coords.lng]
 
     const icon = L.divIcon({
       className: 'll-event-leaflet-icon',
       html: `
-        <div style="position: relative; width: 30px; height: 36px; filter: drop-shadow(0 3px 6px rgba(13,110,253,0.35)); cursor: pointer;">
+        <div class="map-style-58">
           <svg width="30" height="36" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z" fill="#0D6EFD"/>
             <circle cx="16" cy="15" r="9" fill="#ffffff"/>
@@ -905,16 +802,16 @@ function renderEventMarkers() {
     const marker = L.marker(pos, { icon, zIndexOffset: 100 }).addTo(leafletMap)
     const phoneNum = extractPhoneNumber(ev)
     marker.bindPopup(`
-      <div style="font-family: system-ui, sans-serif; padding: 2px; width: 235px; min-width: 235px; box-sizing: border-box;">
-        <strong style="color: #0D6EFD; font-size: 0.88rem; display: block; line-height: 1.25; margin-bottom: 2px;">${escapeHtml(cleanEventTitle(ev.title))}</strong>
-        <span style="font-size: 0.76rem; color: #555; display: block;">Category: <strong>${escapeHtml(ev.category || 'Drive')}</strong></span>
-        <span style="font-size: 0.75rem; color: #555; display: block;">Location: ${escapeHtml(ev.location || ev.city)}</span>
-        <span style="font-size: 0.75rem; color: #0D6EFD; font-weight: bold; display: block;">Date: ${escapeHtml(ev.date || 'Upcoming')}</span>
-        <div class="small text-slate-600 mt-1 mb-1" style="font-size: 0.73rem;">
-          Hotline: <a href="tel:${escapeHtml(phoneNum)}" class="fw-bold text-decoration-none" style="color: #0D6EFD;">${escapeHtml(phoneNum)}</a>
+      <div class="map-style-51">
+        <strong class="map-style-59">${escapeHtml(cleanEventTitle(ev.title))}</strong>
+        <span class="map-style-60">Category: <strong>${escapeHtml(ev.category || 'Drive')}</strong></span>
+        <span class="map-style-61">Location: ${escapeHtml(ev.location || ev.city)}</span>
+        <span class="map-style-62">Date: ${escapeHtml(ev.date || 'Upcoming')}</span>
+        <div class="small text-slate-600 mt-1 mb-1 map-style-56">
+          Hotline: <a href="tel:${escapeHtml(phoneNum)}" class="fw-bold text-decoration-none map-style-63">${escapeHtml(phoneNum)}</a>
         </div>
         ${getDistanceBadgeHtml(coords.lat, coords.lng, '#0D6EFD')}
-        <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1" style="background-color: #0D6EFD; font-size: 0.72rem; border-radius: 6px;" onclick="window.handleEventPopupRegister('${escapeHtml(String(ev.id))}')">
+        <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1 map-style-64" onclick="window.handleEventPopupRegister('${escapeHtml(String(ev.id))}')">
           <i class="bi bi-heart-fill me-1"></i> Register Interest
         </button>
       </div>
@@ -935,7 +832,7 @@ function renderEventMarkers() {
 function renderDonorMarkers() {
   if (!leafletMap) return
 
-  const currentKeys = new Set(filteredResponders.value.map(r => r.trackingKey))
+  const currentKeys = new Set(filteredResponders.value.map((r) => r.trackingKey))
 
   donorMarkers.forEach((m, key) => {
     if (!currentKeys.has(key)) {
@@ -965,7 +862,7 @@ function renderDonorMarkers() {
       const icon = L.divIcon({
         className: 'll-donor-leaflet-icon',
         html: `
-          <div style="position: relative; width: 30px; height: 36px; filter: drop-shadow(0 3px 6px rgba(25,135,84,0.4)); cursor: pointer;">
+          <div class="map-style-65">
             <svg width="30" height="36" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M16 0C7.16 0 0 7.16 0 16C0 26 14 36.6 15.3 37.7C15.7 38.1 16.3 38.1 16.7 37.7C18 36.6 32 26 32 16C32 7.16 24.84 0 16 0Z" fill="#198754"/>
               <circle cx="16" cy="15" r="9" fill="#ffffff"/>
@@ -979,7 +876,7 @@ function renderDonorMarkers() {
 
       const m = L.marker(pos, { icon }).addTo(leafletMap)
       m.bindPopup(`
-        <div style="font-size: 0.78rem;">
+        <div class="map-style-66">
           <strong>${escapeHtml(resp.donorName)}</strong> (${escapeHtml(resp.bloodType)})<br>
           Status: <strong>${escapeHtml(resp.status)}</strong><br>
           ETA: <strong>~${escapeHtml(String(resp.etaMins || 1))} min</strong>
@@ -1004,7 +901,7 @@ function renderRadarDonors() {
   if (!leafletMap) return
 
   // Clear existing radar markers
-  radarMarkers.forEach(m => leafletMap.removeLayer(m))
+  radarMarkers.forEach((m) => leafletMap.removeLayer(m))
   radarMarkers.clear()
   showRadarOverlay.value = false
   selectedHospitalForRadar.value = null
@@ -1014,12 +911,13 @@ function renderRadarDonors() {
     return
   }
 
-  const req = activeRequests.value.find(r => String(r.id) === String(selectedRequestId.value))
+  const req = activeRequests.value.find((r) => String(r.id) === String(selectedRequestId.value))
   if (!req) return
 
-  const coords = (req.latitude && req.longitude)
-    ? { lat: Number(req.latitude), lng: Number(req.longitude) }
-    : getHospitalCoordinates(req.hospitalName, req.city)
+  const coords =
+    req.latitude && req.longitude
+      ? { lat: Number(req.latitude), lng: Number(req.longitude) }
+      : getHospitalCoordinates(req.hospitalName, req.city)
 
   const outerRadius = 10000
   const innerRadius = 3000
@@ -1027,16 +925,16 @@ function renderRadarDonors() {
   let outerCount = 0
 
   // Calculate counts for the overlay card
-  mockDonors.forEach(donor => {
+  mockDonors.forEach((donor) => {
     if (canDonateTo(donor.bloodType, req.bloodType)) {
       const dist = calculateHaversineDistance(donor.lat, donor.lng, coords.lat, coords.lng)
       if (dist <= innerRadius) innerCount++
       else if (dist <= outerRadius) outerCount++
-      
+
       // Render radar markers only for authenticated non-guest users and if zoomed in
       if (!isGuest.value && currentZoom > 12 && dist <= outerRadius) {
         const color = donor.canDonateNow ? '#198754' : '#6c757d'
-        
+
         const icon = L.divIcon({
           className: 'll-radar-donor-icon',
           html: `
@@ -1047,18 +945,29 @@ function renderRadarDonors() {
           iconAnchor: [7, 7]
         })
 
-        const marker = L.marker([donor.lat, donor.lng], { icon, zIndexOffset: 50 }).addTo(leafletMap)
-        
-        const cooldownStatus = donor.canDonateNow ? '<strong class="text-success">Ready</strong>' : '<strong class="text-secondary">On Cooldown</strong>'
-        const phone = donor.phoneNumber || ('09' + String(Math.abs((donor.id || '').split('').reduce((a,b)=>a+b.charCodeAt(0),0)) % 10000000).padStart(8, '0'))
+        const marker = L.marker([donor.lat, donor.lng], { icon, zIndexOffset: 50 }).addTo(
+          leafletMap
+        )
+
+        const cooldownStatus = donor.canDonateNow
+          ? '<strong class="text-success">Ready</strong>'
+          : '<strong class="text-secondary">On Cooldown</strong>'
+        const phone =
+          donor.phoneNumber ||
+          '09' +
+            String(
+              Math.abs((donor.id || '').split('').reduce((a, b) => a + b.charCodeAt(0), 0)) %
+                10000000
+            ).padStart(8, '0')
+        const safePhone = escapeHtml(phone)
         const phoneBtn = donor.canDonateNow
-          ? `<div class="mt-2 pt-1 border-top"><a href="tel:${phone}" class="btn btn-sm text-white w-100 py-1 d-inline-flex align-items-center justify-content-center gap-1 font-weight-700" style="background-color: #198754; font-size: 0.72rem; border-radius: 6px;"><i class="bi bi-telephone-fill me-1"></i> Call ${phone}</a></div>`
-          : `<div class="mt-2 pt-1 border-top text-slate-500" style="font-size: 0.7rem;"><i class="bi bi-telephone me-1"></i> Phone: <strong>${phone}</strong></div>`
+          ? `<div class="mt-2 pt-1 border-top"><a href="tel:${safePhone}" class="btn btn-sm text-white w-100 py-1 d-inline-flex align-items-center justify-content-center gap-1 font-weight-700 map-style-68"><i class="bi bi-telephone-fill me-1"></i> Call ${safePhone}</a></div>`
+          : `<div class="mt-2 pt-1 border-top text-slate-500 map-style-69"><i class="bi bi-telephone me-1"></i> Phone: <strong>${safePhone}</strong></div>`
 
         marker.bindPopup(`
-          <div style="font-size: 0.78rem; font-family: system-ui, sans-serif; padding: 2px;">
-            <strong style="color: #198754; font-size: 0.85rem; display: block; margin-bottom: 2px;">Donor: ${escapeHtml(donor.displayName)}</strong>
-            Blood Type: <strong style="color: #8E2435;">${escapeHtml(donor.bloodType)}</strong><br>
+          <div class="map-style-70">
+            <strong class="map-style-71">Donor: ${escapeHtml(donor.displayName)}</strong>
+            Blood Type: <strong class="map-style-54">${escapeHtml(donor.bloodType)}</strong><br>
             Status: ${cooldownStatus}<br>
             Distance: <strong>${escapeHtml(formatDistance(dist))}</strong>
             ${phoneBtn}
@@ -1082,16 +991,17 @@ function centerMapOnSelected() {
   if (selectedRequestId.value) {
     if (selectedRequestId.value.startsWith('ev_')) {
       const rawId = selectedRequestId.value.replace('ev_', '')
-      const ev = activeEvents.value.find(e => String(e.id) === String(rawId))
+      const ev = activeEvents.value.find((e) => String(e.id) === String(rawId))
       if (ev) {
         if (activeLayerFilter.value === 'hospitals') {
           activeLayerFilter.value = 'all'
           renderHospitalMarkers()
           renderEventMarkers()
         }
-        const coords = (ev.latitude && ev.longitude)
-          ? { lat: Number(ev.latitude), lng: Number(ev.longitude) }
-          : getHospitalCoordinates(ev.location || ev.title, ev.city)
+        const coords =
+          ev.latitude && ev.longitude
+            ? { lat: Number(ev.latitude), lng: Number(ev.longitude) }
+            : getHospitalCoordinates(ev.location || ev.title, ev.city)
         leafletMap.setView([coords.lat, coords.lng], 14, { animate: true })
         updateMeasurementPolyline(coords.lat, coords.lng, '#0D6EFD')
         const m = eventMarkers.get('ev_' + String(ev.id))
@@ -1104,16 +1014,17 @@ function centerMapOnSelected() {
         logActivity(`Focused on event: ${cleanEventTitle(ev.title)}`)
       }
     } else {
-      const req = activeRequests.value.find(r => String(r.id) === String(selectedRequestId.value))
+      const req = activeRequests.value.find((r) => String(r.id) === String(selectedRequestId.value))
       if (req) {
         if (activeLayerFilter.value === 'events') {
           activeLayerFilter.value = 'all'
           renderHospitalMarkers()
           renderEventMarkers()
         }
-        const coords = (req.latitude && req.longitude)
-          ? { lat: Number(req.latitude), lng: Number(req.longitude) }
-          : getHospitalCoordinates(req.hospitalName, req.city)
+        const coords =
+          req.latitude && req.longitude
+            ? { lat: Number(req.latitude), lng: Number(req.longitude) }
+            : getHospitalCoordinates(req.hospitalName, req.city)
         leafletMap.setView([coords.lat, coords.lng], 14, { animate: true })
         updateMeasurementPolyline(coords.lat, coords.lng, '#8E2435')
         const marker = hospitalMarkers.get(String(req.id))
@@ -1134,7 +1045,7 @@ function centerMapOnSelected() {
     renderHospitalMarkers()
     renderEventMarkers()
   }
-  
+
   renderRadarDonors()
 }
 
@@ -1170,24 +1081,40 @@ function refreshMapSize() {
   })
 }
 
-watch(userLocation, () => {
-  renderUserLocationMarker()
-  renderHospitalMarkers()
-  renderEventMarkers()
-  centerMapOnSelected()
-}, { deep: true })
+watch(
+  userLocation,
+  () => {
+    renderUserLocationMarker()
+    renderHospitalMarkers()
+    renderEventMarkers()
+    centerMapOnSelected()
+  },
+  { deep: true }
+)
 
-watch(activeRequests, () => {
-  renderHospitalMarkers()
-}, { deep: true })
+watch(
+  activeRequests,
+  () => {
+    renderHospitalMarkers()
+  },
+  { deep: true }
+)
 
-watch(activeEvents, () => {
-  renderEventMarkers()
-}, { deep: true })
+watch(
+  activeEvents,
+  () => {
+    renderEventMarkers()
+  },
+  { deep: true }
+)
 
-watch(filteredResponders, () => {
-  renderDonorMarkers()
-}, { deep: true })
+watch(
+  filteredResponders,
+  () => {
+    renderDonorMarkers()
+  },
+  { deep: true }
+)
 
 watch(selectedRequestId, () => {
   centerMapOnSelected()
@@ -1198,11 +1125,15 @@ watch(activeLayerFilter, () => {
   renderEventMarkers()
 })
 
-watch(() => props.isVisible, (visible) => {
-  if (visible) {
-    refreshMapSize()
-  }
-}, { immediate: true })
+watch(
+  () => props.isVisible,
+  (visible) => {
+    if (visible) {
+      refreshMapSize()
+    }
+  },
+  { immediate: true }
+)
 
 onMounted(() => {
   startListening()
@@ -1232,6 +1163,347 @@ defineExpose({
   centerMapOnSelected
 })
 </script>
+
+
+<style scoped>
+.map-style-1 {
+  position: relative;
+  z-index: 1;
+  border-color: #eae2df !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 30px rgba(142, 36, 53, 0.06) !important;
+}
+.map-style-2 {
+  border-color: #eae2df;
+  position: relative;
+  z-index: 1050;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+.map-style-3 {
+  font-size: 0.76rem;
+  padding: 0.48rem 0.95rem;
+  line-height: 1;
+  background-color: #8e2435;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.map-style-4 {
+  opacity: 0.4;
+  font-weight: 300;
+}
+.map-style-5 {
+  min-width: 140px;
+  min-height: 38px;
+  font-size: 0.82rem;
+  background-color: #faf5ef;
+  color: #2b2225;
+  border: 1px solid #eae2df;
+  border-radius: 8px;
+}
+.map-style-6 {
+  color: #8e2435;
+}
+.map-style-7 {
+  color: #0d6efd;
+}
+.map-style-8 {
+  font-size: 0.72rem;
+  flex-shrink: 0;
+}
+.map-style-9 {
+  min-width: 165px;
+  z-index: 2000;
+}
+.map-style-10 {
+  min-width: 170px;
+  max-width: 220px;
+  min-height: 38px;
+  font-size: 0.82rem;
+  background-color: #faf5ef;
+  color: #2b2225;
+  border: 1px solid #eae2df;
+  border-radius: 8px;
+}
+.map-style-11 {
+  max-width: 170px;
+}
+.map-style-12 {
+  color: #8e2435;
+  flex-shrink: 0;
+}
+.map-style-13 {
+  color: #0d6efd;
+  flex-shrink: 0;
+}
+.map-style-14 {
+  flex-shrink: 0;
+}
+.map-style-15 {
+  min-width: 260px;
+  max-height: 340px;
+  overflow-y: auto;
+  z-index: 2000;
+}
+.map-style-16 {
+  font-size: 0.68rem;
+  color: #8e2435;
+}
+.map-style-17 {
+  font-size: 0.68rem;
+  color: #0d6efd;
+}
+.map-style-18 {
+  min-height: 38px;
+  padding: 0 0.9rem;
+  font-size: 0.82rem;
+  background-color: #faf5ef;
+  color: #8e2435;
+  border: 1px solid #eae2df;
+  border-radius: 8px;
+}
+.map-style-19 {
+  position: relative;
+  z-index: 1;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+.map-style-20 {
+  height: 660px;
+  min-height: 660px;
+  border-bottom-left-radius: 16px;
+  overflow: hidden;
+}
+.map-style-21 {
+  width: 100%;
+  height: 660px;
+  min-height: 660px;
+  position: relative;
+  z-index: 1;
+  background-color: #f8f9fa;
+}
+.map-style-22 {
+  z-index: 1000;
+  max-width: 290px;
+}
+.map-style-23 {
+  font-size: 0.72rem;
+}
+.map-style-24 {
+  flex-shrink: 0;
+  max-width: none;
+}
+.map-style-25 {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background-color: #198754;
+  border: 2px solid white;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  margin-left: 2px;
+  margin-right: 2px;
+}
+.map-style-26 {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background-color: #6c757d;
+  border: 2px solid white;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  margin-left: 2px;
+  margin-right: 2px;
+}
+.map-style-27 {
+  height: 660px;
+  overflow-y: auto;
+  border-bottom-right-radius: 16px;
+}
+.map-style-28 {
+  font-size: 0.9rem;
+  color: #8e2435;
+}
+.map-style-29 {
+  font-size: 0.68rem;
+}
+.map-style-30 {
+  font-size: 0.83rem;
+}
+.map-style-31 {
+  font-size: 0.65rem;
+  background-color: #8e2435;
+}
+.map-style-32 {
+  font-size: 0.73rem;
+}
+.map-style-33 {
+  font-size: 0.75rem;
+}
+.map-style-34 {
+  font-size: 0.88rem;
+}
+.map-style-35 {
+  font-size: 0.78rem;
+}
+.map-style-36 {
+  font-size: 0.85rem;
+}
+.map-style-37 {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}
+.map-style-38 {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  filter: drop-shadow(0 3px 6px rgba(25,135,84,0.4));
+}
+.map-style-39 {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: rgba(25, 135, 84, 0.25);
+  animation: pulse-white-dot 2s infinite;
+}
+.map-style-40 {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #198754;
+  border: 3px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.map-style-41 {
+  font-size: 13px;
+}
+.map-style-42 {
+  font-family: system-ui, sans-serif;
+  padding: 4px;
+  font-size: 0.8rem;
+}
+.map-style-43 {
+  color: #198754;
+}
+
+.map-style-50 {
+  position: relative;
+  width: 32px;
+  height: 38px;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3));
+  cursor: pointer;
+}
+.map-style-51 {
+  font-family: system-ui, sans-serif;
+  padding: 2px;
+  width: 235px;
+  min-width: 235px;
+  box-sizing: border-box;
+}
+.map-style-52 {
+  color: #8E2435;
+  font-size: 0.9rem;
+  display: block;
+  line-height: 1.25;
+  margin-bottom: 2px;
+}
+.map-style-53 {
+  font-size: 0.78rem;
+  display: block;
+}
+.map-style-54 {
+  color: #8E2435;
+}
+.map-style-55 {
+  font-size: 0.75rem;
+  display: block;
+}
+.map-style-56 {
+  font-size: 0.73rem;
+}
+.map-style-57 {
+  background-color: #8E2435;
+  font-size: 0.72rem;
+  border-radius: 6px;
+}
+.map-style-58 {
+  position: relative;
+  width: 30px;
+  height: 36px;
+  filter: drop-shadow(0 3px 6px rgba(13,110,253,0.35));
+  cursor: pointer;
+}
+.map-style-59 {
+  color: #0D6EFD;
+  font-size: 0.88rem;
+  display: block;
+  line-height: 1.25;
+  margin-bottom: 2px;
+}
+.map-style-60 {
+  font-size: 0.76rem;
+  color: #555;
+  display: block;
+}
+.map-style-61 {
+  font-size: 0.75rem;
+  color: #555;
+  display: block;
+}
+.map-style-62 {
+  font-size: 0.75rem;
+  color: #0D6EFD;
+  font-weight: bold;
+  display: block;
+}
+.map-style-63 {
+  color: #0D6EFD;
+}
+.map-style-64 {
+  background-color: #0D6EFD;
+  font-size: 0.72rem;
+  border-radius: 6px;
+}
+.map-style-65 {
+  position: relative;
+  width: 30px;
+  height: 36px;
+  filter: drop-shadow(0 3px 6px rgba(25,135,84,0.4));
+  cursor: pointer;
+}
+.map-style-66 {
+  font-size: 0.78rem;
+}
+
+.map-style-68 {
+  background-color: #198754;
+  font-size: 0.72rem;
+  border-radius: 6px;
+}
+.map-style-69 {
+  font-size: 0.7rem;
+}
+.map-style-70 {
+  font-size: 0.78rem;
+  font-family: system-ui, sans-serif;
+  padding: 2px;
+}
+.map-style-71 {
+  color: #198754;
+  font-size: 0.85rem;
+  display: block;
+  margin-bottom: 2px;
+}
+</style>
 
 <style scoped>
 .ll-emergency-map-container {
@@ -1280,7 +1552,7 @@ defineExpose({
   height: 14px;
   border-radius: 50%;
   background: rgba(142, 36, 53, 0.2);
-  border: 1.5px solid #8E2435;
+  border: 1.5px solid #8e2435;
 }
 
 .ll-legend-circle--10k {
@@ -1289,7 +1561,7 @@ defineExpose({
   height: 14px;
   border-radius: 50%;
   background: rgba(142, 36, 53, 0.08);
-  border: 1px dashed #8E2435;
+  border: 1px dashed #8e2435;
 }
 
 .cursor-pointer {
@@ -1297,7 +1569,9 @@ defineExpose({
 }
 
 .hover-lift {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 .hover-lift:hover {
   transform: translateY(-2px);
@@ -1333,7 +1607,7 @@ defineExpose({
   top: 10px !important;
   right: 10px !important;
   font-size: 18px !important;
-  color: #64748B !important;
+  color: #64748b !important;
   transition: all 0.2s ease !important;
   width: 40px !important;
   height: 40px !important;
@@ -1345,8 +1619,8 @@ defineExpose({
 }
 
 :deep(.leaflet-container a.leaflet-popup-close-button:hover) {
-  color: #8E2435 !important;
-  background-color: #FAF5EF !important;
+  color: #8e2435 !important;
+  background-color: #faf5ef !important;
   transform: scale(1.1) !important;
 }
 

@@ -1,4 +1,4 @@
-import { nextTick } from 'vue'
+import { nextTick, onUnmounted } from 'vue'
 
 /**
  * useScrollReveal composable
@@ -8,6 +8,8 @@ import { nextTick } from 'vue'
  * Respects `prefers-reduced-motion` for accessibility compliance.
  */
 export function useScrollReveal() {
+  let activeObserver = null
+
   /**
    * Initialises IntersectionObserver-based reveal animations on matched elements.
    * Each element receives a staggered delay based on its DOM order.
@@ -16,43 +18,64 @@ export function useScrollReveal() {
    * @returns {Promise<void>} Resolves after observers are attached.
    */
   const reveal = async (selector, delayMs = 60) => {
+    // Disconnect any previous observer to prevent leaks
+    if (activeObserver) {
+      activeObserver.disconnect()
+      activeObserver = null
+    }
+
     // Wait for Vue's DOM update cycle
     await nextTick()
-    
-    const prefersReducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false
-    
+
+    const prefersReducedMotion =
+      typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+        ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        : false
+
     if (typeof IntersectionObserver === 'undefined') return
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const target = entry.target
-          if (prefersReducedMotion) {
-            target.classList.add('reveal-instant')
-          } else {
-            target.classList.add('reveal-visible')
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const target = entry.target
+            if (prefersReducedMotion) {
+              target.classList.add('reveal-instant')
+            } else {
+              target.classList.add('reveal-visible')
+            }
+            observer.unobserve(target)
           }
-          observer.unobserve(target)
-        }
-      })
-    }, {
-      threshold: 0.05,
-      rootMargin: '0px 0px -30px 0px'
-    })
+        })
+      },
+      {
+        threshold: 0.05,
+        rootMargin: '0px 0px -30px 0px'
+      }
+    )
+
+    activeObserver = observer
 
     const elements = document.querySelectorAll(selector)
     elements.forEach((el, index) => {
       if (!el.classList.contains('reveal-item')) {
         el.classList.add('reveal-item')
       }
-      
+
       // Calculate stagger delay
       const delay = el.getAttribute('data-delay') || `${index * delayMs}ms`
       el.style.setProperty('--reveal-delay', delay)
-      
+
       observer.observe(el)
     })
   }
+
+  onUnmounted(() => {
+    if (activeObserver) {
+      activeObserver.disconnect()
+      activeObserver = null
+    }
+  })
 
   return { reveal }
 }

@@ -24,7 +24,7 @@ export function useEligibility() {
 
   /**
    * Check if a donor is currently eligible based on last donation date.
-   * @param {Object|Date|string|null} lastDonationDate 
+   * @param {Object|Date|string|null} lastDonationDate
    * @returns {boolean} True if eligible or no prior donation.
    */
   function isEligible(lastDonationDate) {
@@ -35,7 +35,7 @@ export function useEligibility() {
 
   /**
    * Calculate the next date the donor is allowed to donate.
-   * @param {Object|Date|string|null} lastDonationDate 
+   * @param {Object|Date|string|null} lastDonationDate
    * @returns {Date|null} Date object or null if never donated.
    */
   function nextEligibleDate(lastDonationDate) {
@@ -46,7 +46,7 @@ export function useEligibility() {
 
   /**
    * Calculate number of days remaining until the donor is eligible.
-   * @param {Object|Date|string|null} lastDonationDate 
+   * @param {Object|Date|string|null} lastDonationDate
    * @returns {number} Days remaining (0 if already eligible).
    */
   function daysUntilEligible(lastDonationDate) {

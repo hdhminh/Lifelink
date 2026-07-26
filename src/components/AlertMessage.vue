@@ -45,17 +45,24 @@ const alertIcon = computed(() => {
 
 const visible = ref(true)
 
-watch(() => props.message, () => {
-  visible.value = true
-})
-
-watch(() => props.type, () => {
-  if (props.type === 'success') {
-    setTimeout(() => {
-      visible.value = false
-    }, 5000)
+watch(
+  () => props.message,
+  () => {
+    visible.value = true
   }
-}, { immediate: true })
+)
+
+watch(
+  () => props.type,
+  () => {
+    if (props.type === 'success') {
+      setTimeout(() => {
+        visible.value = false
+      }, 5000)
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>

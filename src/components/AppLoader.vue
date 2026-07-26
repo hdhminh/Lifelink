@@ -15,7 +15,7 @@
             >
               <!-- Background subtle glow circle -->
               <circle cx="50" cy="50" r="44" stroke="rgba(255,255,255,0.12)" stroke-width="2.5" />
-              
+
               <!-- Draw a path 1: Heart Outline -->
               <path
                 class="ll-path-heart"
@@ -38,7 +38,14 @@
 
               <!-- Gradient Defs -->
               <defs>
-                <linearGradient id="heartGrad" x1="10" y1="10" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+                <linearGradient
+                  id="heartGrad"
+                  x1="10"
+                  y1="10"
+                  x2="90"
+                  y2="90"
+                  gradientUnits="userSpaceOnUse"
+                >
                   <stop offset="0%" stop-color="#E53935" />
                   <stop offset="100%" stop-color="#8E2435" />
                 </linearGradient>
@@ -49,14 +56,14 @@
           <!-- Staggered Animated Brand Name (Crisp White & Crimson Red) -->
           <div class="ll-loader-text-wrapper">
             <h2 class="ll-loader-title m-0">
-              <span class="ll-letter" style="--i:0">L</span>
-              <span class="ll-letter" style="--i:1">i</span>
-              <span class="ll-letter" style="--i:2">f</span>
-              <span class="ll-letter" style="--i:3">e</span>
-              <span class="ll-letter ll-letter--accent" style="--i:4">L</span>
-              <span class="ll-letter ll-letter--accent" style="--i:5">i</span>
-              <span class="ll-letter ll-letter--accent" style="--i:6">n</span>
-              <span class="ll-letter ll-letter--accent" style="--i:7">k</span>
+              <span class="ll-letter" style="--i: 0">L</span>
+              <span class="ll-letter" style="--i: 1">i</span>
+              <span class="ll-letter" style="--i: 2">f</span>
+              <span class="ll-letter" style="--i: 3">e</span>
+              <span class="ll-letter ll-letter--accent" style="--i: 4">L</span>
+              <span class="ll-letter ll-letter--accent" style="--i: 5">i</span>
+              <span class="ll-letter ll-letter--accent" style="--i: 6">n</span>
+              <span class="ll-letter ll-letter--accent" style="--i: 7">k</span>
             </h2>
             <p class="ll-loader-subtitle mt-3 mb-0">CONNECTING LIVES • EMERGENCY NETWORK</p>
           </div>
@@ -81,7 +88,7 @@ onMounted(() => {
   // Smooth 1.0s SVG Path animation playback on every page load
   const duration = 1000
   const intervalTime = 16
-  const step = (100 / (duration / intervalTime))
+  const step = 100 / (duration / intervalTime)
 
   const timer = setInterval(() => {
     progress.value += step
@@ -106,14 +113,17 @@ onMounted(() => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: #120A0C;
+  background-color: #120a0c;
   background-image: radial-gradient(circle at 50% 40%, rgba(142, 36, 53, 0.35), transparent 70%);
   z-index: 99999;
   display: flex;
   justify-content: center;
   align-items: center;
   color: #ffffff;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
   overflow: hidden;
 }
 
@@ -182,7 +192,7 @@ onMounted(() => {
 }
 
 .ll-letter--accent {
-  color: #E53935 !important;
+  color: #e53935 !important;
   font-weight: 800;
   text-shadow: 0 4px 12px rgba(229, 57, 53, 0.4);
 }
@@ -214,7 +224,7 @@ onMounted(() => {
 
 .ll-loader-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #8E2435, #E53935);
+  background: linear-gradient(90deg, #8e2435, #e53935);
   border-radius: 6px;
   transition: width 0.05s linear;
   box-shadow: 0 0 14px rgba(229, 57, 53, 0.9);
@@ -222,7 +232,9 @@ onMounted(() => {
 
 /* Curtain Lift Transition */
 .loader-curtain-leave-active {
-  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.76, 0, 0.24, 1);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 .loader-curtain-leave-to {

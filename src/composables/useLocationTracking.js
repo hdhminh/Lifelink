@@ -15,8 +15,11 @@
 import { ref as vueRef, onUnmounted } from 'vue'
 import { ref as dbRef, set, update, remove, onDisconnect, serverTimestamp } from 'firebase/database'
 import { rtdb } from '@/firebase.js'
-import { db } from '@/firebase.js'
-import { calculateHaversineDistance, formatDistance, calculateEtaMinutes } from '@/utils/haversine.js'
+import {
+  calculateHaversineDistance,
+  formatDistance,
+  calculateEtaMinutes
+} from '@/utils/haversine.js'
 
 export function useLocationTracking() {
   const isTracking = vueRef(false)
@@ -60,11 +63,13 @@ export function useLocationTracking() {
     activeTrackingKey = getTrackingKey(requestId, donorId)
 
     const trackingDocRef = dbRef(rtdb, `liveTracking/${activeTrackingKey}`)
-    
+
     // Set up onDisconnect to remove the node when the client disconnects
-    onDisconnect(trackingDocRef).remove().catch(err => {
-      console.warn('[useLocationTracking] onDisconnect setup failed:', err)
-    })
+    onDisconnect(trackingDocRef)
+      .remove()
+      .catch((err) => {
+        console.warn('[useLocationTracking] onDisconnect setup failed:', err)
+      })
 
     watchId = navigator.geolocation.watchPosition(
       (position) => {
@@ -99,10 +104,19 @@ export function useLocationTracking() {
         // Check throttling condition before writing
         const timePassed = now - lastWriteTimestamp
         const distMoved = lastRecordedPos
-          ? calculateHaversineDistance(latitude, longitude, lastRecordedPos.lat, lastRecordedPos.lng)
+          ? calculateHaversineDistance(
+              latitude,
+              longitude,
+              lastRecordedPos.lat,
+              lastRecordedPos.lng
+            )
           : Infinity
 
-        if (!lastRecordedPos || timePassed >= MIN_WRITE_INTERVAL_MS || distMoved >= MIN_WRITE_DISTANCE_METERS) {
+        if (
+          !lastRecordedPos ||
+          timePassed >= MIN_WRITE_INTERVAL_MS ||
+          distMoved >= MIN_WRITE_DISTANCE_METERS
+        ) {
           lastWriteTimestamp = now
           lastRecordedPos = { lat: latitude, lng: longitude }
 
@@ -163,11 +177,13 @@ export function useLocationTracking() {
 
     if (activeTrackingKey) {
       const trackingDocRef = dbRef(rtdb, `liveTracking/${activeTrackingKey}`)
-      
+
       // Cancel onDisconnect first so it doesn't fire unnecessarily
-      onDisconnect(trackingDocRef).cancel().catch(err => {
-        console.warn('[useLocationTracking] onDisconnect cancel warning:', err)
-      })
+      onDisconnect(trackingDocRef)
+        .cancel()
+        .catch((err) => {
+          console.warn('[useLocationTracking] onDisconnect cancel warning:', err)
+        })
 
       remove(trackingDocRef).catch((err) => {
         console.warn('[useLocationTracking] RTDB remove warning:', err)

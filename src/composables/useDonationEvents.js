@@ -5,7 +5,7 @@
  * optimistic interested toggles.
  */
 
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import {
   collection,
   query,
@@ -15,6 +15,7 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  runTransaction,
   arrayUnion,
   arrayRemove,
   increment,
@@ -45,16 +46,22 @@ export function useDonationEvents() {
     error.value = null
 
     const q = query(collection(db, 'events'), orderBy('date', 'asc'))
-    unsubscribeFn = onSnapshot(q, (snap) => {
-      const sorted = sortEvents(snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() })))
-      cachedEvents.value = sorted
-      events.value = sorted
-      loading.value = false
-    }, (err) => {
-      error.value = 'Failed to load events. Please try again.'
-      loading.value = false
-      console.error('[useDonationEvents] startListening error:', err)
-    })
+    unsubscribeFn = onSnapshot(
+      q,
+      (snap) => {
+        const sorted = sortEvents(
+          snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
+        )
+        cachedEvents.value = sorted
+        events.value = sorted
+        loading.value = false
+      },
+      (err) => {
+        error.value = 'Failed to load events. Please try again.'
+        loading.value = false
+        console.error('[useDonationEvents] startListening error:', err)
+      }
+    )
   }
 
   function stopListening() {
@@ -72,7 +79,7 @@ export function useDonationEvents() {
 
   async function toggleInterested(eventId, userId) {
     const eventRef = doc(db, 'events', eventId)
-    const index = events.value.findIndex(e => e.id === eventId)
+    const index = events.value.findIndex((e) => e.id === eventId)
     if (index === -1) return
 
     const event = events.value[index]
@@ -82,8 +89,9 @@ export function useDonationEvents() {
       interestedCount: event.interestedCount || 0
     }
 
+    // Optimistic UI update
     if (alreadyLiked) {
-      events.value[index].likedBy = snapshot.likedBy.filter(id => id !== userId)
+      events.value[index].likedBy = snapshot.likedBy.filter((id) => id !== userId)
       events.value[index].interestedCount = Math.max(0, snapshot.interestedCount - 1)
     } else {
       events.value[index].likedBy = [...snapshot.likedBy, userId]
@@ -91,20 +99,32 @@ export function useDonationEvents() {
     }
 
     try {
-      if (alreadyLiked) {
-        await updateDoc(eventRef, {
-          likedBy: arrayRemove(userId),
-          interestedCount: increment(-1),
-          updatedAt: serverTimestamp()
-        })
-      } else {
-        await updateDoc(eventRef, {
-          likedBy: arrayUnion(userId),
-          interestedCount: increment(1),
-          updatedAt: serverTimestamp()
-        })
-      }
+      await runTransaction(db, async (transaction) => {
+        const eventSnap = await transaction.get(eventRef)
+        if (!eventSnap.exists()) {
+          throw new Error('Event not found.')
+        }
+
+        const data = eventSnap.data()
+        const serverLikedBy = data.likedBy || []
+        const serverAlreadyLiked = serverLikedBy.includes(userId)
+
+        if (serverAlreadyLiked) {
+          transaction.update(eventRef, {
+            likedBy: arrayRemove(userId),
+            interestedCount: increment(-1),
+            updatedAt: serverTimestamp()
+          })
+        } else {
+          transaction.update(eventRef, {
+            likedBy: arrayUnion(userId),
+            interestedCount: increment(1),
+            updatedAt: serverTimestamp()
+          })
+        }
+      })
     } catch (err) {
+      // Roll back optimistic UI update
       events.value[index].likedBy = snapshot.likedBy
       events.value[index].interestedCount = snapshot.interestedCount
       error.value = 'Could not update your Interested status.'
@@ -155,7 +175,7 @@ export function useDonationEvents() {
     error.value = null
     try {
       await deleteDoc(doc(db, 'events', eventId))
-      events.value = events.value.filter(e => e.id !== eventId)
+      events.value = events.value.filter((e) => e.id !== eventId)
     } catch (err) {
       error.value = 'Could not delete the donation event.'
       console.error('[useDonationEvents] deleteEvent error:', err)
@@ -164,6 +184,10 @@ export function useDonationEvents() {
       loading.value = false
     }
   }
+
+  onUnmounted(() => {
+    stopListening()
+  })
 
   return {
     events,

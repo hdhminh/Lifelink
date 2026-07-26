@@ -1,12 +1,16 @@
 <template>
-  <div class="ll-page-container" style="min-height: 80vh;">
+  <div class="ll-page-container" style="min-height: 80vh">
     <div class="ll-section-header reveal-header">
       <div>
-        <h1 class="ll-section-title"><i class="bi bi-calendar-event me-2" style="color: #8E2435;"></i> Donation Events</h1>
+        <h1 class="ll-section-title">
+          <i class="bi bi-calendar-event me-2" style="color: #8e2435"></i> Donation Events
+        </h1>
 
         <p class="ll-text-meta mb-0">Browse upcoming drives, campaigns, and awareness workshops.</p>
       </div>
-      <button v-if="isAdmin" type="button" class="ll-btn-primary" @click="openCreateForm"><i class="bi bi-plus-lg me-1"></i> New Event</button>
+      <button v-if="isAdmin" type="button" class="ll-btn-primary" @click="openCreateForm">
+        <i class="bi bi-plus-lg me-1"></i> New Event
+      </button>
     </div>
 
     <section class="ll-toolbar reveal-header" data-delay="100ms">
@@ -15,12 +19,25 @@
           <label for="event-search" class="ll-text-label mb-1">Search Events</label>
           <div class="ll-search-wrapper">
             <i class="bi bi-search ll-search-icon" aria-hidden="true"></i>
-            <input id="event-search" v-model="searchQuery" class="form-control" type="search" placeholder="Search title, location, or city" aria-label="Search title, location, or city" autocomplete="off">
+            <input
+              id="event-search"
+              v-model="searchQuery"
+              class="form-control"
+              type="search"
+              placeholder="Search title, location, or city"
+              aria-label="Search title, location, or city"
+              autocomplete="off"
+            />
           </div>
         </div>
         <div class="col-12 col-md-4">
           <label for="event-category" class="ll-text-label mb-1">Category</label>
-          <select id="event-category" v-model="filterCategory" class="form-select" aria-label="Filter events by category">
+          <select
+            id="event-category"
+            v-model="filterCategory"
+            class="form-select"
+            aria-label="Filter events by category"
+          >
             <option value="">All Categories</option>
             <option value="Drive">Drive</option>
             <option value="Campaign">Campaign</option>
@@ -28,7 +45,9 @@
           </select>
         </div>
       </div>
-      <p class="ll-text-meta mb-0 mt-3">Showing {{ paginatedEvents.length }} of {{ filteredEvents.length }} events</p>
+      <p class="ll-text-meta mb-0 mt-3">
+        Showing {{ paginatedEvents.length }} of {{ filteredEvents.length }} events
+      </p>
     </section>
 
     <AlertMessage v-if="error" type="danger" :message="error" />
@@ -43,7 +62,11 @@
       </div>
 
       <section v-else class="row g-4 ll-event-fade-in">
-        <div v-for="event in paginatedEvents" :key="event.id" class="col-lg-4 col-md-6 col-12 reveal-item">
+        <div
+          v-for="event in paginatedEvents"
+          :key="event.id"
+          class="col-lg-4 col-md-6 col-12 reveal-item"
+        >
           <EventCard
             :event="event"
             :is-logged-in="!!user"
@@ -62,8 +85,6 @@
         @page-change="currentPage = $event"
       />
     </div>
-
-
 
     <div v-if="showForm && isAdmin" class="ll-form-overlay">
       <div class="ll-page-container ll-event-form-container">
@@ -89,9 +110,11 @@
     <ConfirmModal
       :show="showInterestModal"
       :title="isRegisteringInterest ? 'Register for Event' : 'Cancel Registration'"
-      :message="isRegisteringInterest 
-        ? `Are you sure you want to register your interest for '${pendingInterestEvent?.title}'?` 
-        : `Are you sure you want to cancel your registration for '${pendingInterestEvent?.title}'?`"
+      :message="
+        isRegisteringInterest
+          ? `Are you sure you want to register your interest for '${pendingInterestEvent?.title}'?`
+          : `Are you sure you want to cancel your registration for '${pendingInterestEvent?.title}'?`
+      "
       :confirm-label="isRegisteringInterest ? 'Register' : 'Cancel Registration'"
       @confirm="commitToggleInterested"
       @cancel="showInterestModal = false"
@@ -121,7 +144,18 @@ import { useToast } from '@/composables/useToast.js'
 const ITEMS_PER_PAGE = 6
 const router = useRouter()
 const { user, isAdmin } = useAuth()
-const { events, loading, error, startListening, stopListening, fetchEvents, toggleInterested, createEvent, updateEvent, deleteEvent } = useDonationEvents()
+const {
+  events,
+  loading,
+  error,
+  startListening,
+  stopListening,
+  fetchEvents,
+  toggleInterested,
+  createEvent,
+  updateEvent,
+  deleteEvent
+} = useDonationEvents()
 const { getGuestSession, updateGuestSession } = useGuestSession()
 
 const { showToast } = useToast()
@@ -135,7 +169,6 @@ const editingEvent = ref(null)
 const showDeleteModal = ref(false)
 const deletingEventId = ref(null)
 
-
 const showInterestModal = ref(false)
 const pendingInterestEvent = ref(null)
 const isRegisteringInterest = ref(true)
@@ -143,9 +176,10 @@ const isRegisteringInterest = ref(true)
 const guestInterestedEvents = ref([])
 
 const filteredEvents = computed(() => {
-  return events.value.filter(e => {
+  return events.value.filter((e) => {
     const q = searchQuery.value.toLowerCase().trim()
-    const matchSearch = !q ||
+    const matchSearch =
+      !q ||
       e.title.toLowerCase().includes(q) ||
       e.location.toLowerCase().includes(q) ||
       e.city.toLowerCase().includes(q)
@@ -154,7 +188,9 @@ const filteredEvents = computed(() => {
   })
 })
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredEvents.value.length / ITEMS_PER_PAGE)))
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(filteredEvents.value.length / ITEMS_PER_PAGE))
+)
 const paginatedEvents = computed(() => {
   const start = (currentPage.value - 1) * ITEMS_PER_PAGE
   return filteredEvents.value.slice(start, start + ITEMS_PER_PAGE)
@@ -173,7 +209,7 @@ function isInterested(event) {
 }
 
 function handleToggleInterested(eventId) {
-  const targetEvent = events.value.find(e => e.id === eventId)
+  const targetEvent = events.value.find((e) => e.id === eventId)
   if (!targetEvent) return
 
   if (user.value) {
@@ -205,14 +241,17 @@ async function commitToggleInterested() {
   const targetEvent = pendingInterestEvent.value
   const eventId = targetEvent.id
   const isRegistering = isRegisteringInterest.value
-  
+
   showInterestModal.value = false
   pendingInterestEvent.value = null
-  
+
   try {
     await toggleInterested(eventId, user.value.uid)
     if (isRegistering) {
-      showToast(`Successfully registered for "${targetEvent.title}". You can track your events in your Dashboard.`, 'success')
+      showToast(
+        `Successfully registered for "${targetEvent.title}". You can track your events in your Dashboard.`,
+        'success'
+      )
     } else {
       showToast(`Removed registration for "${targetEvent.title}".`, 'info')
     }
@@ -312,11 +351,15 @@ watch([searchQuery, filterCategory], () => {
   }
 })
 
-watch([loading, paginatedEvents], ([newLoading, newEvents]) => {
-  if (!newLoading && newEvents.length > 0) {
-    reveal('.reveal-item', 60)
-  }
-}, { immediate: true })
+watch(
+  [loading, paginatedEvents],
+  ([newLoading, newEvents]) => {
+    if (!newLoading && newEvents.length > 0) {
+      reveal('.reveal-item', 60)
+    }
+  },
+  { immediate: true }
+)
 
 onMounted(() => {
   reveal('.reveal-header', 60)

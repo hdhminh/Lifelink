@@ -1,6 +1,6 @@
 <template>
   <div class="ll-auth-page">
-    <form ref="registerCard" class="ll-auth-card" @submit.prevent="handleRegister" novalidate>
+    <form ref="registerCard" class="ll-auth-card" novalidate @submit.prevent="handleRegister">
       <div class="ll-auth-card__logo">
         <h2>Register as Donor</h2>
         <p class="ll-text-meta mb-0">Create a profile for emergency blood coordination.</p>
@@ -9,31 +9,33 @@
       <div class="ll-form-group">
         <label for="register-name" class="form-label">Full Name</label>
         <div class="position-relative">
-          <input 
-            id="register-name" 
-            v-model.trim="form.displayName" 
-            class="form-control" 
-            :class="{ 'is-invalid': errors.displayName }" 
-            type="text" 
+          <input
+            id="register-name"
+            v-model.trim="form.displayName"
+            class="form-control"
+            :class="{ 'is-invalid': errors.displayName }"
+            type="text"
             placeholder="e.g. Nguyen Van A"
             autocomplete="name"
-          >
+          />
         </div>
-        <div v-if="errors.displayName" class="invalid-feedback d-block">{{ errors.displayName }}</div>
+        <div v-if="errors.displayName" class="invalid-feedback d-block">
+          {{ errors.displayName }}
+        </div>
       </div>
 
       <div class="ll-form-group">
         <label for="register-email" class="form-label">Email</label>
         <div class="position-relative">
-          <input 
-            id="register-email" 
-            v-model.trim="form.email" 
-            class="form-control" 
-            :class="{ 'is-invalid': errors.email }" 
-            type="email" 
+          <input
+            id="register-email"
+            v-model.trim="form.email"
+            class="form-control"
+            :class="{ 'is-invalid': errors.email }"
+            type="email"
             placeholder="e.g. name@example.com"
             autocomplete="email"
-          >
+          />
         </div>
         <div v-if="errors.email" class="invalid-feedback d-block">{{ errors.email }}</div>
       </div>
@@ -41,74 +43,86 @@
       <div class="ll-form-group">
         <label for="register-phone" class="form-label">Phone Number</label>
         <div class="position-relative">
-          <input 
-            id="register-phone" 
-            v-model.trim="form.phoneNumber" 
-            class="form-control" 
-            :class="{ 'is-invalid': errors.phoneNumber }" 
-            type="tel" 
-            placeholder="e.g. 0901234567" 
+          <input
+            id="register-phone"
+            v-model.trim="form.phoneNumber"
+            class="form-control"
+            :class="{ 'is-invalid': errors.phoneNumber }"
+            type="tel"
+            placeholder="e.g. 0901234567"
             autocomplete="tel"
-          >
+          />
         </div>
-        <div v-if="errors.phoneNumber" class="invalid-feedback d-block">{{ errors.phoneNumber }}</div>
+        <div v-if="errors.phoneNumber" class="invalid-feedback d-block">
+          {{ errors.phoneNumber }}
+        </div>
       </div>
 
       <div class="ll-form-group">
         <label for="register-password" class="form-label">Password</label>
         <div class="position-relative">
-          <input 
-            id="register-password" 
-            v-model="form.password" 
-            class="form-control pe-5" 
-            :class="{ 'is-invalid': errors.password }" 
-            :type="showPassword ? 'text' : 'password'" 
+          <input
+            id="register-password"
+            v-model="form.password"
+            class="form-control pe-5"
+            :class="{ 'is-invalid': errors.password }"
+            :type="showPassword ? 'text' : 'password'"
             placeholder="Create a password"
             autocomplete="new-password"
-          >
-          <button 
-            type="button" 
+          />
+          <button
+            type="button"
             class="ll-password-toggle-btn"
-            @click="showPassword = !showPassword"
             title="Toggle password visibility"
+            @click="showPassword = !showPassword"
           >
             <i :class="showPassword ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'"></i>
           </button>
         </div>
-        
+
         <!-- Password Strength & Suggestions -->
         <div v-if="form.password" class="mt-2 small text-start">
           <div class="d-flex justify-content-between align-items-center mb-1">
-            <span class="text-slate-500 font-sans" style="font-size: 0.78rem;">Password Strength:</span>
-            <span 
-              class="fw-bold font-mono" 
+            <span class="text-slate-500 font-sans" style="font-size: 0.78rem"
+              >Password Strength:</span
+            >
+            <span
+              class="fw-bold font-mono"
               :class="{
                 'text-danger': passwordScore < 2,
                 'text-warning': passwordScore === 2 || passwordScore === 3,
                 'text-success': passwordScore === 4
               }"
-              style="font-size: 0.78rem;"
+              style="font-size: 0.78rem"
             >
               {{ passwordScoreText }}
             </span>
           </div>
-          
+
           <!-- Strength Meter Bar -->
-          <div class="progress mb-2" style="height: 4px; background-color: var(--ll-slate-100);">
-            <div 
-              class="progress-bar transition-all" 
+          <div class="progress mb-2" style="height: 4px; background-color: var(--ll-slate-100)">
+            <div
+              class="progress-bar transition-all"
               :class="{
                 'bg-danger': passwordScore < 2,
                 'bg-warning': passwordScore === 2 || passwordScore === 3,
                 'bg-success': passwordScore === 4
               }"
-              :style="{ width: (passwordScore / 4 * 100) + '%' }"
+              :style="{ width: (passwordScore / 4) * 100 + '%' }"
             ></div>
           </div>
 
           <!-- Password Improvement Checklist -->
-          <ul v-if="passwordSuggestions.length > 0" class="list-unstyled mb-0 text-slate-500" style="font-size: 0.76rem; line-height: 1.4;">
-            <li v-for="(suggestion, idx) in passwordSuggestions" :key="idx" class="d-flex align-items-center gap-1 mb-1 text-slate-500">
+          <ul
+            v-if="passwordSuggestions.length > 0"
+            class="list-unstyled mb-0 text-slate-500"
+            style="font-size: 0.76rem; line-height: 1.4"
+          >
+            <li
+              v-for="(suggestion, idx) in passwordSuggestions"
+              :key="idx"
+              class="d-flex align-items-center gap-1 mb-1 text-slate-500"
+            >
               <i class="bi bi-info-circle text-slate-400"></i> {{ suggestion }}
             </li>
           </ul>
@@ -120,24 +134,26 @@
       <div class="ll-form-group">
         <label for="register-confirm" class="form-label">Confirm Password</label>
         <div class="position-relative">
-          <input 
-            id="register-confirm" 
-            v-model="form.confirmPassword" 
-            class="form-control" 
-            :class="{ 'is-invalid': errors.confirmPassword }" 
-            type="password" 
+          <input
+            id="register-confirm"
+            v-model="form.confirmPassword"
+            class="form-control"
+            :class="{ 'is-invalid': errors.confirmPassword }"
+            type="password"
             placeholder="Confirm your password"
             autocomplete="new-password"
-          >
+          />
         </div>
-        <div v-if="errors.confirmPassword" class="invalid-feedback d-block">{{ errors.confirmPassword }}</div>
+        <div v-if="errors.confirmPassword" class="invalid-feedback d-block">
+          {{ errors.confirmPassword }}
+        </div>
       </div>
 
       <div class="ll-form-group">
         <label class="form-label">Blood Type</label>
         <div class="ll-blood-grid">
-          <button 
-            v-for="bType in bloodTypes" 
+          <button
+            v-for="bType in bloodTypes"
             :key="bType"
             type="button"
             class="ll-blood-btn"
@@ -147,12 +163,19 @@
             {{ bType }}
           </button>
         </div>
-        <div v-if="errors.bloodType" class="invalid-feedback d-block mt-2">{{ errors.bloodType }}</div>
+        <div v-if="errors.bloodType" class="invalid-feedback d-block mt-2">
+          {{ errors.bloodType }}
+        </div>
       </div>
 
       <div class="ll-form-group">
         <label for="register-city" class="form-label">City / Region</label>
-        <select id="register-city" v-model="form.city" class="form-select" :class="{ 'is-invalid': errors.city }">
+        <select
+          id="register-city"
+          v-model="form.city"
+          class="form-select"
+          :class="{ 'is-invalid': errors.city }"
+        >
           <option value="" disabled>Select your city...</option>
           <option v-for="c in cities" :key="c" :value="c">{{ c }}</option>
         </select>

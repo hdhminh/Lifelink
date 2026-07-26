@@ -2,19 +2,32 @@
   <div>
     <!-- Premium Image Background Hero with Curve Space -->
     <section class="ll-hero-premium">
-      <div class="container py-5 px-lg-4 position-relative z-index-2 text-white text-shadow-sm text-start">
+      <div
+        class="container py-5 px-lg-4 position-relative z-index-2 text-white text-shadow-sm text-start"
+      >
         <div class="row">
           <div class="col-lg-9 col-12">
-            <span ref="heroBadge" class="ll-badge-hero mb-3 text-uppercase">Connecting Lives Vietnam</span>
-            <h1 ref="heroTitle" class="display-3 fw-bold mb-3 ll-hero-title">Life<span class="ll-title-accent">Link</span></h1>
-            <p ref="heroText" class="lead mb-4 text-white-80" style="max-width: 620px;">
-              Connecting voluntary blood donors with hospitals in real-time. Every donation saves a life when seconds count.
+            <span ref="heroBadge" class="ll-badge-hero mb-3 text-uppercase"
+              >Connecting Lives Vietnam</span
+            >
+            <h1 ref="heroTitle" class="display-3 fw-bold mb-3 ll-hero-title">
+              Life<span class="ll-title-accent">Link</span>
+            </h1>
+            <p ref="heroText" class="lead mb-4 text-white-80" style="max-width: 620px">
+              Connecting voluntary blood donors with hospitals in real-time. Every donation saves a
+              life when seconds count.
             </p>
             <div ref="heroButtons" class="d-flex flex-wrap gap-3">
-              <RouterLink to="/emergency-board" class="ll-btn-primary ll-btn-lg ll-btn-hero text-decoration-none">
+              <RouterLink
+                to="/emergency-board"
+                class="ll-btn-primary ll-btn-lg ll-btn-hero text-decoration-none"
+              >
                 <i class="bi bi-hospital me-2"></i> Browse Board
               </RouterLink>
-              <RouterLink to="/map" class="ll-btn-secondary ll-btn-lg ll-btn-hero text-decoration-none">
+              <RouterLink
+                to="/map"
+                class="ll-btn-secondary ll-btn-lg ll-btn-hero text-decoration-none"
+              >
                 <i class="bi bi-geo-alt-fill me-2"></i> View Live Map
               </RouterLink>
             </div>
@@ -25,7 +38,6 @@
 
     <!-- Transition Page Container (Beige Theme Layout A) -->
     <div class="ll-home-beige-bg">
-      
       <!-- 1. Stats Row Overlapping Curved Bottom of Hero -->
       <div ref="statsContainer" class="ll-stats-overlap-container container max-w-1000">
         <div class="row g-4 text-center justify-content-center">
@@ -51,36 +63,41 @@
       </div>
 
       <div class="container max-w-1000">
-        
         <!-- Double-Column Editorial Layout -->
         <div class="row g-5 text-start mb-5 pb-3">
-          
           <!-- Left Column (Column A): Our Mission text & tambinh image -->
           <div class="col-md-6 ps-md-0 d-flex flex-column gap-5">
             <!-- Our Mission Text Block -->
             <div>
               <span class="ll-badge-subtle ll-badge-subtle--flush mb-2">Our Mission</span>
               <h2 class="ll-text-heading mb-3">Bridging Donors & Hospitals</h2>
-              <p class="text-slate-700 mb-3 leading-relaxed" style="font-size: 0.92rem;">
-                LifeLink is dedicated to bridging the gap between voluntary blood donors and healthcare facilities across Vietnam. By facilitating real-time coordination, we ensure that critical blood shortages are addressed swiftly and transparently.
+              <p class="text-slate-700 mb-3 leading-relaxed" style="font-size: 0.92rem">
+                LifeLink is dedicated to bridging the gap between voluntary blood donors and
+                healthcare facilities across Vietnam. By facilitating real-time coordination, we
+                ensure that critical blood shortages are addressed swiftly and transparently.
               </p>
-              <p class="text-slate-700 leading-relaxed font-weight-400" style="font-size: 0.92rem;">
-                Our portal empowers individuals to register their donor status, receive location-based emergency notifications, and immediately coordinate safe donations directly with certified hospital staff.
+              <p class="text-slate-700 leading-relaxed font-weight-400" style="font-size: 0.92rem">
+                Our portal empowers individuals to register their donor status, receive
+                location-based emergency notifications, and immediately coordinate safe donations
+                directly with certified hospital staff.
               </p>
             </div>
 
             <!-- Tambinh Image (home-donation-event.jpg) -->
             <div class="d-block ll-image-frame ll-image-frame--process-photo">
-              <img
-                src="/images/home-donation-event.jpg"
-                alt="Volunteer registration event"
-                class="img-fluid rounded-lg shadow-sm"
-                width="600"
-                height="350"
-                loading="lazy"
-                decoding="async"
-                style="height: 350px; object-fit: cover; width: 100%;"
-              >
+              <picture>
+                <source srcset="/images/home-donation-event.webp" type="image/webp">
+                <img
+                  src="/images/home-donation-event.jpg"
+                  alt="Volunteer registration event"
+                  class="img-fluid rounded-lg shadow-sm"
+                  width="600"
+                  height="350"
+                  loading="lazy"
+                  decoding="async"
+                  style="height: 350px; object-fit: cover; width: 100%"
+                />
+              </picture>
             </div>
           </div>
 
@@ -88,38 +105,54 @@
           <div class="col-md-6 pe-md-0 d-flex flex-column gap-5">
             <!-- Our Mission Image (home-community.jpg) -->
             <div class="d-block ll-image-frame ll-image-frame--mission-photo">
-              <img
-                src="/images/home-community.jpg"
-                alt="Blue gloves preparing blood donation"
-                class="img-fluid rounded-lg ll-home-img ll-home-img--mission shadow-md"
-              >
+              <picture>
+                <source srcset="/images/home-community.webp" type="image/webp">
+                <img
+                  src="/images/home-community.jpg"
+                  alt="Blue gloves preparing blood donation"
+                  class="img-fluid rounded-lg ll-home-img ll-home-img--mission shadow-md"
+                />
+              </picture>
             </div>
 
             <!-- How It Works Section -->
             <div class="ll-process-section">
               <div class="ll-process-section__intro">
                 <span class="ll-badge-subtle ll-badge-subtle--flush mb-2">Our Process</span>
-                <h2 class="ll-text-heading mb-1" style="font-size: 1.65rem;">How It Works</h2>
-                <p class="text-slate-500 small mb-0" style="font-size: 0.85rem;">
+                <h2 class="ll-text-heading mb-1" style="font-size: 1.65rem">How It Works</h2>
+                <p class="text-slate-500 small mb-0" style="font-size: 0.85rem">
                   Follow our simple three-step process to get started with blood donation.
                 </p>
               </div>
 
               <div ref="timelineContainer" class="ll-vertical-steps-timeline position-relative">
                 <!-- The vertical connector line -->
-                <div class="ll-vertical-connector-line" aria-hidden="true" style="top: 20px; bottom: 20px;"></div>
+                <div
+                  class="ll-vertical-connector-line"
+                  aria-hidden="true"
+                  style="top: 20px; bottom: 20px"
+                ></div>
 
                 <!-- Step 1 -->
                 <div class="ll-vertical-step-item position-relative mb-3">
                   <!-- Dot on the line -->
                   <div class="ll-vertical-step-dot"></div>
-                  <div class="ll-vertical-step-card d-flex align-items-center bg-white border rounded-lg ms-4 ms-md-5">
+                  <div
+                    class="ll-vertical-step-card d-flex align-items-center bg-white border rounded-lg ms-4 ms-md-5"
+                  >
                     <div class="ll-vertical-step-circle me-3">
                       <i class="bi bi-person-plus-fill"></i>
                     </div>
                     <div>
-                      <h3 class="fw-bold mb-1 text-slate-900" style="font-size: 1.02rem; margin-bottom: 0.15rem;">1. Join Network</h3>
-                      <p class="text-slate-500 mb-0" style="font-size: 0.86rem; line-height: 1.4;">Create your secure donor profile with blood type.</p>
+                      <h3
+                        class="fw-bold mb-1 text-slate-900"
+                        style="font-size: 1.02rem; margin-bottom: 0.15rem"
+                      >
+                        1. Join Network
+                      </h3>
+                      <p class="text-slate-500 mb-0" style="font-size: 0.86rem; line-height: 1.4">
+                        Create your secure donor profile with blood type.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -127,13 +160,22 @@
                 <!-- Step 2 -->
                 <div class="ll-vertical-step-item position-relative mb-3">
                   <div class="ll-vertical-step-dot"></div>
-                  <div class="ll-vertical-step-card d-flex align-items-center bg-white border rounded-lg ms-4 ms-md-5">
+                  <div
+                    class="ll-vertical-step-card d-flex align-items-center bg-white border rounded-lg ms-4 ms-md-5"
+                  >
                     <div class="ll-vertical-step-circle me-3">
                       <i class="bi bi-activity"></i>
                     </div>
                     <div>
-                      <h3 class="fw-bold mb-1 text-slate-900" style="font-size: 1.02rem; margin-bottom: 0.15rem;">2. Track Live Board</h3>
-                      <p class="text-slate-500 mb-0" style="font-size: 0.86rem; line-height: 1.4;">Monitor the live board for urgent requests.</p>
+                      <h3
+                        class="fw-bold mb-1 text-slate-900"
+                        style="font-size: 1.02rem; margin-bottom: 0.15rem"
+                      >
+                        2. Track Live Board
+                      </h3>
+                      <p class="text-slate-500 mb-0" style="font-size: 0.86rem; line-height: 1.4">
+                        Monitor the live board for urgent requests.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -141,13 +183,22 @@
                 <!-- Step 3 -->
                 <div class="ll-vertical-step-item position-relative mb-2">
                   <div class="ll-vertical-step-dot"></div>
-                  <div class="ll-vertical-step-card d-flex align-items-center bg-white border rounded-lg ms-4 ms-md-5">
+                  <div
+                    class="ll-vertical-step-card d-flex align-items-center bg-white border rounded-lg ms-4 ms-md-5"
+                  >
                     <div class="ll-vertical-step-circle me-3">
                       <i class="bi bi-heart-fill"></i>
                     </div>
                     <div>
-                      <h3 class="fw-bold mb-1 text-slate-900" style="font-size: 1.02rem; margin-bottom: 0.15rem;">3. Save a Life</h3>
-                      <p class="text-slate-500 mb-0" style="font-size: 0.86rem; line-height: 1.4;">Confirm availability and donate at hospital.</p>
+                      <h3
+                        class="fw-bold mb-1 text-slate-900"
+                        style="font-size: 1.02rem; margin-bottom: 0.15rem"
+                      >
+                        3. Save a Life
+                      </h3>
+                      <p class="text-slate-500 mb-0" style="font-size: 0.86rem; line-height: 1.4">
+                        Confirm availability and donate at hospital.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -162,7 +213,8 @@
             <span class="ll-badge-subtle mb-2">What We Offer</span>
             <h2 class="ll-text-heading">Key Features</h2>
             <p class="text-slate-500 small max-w-800 mx-auto">
-              Experience a modern coordination network built for real-time safety, speed, and emergency response.
+              Experience a modern coordination network built for real-time safety, speed, and
+              emergency response.
             </p>
           </div>
           <div class="row g-4">
@@ -170,11 +222,18 @@
               <div class="ll-feature-card h-100 p-1">
                 <div class="ll-card__body d-flex align-items-start p-3">
                   <div class="me-3 mt-1">
-                    <i class="bi bi-heart-pulse-fill text-wine fs-2" aria-hidden="true" style="color: var(--ll-wine-red);"></i>
+                    <i
+                      class="bi bi-heart-pulse-fill text-wine fs-2"
+                      aria-hidden="true"
+                      style="color: var(--ll-wine-red)"
+                    ></i>
                   </div>
                   <div>
-                    <h5 class="fw-bold mb-1" style="font-size: 1.05rem;">Emergency Board</h5>
-                    <p class="ll-text-meta mb-0 leading-relaxed" style="font-size: 0.85rem;">Urgent blood requests updated live as hospitals post them. Accessible to everyone instantly.</p>
+                    <h5 class="fw-bold mb-1" style="font-size: 1.05rem">Emergency Board</h5>
+                    <p class="ll-text-meta mb-0 leading-relaxed" style="font-size: 0.85rem">
+                      Urgent blood requests updated live as hospitals post them. Accessible to
+                      everyone instantly.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -183,11 +242,18 @@
               <div class="ll-feature-card h-100 p-1">
                 <div class="ll-card__body d-flex align-items-start p-3">
                   <div class="me-3 mt-1">
-                    <i class="bi bi-people-fill text-wine fs-2" aria-hidden="true" style="color: var(--ll-wine-red);"></i>
+                    <i
+                      class="bi bi-people-fill text-wine fs-2"
+                      aria-hidden="true"
+                      style="color: var(--ll-wine-red)"
+                    ></i>
                   </div>
                   <div>
-                    <h5 class="fw-bold mb-1" style="font-size: 1.05rem;">Donor Matching</h5>
-                    <p class="ll-text-meta mb-0 leading-relaxed" style="font-size: 0.85rem;">Matches blood type and location metrics to instantly coordinate available local volunteer donors.</p>
+                    <h5 class="fw-bold mb-1" style="font-size: 1.05rem">Donor Matching</h5>
+                    <p class="ll-text-meta mb-0 leading-relaxed" style="font-size: 0.85rem">
+                      Matches blood type and location metrics to instantly coordinate available
+                      local volunteer donors.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -196,11 +262,18 @@
               <div class="ll-feature-card h-100 p-1">
                 <div class="ll-card__body d-flex align-items-start p-3">
                   <div class="me-3 mt-1">
-                    <i class="bi bi-activity text-wine fs-2" aria-hidden="true" style="color: var(--ll-wine-red);"></i>
+                    <i
+                      class="bi bi-activity text-wine fs-2"
+                      aria-hidden="true"
+                      style="color: var(--ll-wine-red)"
+                    ></i>
                   </div>
                   <div>
-                    <h5 class="fw-bold mb-1" style="font-size: 1.05rem;">Real-Time Sync</h5>
-                    <p class="ll-text-meta mb-0 leading-relaxed" style="font-size: 0.85rem;">Real-time sync of active requests and donor counts across all dashboards and boards instantly.</p>
+                    <h5 class="fw-bold mb-1" style="font-size: 1.05rem">Real-Time Sync</h5>
+                    <p class="ll-text-meta mb-0 leading-relaxed" style="font-size: 0.85rem">
+                      Real-time sync of active requests and donor counts across all dashboards and
+                      boards instantly.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -213,8 +286,15 @@
           <div class="ll-cta-banner bg-white border p-4 rounded-lg text-center text-md-start">
             <div class="row align-items-center g-4">
               <div class="col-md-8">
-                <h4 class="fw-bold mb-2 text-wine" style="color: var(--ll-wine-red); font-size: 1.35rem;">Ready to make a life-saving impact?</h4>
-                <p class="mb-0 text-slate-700 leading-relaxed" style="font-size: 0.9rem;">Join Vietnam's emergency blood donor network. Every single confirmation counts.</p>
+                <h4
+                  class="fw-bold mb-2 text-wine"
+                  style="color: var(--ll-wine-red); font-size: 1.35rem"
+                >
+                  Ready to make a life-saving impact?
+                </h4>
+                <p class="mb-0 text-slate-700 leading-relaxed" style="font-size: 0.9rem">
+                  Join Vietnam's emergency blood donor network. Every single confirmation counts.
+                </p>
               </div>
               <div class="col-md-4 text-md-end">
                 <RouterLink
@@ -235,7 +315,6 @@
             </div>
           </div>
         </section>
-
       </div>
     </div>
   </div>
@@ -267,7 +346,10 @@ const timelineContainer = ref(null)
 const featuresContainer = ref(null)
 
 const executeAnimations = () => {
-  const prefersReduced = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false
+  const prefersReduced =
+    typeof window !== 'undefined' && window.matchMedia
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false
 
   donorCount.value = 12486
   partnerCount.value = 48
@@ -276,7 +358,9 @@ const executeAnimations = () => {
   if (prefersReduced) return
 
   // 1. GSAP Hero Sequence Timeline (Robust gsap.fromTo with clearProps)
-  const heroElements = [heroBadge.value, heroTitle.value, heroText.value, heroButtons.value].filter(Boolean)
+  const heroElements = [heroBadge.value, heroTitle.value, heroText.value, heroButtons.value].filter(
+    Boolean
+  )
   if (heroElements.length) {
     gsap.killTweensOf(heroElements)
     gsap.fromTo(
@@ -314,44 +398,54 @@ const executeAnimations = () => {
 
   // 4. GSAP Counter Numbers for Stats (IntersectionObserver)
   if (statsContainer.value) {
-    const statsObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const dummyDonor = { val: 0 }
-          gsap.to(dummyDonor, {
-            val: 12486,
-            duration: 1.6,
-            ease: 'power2.out',
-            onUpdate: () => { donorCount.value = Math.floor(dummyDonor.val) }
-          })
+    const statsObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const dummyDonor = { val: 0 }
+            gsap.to(dummyDonor, {
+              val: 12486,
+              duration: 1.6,
+              ease: 'power2.out',
+              onUpdate: () => {
+                donorCount.value = Math.floor(dummyDonor.val)
+              }
+            })
 
-          const dummyPartner = { val: 0 }
-          gsap.to(dummyPartner, {
-            val: 48,
-            duration: 1.4,
-            ease: 'power2.out',
-            onUpdate: () => { partnerCount.value = Math.floor(dummyPartner.val) }
-          })
+            const dummyPartner = { val: 0 }
+            gsap.to(dummyPartner, {
+              val: 48,
+              duration: 1.4,
+              ease: 'power2.out',
+              onUpdate: () => {
+                partnerCount.value = Math.floor(dummyPartner.val)
+              }
+            })
 
-          const dummyResolve = { val: 0 }
-          gsap.to(dummyResolve, {
-            val: 98.4,
-            duration: 1.5,
-            ease: 'power2.out',
-            onUpdate: () => { resolveRate.value = Number(dummyResolve.val.toFixed(1)) }
-          })
+            const dummyResolve = { val: 0 }
+            gsap.to(dummyResolve, {
+              val: 98.4,
+              duration: 1.5,
+              ease: 'power2.out',
+              onUpdate: () => {
+                resolveRate.value = Number(dummyResolve.val.toFixed(1))
+              }
+            })
 
-          statsObserver.unobserve(entry.target)
-        }
-      })
-    }, { threshold: 0.1 })
-    
+            statsObserver.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.1 }
+    )
+
     statsObserver.observe(statsContainer.value)
   }
 }
 
 const runAnimations = () => {
-  const isLoaderActive = typeof document !== 'undefined' && !!document.querySelector('.ll-global-loader-overlay')
+  const isLoaderActive =
+    typeof document !== 'undefined' && !!document.querySelector('.ll-global-loader-overlay')
   if (isLoaderActive) {
     donorCount.value = 0
     partnerCount.value = 0
@@ -392,12 +486,22 @@ onActivated(() => {
   align-items: center;
   overflow: hidden;
   padding: 4.5rem 0 7.5rem 0;
-  background-image: linear-gradient(rgba(43, 34, 37, 0.72), rgba(43, 34, 37, 0.72)), url('/images/hero-blood-donation.jpg');
+  background-image:
+    linear-gradient(rgba(43, 34, 37, 0.72), rgba(43, 34, 37, 0.72)),
+    url('/images/hero-blood-donation.jpg');
   background-size: cover;
   background-position: center;
   background-attachment: scroll;
   border-bottom-left-radius: 50% 30px;
   border-bottom-right-radius: 50% 30px;
+}
+
+@supports (background-image: image-set(url('/images/hero-blood-donation.webp') 1x)) {
+  .ll-hero-premium {
+    background-image:
+      linear-gradient(rgba(43, 34, 37, 0.72), rgba(43, 34, 37, 0.72)),
+      url('/images/hero-blood-donation.webp');
+  }
 }
 
 @media (min-width: 992px) {
@@ -437,7 +541,7 @@ onActivated(() => {
 }
 
 .ll-title-accent {
-  color: #8E2435;
+  color: #8e2435;
 }
 
 .ll-btn-hero {

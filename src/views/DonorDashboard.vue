@@ -142,32 +142,7 @@
         </div>
         <div v-else>
           <!-- Statistic Cards -->
-          <div class="row g-4 text-center mb-5">
-            <div class="col-md-3 col-sm-6 col-12">
-              <div class="ll-card p-4">
-                <div class="ll-stat-number text-wine">{{ stats.usersCount }}</div>
-                <div class="ll-stat-label">Total System Users</div>
-              </div>
-            </div>
-            <div class="col-md-3 col-sm-6 col-12">
-              <div class="ll-card p-4">
-                <div class="ll-stat-number text-wine">{{ stats.activeRequestsCount }}</div>
-                <div class="ll-stat-label">Active Requests</div>
-              </div>
-            </div>
-            <div class="col-md-3 col-sm-6 col-12">
-              <div class="ll-card p-4">
-                <div class="ll-stat-number text-wine">{{ stats.totalConfirmationsCount }}</div>
-                <div class="ll-stat-label">Total Confirmations</div>
-              </div>
-            </div>
-            <div class="col-md-3 col-sm-6 col-12">
-              <div class="ll-card p-4">
-                <div class="ll-stat-number text-wine">{{ stats.eventsCount }}</div>
-                <div class="ll-stat-label">Outreach Events</div>
-              </div>
-            </div>
-          </div>
+          <AdminAnalytics :stats="stats" />
 
           <!-- Administration Tabs and Directory Lists -->
           <div class="ll-tabs mb-4" role="tablist" aria-label="Admin management directories">
@@ -207,384 +182,53 @@
           </div>
 
           <!-- User Management Panel -->
-          <div v-if="activeAdminTab === 'users'">
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-              <h5 class="fw-bold mb-0 text-slate-900"><i class="bi bi-people-fill text-wine me-2"></i>System Users</h5>
-              <div class="ll-search-wrapper" style="max-width: 320px; width: 100%;">
-                <i class="bi bi-search ll-search-icon"></i>
-                <input
-                  v-model="userSearchQuery"
-                  class="form-control form-control-sm"
-                  type="text"
-                  :placeholder="`Search ${allSystemUsers.length} users (Name, Phone, City)...`"
-                />
-              </div>
-            </div>
-
-            <div v-if="usersLoading" class="text-center py-4">
-              <div class="spinner-border spinner-border-sm text-danger" role="status"></div>
-            </div>
-
-            <!-- Single Unified User Accounts Table -->
-            <div v-else class="ll-card ll-table-card shadow-sm border rounded-3 overflow-hidden">
-              <div class="table-responsive" style="max-height: 540px; overflow-y: auto;">
-                <table class="table align-middle mb-0 ll-admin-table" style="table-layout: fixed; width: 100%;">
-                  <thead class="sticky-top bg-slate-50 border-bottom border-slate-200" style="z-index: 10;">
-                    <tr>
-                      <th scope="col" style="width: 5%; padding: 0.9rem 0.5rem; text-align: center;">No.</th>
-                      <th scope="col" style="width: 20%; padding: 0.9rem 0.8rem;">User Info</th>
-                      <th scope="col" style="width: 14%; padding: 0.9rem 0.65rem;">Phone</th>
-                      <th scope="col" style="width: 13%; padding: 0.9rem 0.65rem;">City</th>
-                      <th scope="col" style="width: 10%; padding: 0.9rem 0.4rem; text-align: center;">Blood</th>
-                      <th scope="col" style="width: 11%; padding: 0.9rem 0.4rem; text-align: center;">Status</th>
-                      <th scope="col" style="width: 13%; padding: 0.9rem 0.4rem; text-align: center;">Role</th>
-                      <th scope="col" style="width: 14%; padding: 0.9rem 1rem; text-align: right;">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="(u, index) in allSystemUsers.slice(0, userDisplayLimit)" :key="u.id">
-                      <td style="padding: 0.75rem 0.5rem; text-align: center; vertical-align: middle; font-weight: 600; color: var(--ll-slate-500); font-size: 0.8rem;">
-                        {{ index + 1 }}
-                      </td>
-                      <td style="padding: 0.75rem 0.8rem;">
-                        <div class="d-flex flex-column">
-                          <strong class="text-slate-900 text-truncate" style="max-width: 180px;" :title="u.displayName">{{ u.displayName }}</strong>
-                          <span class="text-slate-500 text-truncate" style="font-size: 0.78rem; max-width: 180px;" :title="u.email">{{ u.email }}</span>
-                        </div>
-                      </td>
-                      <td class="text-truncate" style="padding: 0.75rem 0.65rem;">
-                        <a v-if="u.phoneNumber" :href="`tel:${u.phoneNumber}`" class="text-wine text-decoration-none fw-bold" style="font-size: 0.82rem;">
-                          <i class="bi bi-telephone-fill me-1"></i>{{ u.phoneNumber }}
-                        </a>
-                        <span v-else class="text-muted small">-</span>
-                      </td>
-                      <td class="text-truncate" style="padding: 0.75rem 0.65rem;" :title="u.city">{{ u.city }}</td>
-                      <td style="padding: 0.5rem 0.4rem; text-align: center; vertical-align: middle;"><span class="ll-badge-blood">{{ u.bloodType || 'N/A' }}</span></td>
-                      <td style="padding: 0.5rem 0.4rem; text-align: center; vertical-align: middle;">
-                        <span :class="u.canDonateNow !== false ? 'badge bg-success text-white' : 'badge bg-secondary text-white'" style="font-size: 0.74rem; height: 28px !important; min-height: 28px !important; max-height: 28px !important; line-height: 28px !important; padding: 0 0.55rem; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center;">
-                          {{ u.canDonateNow !== false ? 'Ready' : 'Cooldown' }}
-                        </span>
-                      </td>
-                      <td style="padding: 0.5rem 0.4rem; text-align: center; vertical-align: middle;">
-                        <select
-                          class="form-select form-select-sm d-inline-block shadow-xs ll-select-button"
-                          style="font-size: 0.75rem; padding: 0 1.25rem 0 0.45rem !important; height: 28px !important; min-height: 28px !important; max-height: 28px !important; line-height: 26px !important; width: 82px; border-radius: 4px !important; border: 1px solid #CBD5E1; vertical-align: middle; background-position: right 0.25rem center; background-size: 10px 10px; cursor: pointer !important;"
-                          :value="u.role || 'donor'"
-                          :disabled="u.uid === userProfile.uid"
-                          :title="`Change role for ${u.displayName}`"
-                          @change="promptRoleChange(u, $event.target.value, $event)"
-                        >
-                          <option value="donor">Donor</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                      </td>
-                      <td style="text-align: right; padding: 0.5rem 1rem 0.5rem 0; vertical-align: middle;">
-                        <div class="d-flex justify-content-end align-items-center" style="gap: 0.65rem;">
-                          <button
-                            class="ll-btn-secondary btn-sm px-2 py-0 d-inline-flex align-items-center justify-content-center"
-                            style="font-size: 0.73rem; border-radius: 4px; height: 28px !important; min-height: 28px !important; max-height: 28px !important; line-height: 26px !important; vertical-align: middle;"
-                            type="button"
-                            title="View participation history"
-                            @click="viewUserHistory(u)"
-                          >
-                            <i class="bi bi-clock-history me-1"></i>History
-                          </button>
-                          <button
-                            class="ll-icon-button ll-icon-button--danger d-inline-flex align-items-center justify-content-center"
-                            style="width: 28px !important; height: 28px !important; min-width: 28px !important; min-height: 28px !important; max-height: 28px !important; border-radius: 4px; padding: 0; line-height: 26px !important; vertical-align: middle;"
-                            type="button"
-                            title="Delete user"
-                            :disabled="u.uid === userProfile.uid"
-                            @click="handleDeleteUser(u.id)"
-                          >
-                            <i class="bi bi-trash-fill" style="font-size: 0.7rem;"></i>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr v-if="allSystemUsers.length === 0">
-                      <td colspan="8" class="text-center py-4 text-slate-500">No matching users found.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div v-if="allSystemUsers.length > 0" class="card-footer bg-slate-50 py-2 px-3 d-flex flex-wrap justify-content-between align-items-center border-top border-slate-200">
-                <span class="small text-slate-500 font-weight-500">
-                  Showing <strong>{{ Math.min(userDisplayLimit, allSystemUsers.length) }}</strong> of <strong>{{ allSystemUsers.length }}</strong> system users
-                </span>
-                <button
-                  v-if="userDisplayLimit < allSystemUsers.length"
-                  type="button"
-                  class="btn btn-link text-wine text-decoration-none btn-sm p-0 font-weight-600"
-                  style="font-size: 0.78rem;"
-                  @click="userDisplayLimit += 100"
-                >
-                  Load More <i class="bi bi-chevron-down ms-1"></i>
-                </button>
-              </div>
-            </div>
-          </div>
+          <AdminUserManagement
+            v-if="activeAdminTab === 'users'"
+            v-model:searchQuery="userSearchQuery"
+            :usersLoading="usersLoading"
+            :allSystemUsers="allSystemUsers"
+            :userDisplayLimit="userDisplayLimit"
+            :userProfile="userProfile"
+            @prompt-role-change="promptRoleChange"
+            @view-user-history="viewUserHistory"
+            @handle-delete-user="handleDeleteUser"
+            @load-more-users="userDisplayLimit += 100"
+          />
 
           <!-- Emergency Board Management Panel -->
-          <div v-else-if="activeAdminTab === 'requests'">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h5 class="fw-bold mb-0 text-slate-900"><i class="bi bi-exclamation-triangle-fill text-wine me-2"></i>Emergency Requests</h5>
-              <button class="ll-btn-primary btn-sm px-3" type="button" @click="openCreateRequestForm">
-                <i class="bi bi-plus-lg me-1"></i> New Request
-              </button>
-            </div>
-            
-            <div class="ll-tabs mb-4" role="tablist" aria-label="Request status filters">
-              <button
-                v-for="tab in requestStatusTabs"
-                :key="tab.value"
-                type="button"
-                class="ll-tab-button btn-sm py-1 px-3"
-                style="font-size: 0.85rem;"
-                :class="{ 'll-tab-button--active': selectedRequestStatus === tab.value }"
-                @click="selectedRequestStatus = tab.value"
-              >
-                {{ tab.label }}
-              </button>
-            </div>
-
-            <div v-if="requestsLoadingState" class="text-center py-4">
-              <div class="spinner-border spinner-border-sm text-danger" role="status"></div>
-            </div>
-            <div v-else class="ll-card ll-table-card">
-              <div class="table-responsive">
-                <table class="table align-middle mb-0 ll-admin-table">
-                  <thead>
-                    <tr>
-                      <th scope="col">Hospital</th>
-                      <th scope="col">City</th>
-                      <th scope="col">Blood</th>
-                      <th scope="col">Urgency</th>
-                      <th scope="col">Status</th>
-                      <th scope="col">Units</th>
-                      <th scope="col">Confirmed</th>
-                      <th scope="col">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <template v-for="req in filteredAdminRequests" :key="req.id">
-                      <tr>
-                        <td><strong>{{ req.hospitalName }}</strong></td>
-                        <td>{{ req.city }}</td>
-                        <td><span class="ll-badge-blood">{{ req.bloodType }}</span></td>
-                        <td><span class="ll-badge" v-highlight-urgency="req.urgency">{{ req.urgency }}</span></td>
-                        <td>
-                          <select
-                            class="form-select form-select-sm"
-                            :value="req.status"
-                            :title="`Change status for ${req.hospitalName}`"
-                            @change="handleRequestStatusSelect(req, $event.target.value)"
-                          >
-                            <option value="active">Active</option>
-                            <option value="fulfilled">Fulfilled</option>
-                            <option value="cancelled">Cancelled</option>
-                          </select>
-                        </td>
-                        <td>{{ req.unitsNeeded }}</td>
-                        <td>{{ req.confirmedCount || 0 }}</td>
-                        <td>
-                          <div class="d-flex gap-2 align-items-center">
-                            <button
-                              class="ll-btn-secondary btn-sm py-1 px-2"
-                              style="font-size: 0.75rem;"
-                              type="button"
-                              @click="toggleRequestExpand(req.id)"
-                            >
-                              <i class="bi" :class="expandedRequestIds.includes(req.id) ? 'bi-chevron-up' : 'bi-people-fill'"></i>
-                              Donors ({{ req.confirmedCount || 0 }})
-                            </button>
-                            <button class="ll-icon-button" type="button" title="Edit request" @click="openEditRequestForm(req)">
-                              <i class="bi bi-pencil-fill"></i>
-                            </button>
-                            <button class="ll-icon-button ll-icon-button--danger" type="button" title="Delete request" @click="handleDeleteRequest(req.id)">
-                              <i class="bi bi-trash-fill"></i>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                      
-                      <!-- Expandable Donors Details Row -->
-                      <tr v-if="expandedRequestIds.includes(req.id)" class="ll-expanded-row">
-                        <td colspan="8" class="p-3" style="background: #F8FAFC;">
-                          <div class="card shadow-none border border-slate-100 mb-0">
-                            <div class="card-header py-2 bg-slate-50">
-                              <span class="small fw-bold text-slate-800"><i class="bi bi-people-fill text-wine me-1"></i>Confirmed Donors for {{ req.hospitalName }}</span>
-                            </div>
-                            <div class="card-body p-0">
-                              <div v-if="getConfirmationsForRequest(req.id).length === 0" class="text-center py-3 text-slate-400 small">
-                                No donors confirmed for this request yet.
-                              </div>
-                              <table v-else class="table table-sm align-middle mb-0 small">
-                                <thead>
-                                  <tr class="table-light">
-                                    <th scope="col" class="ps-3">Name</th>
-                                    <th scope="col">Phone Number</th>
-                                    <th scope="col">Blood Type</th>
-                                    <th scope="col">Confirmed Date</th>
-                                    <th scope="col">Status</th>
-                                    <th scope="col" class="text-end pe-3">Actions</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr v-for="c in getConfirmationsForRequest(req.id)" :key="c.id">
-                                    <td class="ps-3"><strong>{{ c.donorName }}</strong></td>
-                                    <td>
-                                      <a v-if="c.donorPhone && c.donorPhone !== 'N/A'" :href="`tel:${c.donorPhone}`" class="text-wine text-decoration-none fw-bold">
-                                        <i class="bi bi-telephone-fill me-1"></i>{{ c.donorPhone }}
-                                      </a>
-                                      <span v-else class="text-muted">N/A</span>
-                                    </td>
-                                    <td><span class="badge bg-danger">{{ c.bloodType }}</span></td>
-                                    <td>{{ formatDateTime(c.createdAt) }}</td>
-                                    <td>
-                                      <select
-                                        class="form-select form-select-sm ll-select-button"
-                                        style="max-width: 120px; font-size: 0.78rem; cursor: pointer !important;"
-                                        :value="c.status || 'confirmed'"
-                                        @change="changeConfirmationStatus(c.id, $event.target.value)"
-                                      >
-                                        <option value="confirmed">Confirmed</option>
-                                        <option value="arrived">Arrived</option>
-                                        <option value="donated">Donated</option>
-                                        <option value="completed">Completed</option>
-                                      </select>
-                                    </td>
-                                    <td class="text-end pe-3">
-                                      <button
-                                        class="btn btn-sm btn-outline-danger py-0 px-2"
-                                        style="font-size: 0.75rem;"
-                                        type="button"
-                                        @click="handleCancelConfirmation(c.id, req.id, c.donorName)"
-                                      >
-                                        <i class="bi bi-x-circle me-1"></i>Cancel Donation
-                                      </button>
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    </template>
-                    <tr v-if="filteredAdminRequests.length === 0">
-                      <td colspan="8" class="text-center py-4 text-slate-500">No requests found in this status.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+          <AdminRequestManagement
+            v-else-if="activeAdminTab === 'requests'"
+            :requestStatusTabs="requestStatusTabs"
+            v-model:selectedRequestStatus="selectedRequestStatus"
+            :requestsLoadingState="requestsLoadingState"
+            :filteredAdminRequests="filteredAdminRequests"
+            :expandedRequestIds="expandedRequestIds"
+            :getConfirmationsForRequest="getConfirmationsForRequest"
+            :formatDateTime="formatDateTime"
+            @open-create-request-form="openCreateRequestForm"
+            @handle-request-status-select="handleRequestStatusSelect"
+            @toggle-request-expand="toggleRequestExpand"
+            @open-edit-request-form="openEditRequestForm"
+            @handle-delete-request="handleDeleteRequest"
+            @change-confirmation-status="changeConfirmationStatus"
+            @handle-cancel-confirmation="handleCancelConfirmation"
+          />
 
           <!-- Event Management Panel -->
-          <div v-else-if="activeAdminTab === 'events'">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h5 class="fw-bold mb-0 text-slate-900"><i class="bi bi-calendar-event-fill text-wine me-2"></i>Campaigns & Drives</h5>
-              <button class="ll-btn-primary btn-sm px-3" type="button" @click="openCreateEventForm">
-                <i class="bi bi-plus-lg me-1"></i> New Event
-              </button>
-            </div>
-            <div v-if="adminEventsLoading" class="text-center py-4">
-              <div class="spinner-border spinner-border-sm text-danger" role="status"></div>
-            </div>
-            <div v-else class="ll-card ll-table-card">
-              <div class="table-responsive">
-                <table class="table align-middle mb-0 ll-admin-table">
-                  <thead>
-                    <tr>
-                      <th scope="col">Title</th>
-                      <th scope="col">Date</th>
-                      <th scope="col">Category</th>
-                      <th scope="col">Location</th>
-                      <th scope="col">City</th>
-                      <th scope="col">Interested</th>
-                      <th scope="col">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <template v-for="ev in eventsList" :key="ev.id">
-                      <tr>
-                        <td><strong>{{ formatEventTitle(ev.title) }}</strong></td>
-                        <td>{{ formatEventDate(ev.date) }}</td>
-                        <td><span class="badge bg-secondary">{{ ev.category }}</span></td>
-                        <td>{{ ev.location }}</td>
-                        <td>{{ ev.city }}</td>
-                        <td><i class="bi bi-heart-fill text-wine me-1"></i>{{ ev.interestedCount || 0 }}</td>
-                        <td>
-                          <div class="d-flex gap-2 align-items-center">
-                            <button
-                              class="ll-btn-secondary btn-sm py-1 px-2"
-                              style="font-size: 0.75rem;"
-                              type="button"
-                              @click="toggleEventExpand(ev.id)"
-                            >
-                              <i class="bi" :class="expandedEventIds.includes(ev.id) ? 'bi-chevron-up' : 'bi-people-fill'"></i>
-                              Attendees ({{ ev.interestedCount || 0 }})
-                            </button>
-                            <button class="ll-icon-button" type="button" title="Edit event" @click="openEditEventForm(ev)">
-                              <i class="bi bi-pencil-fill"></i>
-                            </button>
-                            <button class="ll-icon-button ll-icon-button--danger" type="button" title="Delete event" @click="handleDeleteEvent(ev.id)">
-                              <i class="bi bi-trash-fill"></i>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                      
-                      <!-- Expandable Attendees Details Row -->
-                      <tr v-if="expandedEventIds.includes(ev.id)" class="ll-expanded-row">
-                        <td colspan="7" class="p-3" style="background: #F8FAFC;">
-                          <div class="card shadow-none border border-slate-100 mb-0">
-                            <div class="card-header py-2 bg-slate-50">
-                              <span class="small fw-bold text-slate-800"><i class="bi bi-people-fill text-wine me-1"></i>Registered Attendees for {{ formatEventTitle(ev.title) }}</span>
-                            </div>
-                            <div class="card-body p-0">
-                              <div v-if="getParticipantsForEvent(ev.likedBy).length === 0" class="text-center py-3 text-slate-400 small">
-                                No attendees registered for this event yet.
-                              </div>
-                              <table v-else class="table table-sm align-middle mb-0 small">
-                                <thead>
-                                  <tr class="table-light">
-                                    <th scope="col" class="ps-3">Name</th>
-                                    <th scope="col">Email</th>
-                                    <th scope="col" class="text-end pe-3">Actions</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr v-for="attendee in getParticipantsForEvent(ev.likedBy)" :key="attendee.uid">
-                                    <td class="ps-3"><strong>{{ attendee.displayName }}</strong></td>
-                                    <td>{{ attendee.email }}</td>
-                                    <td class="text-end pe-3">
-                                      <button
-                                        class="btn btn-sm btn-outline-danger py-0 px-2"
-                                        style="font-size: 0.75rem;"
-                                        type="button"
-                                        @click="removeUserFromEvent(ev.id, attendee.uid, attendee.displayName)"
-                                      >
-                                        <i class="bi bi-x-circle me-1"></i>Remove Attendance
-                                      </button>
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    </template>
-                    <tr v-if="eventsList.length === 0">
-                      <td colspan="7" class="text-center py-4 text-slate-500">No donation events found.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+          <AdminEventManagement
+            v-else-if="activeAdminTab === 'events'"
+            :adminEventsLoading="adminEventsLoading"
+            :eventsList="eventsList"
+            :expandedEventIds="expandedEventIds"
+            :getParticipantsForEvent="getParticipantsForEvent"
+            :formatEventTitle="formatEventTitle"
+            :formatEventDate="formatEventDate"
+            @open-create-event-form="openCreateEventForm"
+            @toggle-event-expand="toggleEventExpand"
+            @open-edit-event-form="openEditEventForm"
+            @handle-delete-event="handleDeleteEvent"
+            @remove-user-from-event="removeUserFromEvent"
+          />
 
           <!-- Live Support Chat Panel -->
           <div v-else-if="activeAdminTab === 'chat'">
@@ -867,6 +511,10 @@ import { useAuth } from '@/composables/useAuth.js'
 import { useGeolocation } from '@/composables/useGeolocation.js'
 import { useSupportChat } from '@/composables/useSupportChat.js'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import AdminAnalytics from '@/components/AdminAnalytics.vue'
+import AdminUserManagement from '@/components/AdminUserManagement.vue'
+import AdminRequestManagement from '@/components/AdminRequestManagement.vue'
+import AdminEventManagement from '@/components/AdminEventManagement.vue'
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import EventForm from '@/components/EventForm.vue'
 import RequestForm from '@/components/RequestForm.vue'

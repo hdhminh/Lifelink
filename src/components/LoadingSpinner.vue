@@ -26,6 +26,8 @@ defineProps({
 }
 
 @keyframes ll-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

@@ -6,7 +6,7 @@
  */
 
 import { ref, computed, onUnmounted } from 'vue'
-import { ref as rtdbRef, onValue, off } from 'firebase/database'
+import { ref as rtdbRef, onValue } from 'firebase/database'
 import { rtdb } from '@/firebase.js'
 
 export function useActiveResponses() {
@@ -62,19 +62,14 @@ export function useActiveResponses() {
    */
   function stopListening() {
     if (listenerUnsubscribe) {
-      try {
-        const trackingRootRef = rtdbRef(rtdb, 'liveTracking')
-        off(trackingRootRef)
-      } catch (e) {
-        // ignore
-      }
+      listenerUnsubscribe()
       listenerUnsubscribe = null
     }
   }
 
   /**
    * Returns active responses filtered by a specific emergency request ID.
-   * @param {string} requestId 
+   * @param {string} requestId
    * @returns {Array<Object>}
    */
   function getResponsesForRequest(requestId) {
@@ -84,7 +79,7 @@ export function useActiveResponses() {
 
   /**
    * Returns count of active en-route or approaching responders for a specific request ID.
-   * @param {string} requestId 
+   * @param {string} requestId
    * @returns {number}
    */
   function getEnRouteCountForRequest(requestId) {

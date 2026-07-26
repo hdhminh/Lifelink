@@ -17,7 +17,7 @@ const URGENCY_CLASSES = {
  * @param {string} level - Urgency level string.
  */
 function applyUrgencyClass(el, level) {
-  Object.values(URGENCY_CLASSES).forEach(cls => el.classList.remove(cls))
+  Object.values(URGENCY_CLASSES).forEach((cls) => el.classList.remove(cls))
 
   const normalised = level?.toLowerCase()
   if (URGENCY_CLASSES[normalised]) {

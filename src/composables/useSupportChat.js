@@ -61,7 +61,8 @@ function buildThreadSeed({
   return {
     participantId,
     participantType,
-    participantDisplayName: participantDisplayName || (participantType === 'guest' ? 'Guest User' : 'User'),
+    participantDisplayName:
+      participantDisplayName || (participantType === 'guest' ? 'Guest User' : 'User'),
     participantEmail: participantEmail || (participantType === 'guest' ? 'Guest Session' : ''),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -126,14 +127,18 @@ export function useSupportChat() {
         participantEmail
       })
 
-      batch.set(threadRef, {
-        ...threadSeed,
-        lastMessage: text,
-        lastMessageAt: serverTimestamp(),
-        lastMessageSenderRole: 'participant',
-        participantLastReadAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      }, { merge: true })
+      batch.set(
+        threadRef,
+        {
+          ...threadSeed,
+          lastMessage: text,
+          lastMessageAt: serverTimestamp(),
+          lastMessageSenderRole: 'participant',
+          participantLastReadAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        },
+        { merge: true }
+      )
 
       batch.set(messageRef, {
         threadId,
@@ -182,13 +187,17 @@ export function useSupportChat() {
         participantEmail
       })
 
-      batch.set(threadRef, {
-        ...threadSeed,
-        lastMessage: text,
-        lastMessageAt: serverTimestamp(),
-        lastMessageSenderRole: senderRole,
-        updatedAt: serverTimestamp()
-      }, { merge: true })
+      batch.set(
+        threadRef,
+        {
+          ...threadSeed,
+          lastMessage: text,
+          lastMessageAt: serverTimestamp(),
+          lastMessageSenderRole: senderRole,
+          updatedAt: serverTimestamp()
+        },
+        { merge: true }
+      )
 
       batch.set(messageRef, {
         threadId,
@@ -234,14 +243,18 @@ export function useSupportChat() {
         participantEmail
       })
 
-      batch.set(threadRef, {
-        ...threadSeed,
-        lastMessage: text,
-        lastMessageAt: serverTimestamp(),
-        lastMessageSenderRole: 'admin',
-        adminLastReadAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      }, { merge: true })
+      batch.set(
+        threadRef,
+        {
+          ...threadSeed,
+          lastMessage: text,
+          lastMessageAt: serverTimestamp(),
+          lastMessageSenderRole: 'admin',
+          adminLastReadAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        },
+        { merge: true }
+      )
 
       batch.set(messageRef, {
         threadId,
@@ -270,9 +283,13 @@ export function useSupportChat() {
    */
   function listenToThreadMessages(threadId, onData, onFailure) {
     const q = query(getMessagesCollection(threadId), orderBy('createdAt', 'asc'))
-    return onSnapshot(q, (snap) => {
-      onData(snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() })))
-    }, onFailure)
+    return onSnapshot(
+      q,
+      (snap) => {
+        onData(snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() })))
+      },
+      onFailure
+    )
   }
 
   /**
@@ -283,9 +300,13 @@ export function useSupportChat() {
    */
   function listenToThreads(onData, onFailure) {
     const q = query(collection(db, THREADS_COLLECTION), orderBy('lastMessageAt', 'desc'))
-    return onSnapshot(q, (snap) => {
-      onData(snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() })))
-    }, onFailure)
+    return onSnapshot(
+      q,
+      (snap) => {
+        onData(snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() })))
+      },
+      onFailure
+    )
   }
 
   /**

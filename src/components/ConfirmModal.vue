@@ -13,14 +13,21 @@
         <div class="modal-content ll-modal-content">
           <div class="modal-header ll-modal-header">
             <h5 :id="titleId" class="modal-title">{{ title }}</h5>
-            <button type="button" class="btn-close" aria-label="Close" @click="emit('cancel')"></button>
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Close"
+              @click="emit('cancel')"
+            ></button>
           </div>
           <div class="modal-body">
             <p class="m-0">{{ message }}</p>
           </div>
           <div class="modal-footer ll-modal-footer">
             <button type="button" class="ll-btn-secondary" @click="emit('cancel')">Cancel</button>
-            <button type="button" class="ll-btn-danger" @click="emit('confirm')">{{ confirmLabel }}</button>
+            <button type="button" class="ll-btn-danger" @click="emit('confirm')">
+              {{ confirmLabel }}
+            </button>
           </div>
         </div>
       </div>

@@ -7,24 +7,68 @@
   >
     <header class="ll-card__header d-flex flex-column align-items-stretch gap-1">
       <div class="d-flex justify-content-between align-items-center w-100">
-        <span class="ll-badge-blood-compact"><i class="bi bi-droplet-fill me-1 text-white"></i> {{ request.bloodType }}</span>
-        <span class="ll-badge" v-highlight-urgency="request.urgency">● {{ request.urgency }}</span>
+        <span class="ll-badge-blood-compact"
+          ><i class="bi bi-droplet-fill me-1 text-white"></i> {{ request.bloodType }}</span
+        >
+        <span v-highlight-urgency="request.urgency" class="ll-badge">● {{ request.urgency }}</span>
       </div>
-      <div v-if="(!isAdmin && isCompatibleDonor) || isExpired || timeAgoText || enRouteCount > 0" class="d-flex flex-wrap align-items-center gap-2 mt-1">
-        <span v-if="enRouteCount > 0" class="badge bg-primary text-white px-2 py-1" style="font-size: 0.68rem; border-radius: 12px; font-weight: 700; letter-spacing: 0.02em; display: inline-flex; align-items: center;">
-          <i class="bi bi-geo-alt-fill me-1"></i>{{ enRouteCount }} responder{{ enRouteCount > 1 ? 's' : '' }} en route
+      <div
+        v-if="(!isAdmin && isCompatibleDonor) || isExpired || timeAgoText || enRouteCount > 0"
+        class="d-flex flex-wrap align-items-center gap-2 mt-1"
+      >
+        <span
+          v-if="enRouteCount > 0"
+          class="badge bg-primary text-white px-2 py-1"
+          style="
+            font-size: 0.68rem;
+            border-radius: 12px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            display: inline-flex;
+            align-items: center;
+          "
+        >
+          <i class="bi bi-geo-alt-fill me-1"></i>{{ enRouteCount }} responder{{
+            enRouteCount > 1 ? 's' : ''
+          }}
+          en route
         </span>
-        <span v-if="!isAdmin && isCompatibleDonor" class="badge bg-success text-white px-2 py-1" style="font-size: 0.68rem; border-radius: 12px; font-weight: 700; letter-spacing: 0.02em; display: inline-flex; align-items: center;">
+        <span
+          v-if="!isAdmin && isCompatibleDonor"
+          class="badge bg-success text-white px-2 py-1"
+          style="
+            font-size: 0.68rem;
+            border-radius: 12px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            display: inline-flex;
+            align-items: center;
+          "
+        >
           <i class="bi bi-heart-pulse-fill me-1"></i>Compatible
         </span>
-        <span v-if="isExpired" class="badge bg-secondary text-white px-2 py-1" style="font-size: 0.68rem; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center;">
+        <span
+          v-if="isExpired"
+          class="badge bg-secondary text-white px-2 py-1"
+          style="
+            font-size: 0.68rem;
+            border-radius: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+          "
+        >
           <i class="bi bi-clock-fill me-1"></i>Expired
         </span>
-        <span v-else-if="timeAgoText" class="text-slate-400 extra-small" :title="'Published: ' + formattedPublishDate" style="font-size: 0.7rem; display: inline-flex; align-items: center; cursor: help;">
+        <span
+          v-else-if="timeAgoText"
+          class="text-slate-400 extra-small"
+          :title="'Published: ' + formattedPublishDate"
+          style="font-size: 0.7rem; display: inline-flex; align-items: center; cursor: help"
+        >
           <i class="bi bi-clock me-1"></i>{{ timeAgoText }}
         </span>
       </div>
-
     </header>
 
     <div class="ll-card__body">
@@ -34,13 +78,12 @@
         <button
           type="button"
           class="btn btn-link p-0 text-decoration-none small text-wine font-weight-700"
-          style="color: #8E2435; font-size: 0.8rem;"
+          style="color: #8e2435; font-size: 0.8rem"
           title="Focus hospital on Live Map"
           @click.prevent="$emit('focus-map', request.id)"
         >
           <i class="bi bi-geo-alt-fill me-1"></i>Map
         </button>
-
       </div>
       <p class="ll-text-meta mb-3"><i class="bi bi-building me-1"></i> {{ request.city }}</p>
 
@@ -50,8 +93,13 @@
       </div>
       <p class="ll-text-meta mb-2">
         Confirmed: {{ request.confirmedCount || 0 }} / {{ request.unitsNeeded }}
-        <span v-if="request.arrivedCount || request.donatedCount || request.completedCount" class="text-slate-400 font-weight-normal ms-1" style="font-size: 0.78rem;">
-          ({{ request.arrivedCount || 0 }} arrived, {{ request.donatedCount || 0 }} donated, {{ request.completedCount || 0 }} completed)
+        <span
+          v-if="request.arrivedCount || request.donatedCount || request.completedCount"
+          class="text-slate-400 font-weight-normal ms-1"
+          style="font-size: 0.78rem"
+        >
+          ({{ request.arrivedCount || 0 }} arrived, {{ request.donatedCount || 0 }} donated,
+          {{ request.completedCount || 0 }} completed)
         </span>
       </p>
       <div class="ll-progress mb-3" aria-label="Donation confirmation progress">
@@ -63,13 +111,17 @@
       </div>
 
       <p class="ll-request-description">{{ request.description }}</p>
-      
+
       <!-- Contact Info with quick call trigger -->
       <div class="d-flex justify-content-between align-items-center ll-card-contact-row">
         <span class="small text-slate-500 font-weight-500">
           <i class="bi bi-info-circle me-1"></i> Contact us
         </span>
-        <a :href="'tel:' + contactPhone" class="btn btn-outline-danger btn-sm py-0 px-2" style="font-size: 0.75rem;">
+        <a
+          :href="'tel:' + contactPhone"
+          class="btn btn-outline-danger btn-sm py-0 px-2"
+          style="font-size: 0.75rem"
+        >
           <i class="bi-telephone-fill me-1"></i> Call {{ contactPhone }}
         </a>
       </div>
@@ -77,12 +129,22 @@
 
     <footer class="ll-card__footer">
       <div v-if="isAdmin" class="d-flex flex-wrap gap-2">
-        <button type="button" class="ll-btn-secondary ll-btn-sm flex-fill" @click="emit('edit')"><i class="bi bi-pencil me-1"></i> Edit</button>
-        <button type="button" class="ll-btn-secondary ll-btn-sm flex-fill" @click="emit('status-change')">
-          <i :class="[request.status === 'active' ? 'bi bi-check-lg' : 'bi bi-play-fill', 'me-1']"></i>
+        <button type="button" class="ll-btn-secondary ll-btn-sm flex-fill" @click="emit('edit')">
+          <i class="bi bi-pencil me-1"></i> Edit
+        </button>
+        <button
+          type="button"
+          class="ll-btn-secondary ll-btn-sm flex-fill"
+          @click="emit('status-change')"
+        >
+          <i
+            :class="[request.status === 'active' ? 'bi bi-check-lg' : 'bi bi-play-fill', 'me-1']"
+          ></i>
           {{ request.status === 'active' ? 'Fulfil' : 'Activate' }}
         </button>
-        <button type="button" class="ll-btn-danger ll-btn-sm flex-fill" @click="emit('delete')"><i class="bi bi-trash me-1"></i> Delete</button>
+        <button type="button" class="ll-btn-danger ll-btn-sm flex-fill" @click="emit('delete')">
+          <i class="bi bi-trash me-1"></i> Delete
+        </button>
       </div>
       <button
         v-else
@@ -92,15 +154,41 @@
         :disabled="stillNeeded <= 0 || confirming || !eligibility.eligible || isExpired"
         @click="emit('confirm')"
       >
-        <i class="bi" :class="isExpired ? 'bi-x-circle' : (eligibility.eligible ? 'bi-heart-fill' : 'bi-hourglass-split')"></i>
+        <i
+          class="bi"
+          :class="
+            isExpired
+              ? 'bi-x-circle'
+              : eligibility.eligible
+                ? 'bi-heart-fill'
+                : 'bi-hourglass-split'
+          "
+        ></i>
         <span class="ms-1">
-          {{ confirming ? 'Confirming...' : (isExpired ? 'Request Expired' : (eligibility.eligible ? 'Confirm Availability' : `Cooldown (${eligibility.daysLeft}d left)`)) }}
+          {{
+            confirming
+              ? 'Confirming...'
+              : isExpired
+                ? 'Request Expired'
+                : eligibility.eligible
+                  ? 'Confirm Availability'
+                  : `Cooldown (${eligibility.daysLeft}d left)`
+          }}
         </span>
       </button>
-      <div v-if="!isAdmin && !eligibility.eligible" class="text-center mt-2 text-warning small font-weight-500" style="font-size: 0.75rem; width: 100%;">
-        <i class="bi bi-exclamation-circle-fill me-1"></i> You can donate again on {{ eligibility.nextDateFormatted }}
+      <div
+        v-if="!isAdmin && !eligibility.eligible"
+        class="text-center mt-2 text-warning small font-weight-500"
+        style="font-size: 0.75rem; width: 100%"
+      >
+        <i class="bi bi-exclamation-circle-fill me-1"></i> You can donate again on
+        {{ eligibility.nextDateFormatted }}
       </div>
-      <div v-if="!isAdmin && isExpired" class="text-center mt-2 text-slate-400 small font-weight-500" style="font-size: 0.75rem; width: 100%;">
+      <div
+        v-if="!isAdmin && isExpired"
+        class="text-center mt-2 text-slate-400 small font-weight-500"
+        style="font-size: 0.75rem; width: 100%"
+      >
         <i class="bi bi-info-circle me-1"></i> This request has expired.
       </div>
     </footer>
@@ -135,9 +223,7 @@ const props = defineProps({
   enRouteCount: { type: Number, default: 0 }
 })
 
-
 const emit = defineEmits(['confirm', 'edit', 'delete', 'status-change', 'focus-map'])
-
 
 const eligibility = computed(() => {
   if (!userProfile.value) return { eligible: true, daysLeft: 0, nextDateFormatted: '' }
@@ -152,12 +238,18 @@ const eligibility = computed(() => {
   }
 })
 
-const stillNeeded = computed(() => Math.max(0, props.request.unitsNeeded - (props.request.confirmedCount || 0)))
-const progressPercent = computed(() => Math.min(100, (((props.request.confirmedCount || 0) / props.request.unitsNeeded) * 100) || 0))
+const stillNeeded = computed(() =>
+  Math.max(0, props.request.unitsNeeded - (props.request.confirmedCount || 0))
+)
+const progressPercent = computed(() =>
+  Math.min(100, ((props.request.confirmedCount || 0) / props.request.unitsNeeded) * 100 || 0)
+)
 
 const formattedPublishDate = computed(() => {
   if (!props.request.createdAt) return ''
-  const date = props.request.createdAt.toDate ? props.request.createdAt.toDate() : new Date(props.request.createdAt)
+  const date = props.request.createdAt.toDate
+    ? props.request.createdAt.toDate()
+    : new Date(props.request.createdAt)
   if (isNaN(date.getTime())) return ''
   return date.toLocaleString('en-AU', {
     day: '2-digit',
@@ -171,7 +263,7 @@ const formattedPublishDate = computed(() => {
 const contactPhone = computed(() => {
   const info = props.request.contactInfo?.trim()
   if (!info) return '115'
-  
+
   const phonePattern = /^[0-9\s+\-()]{3,20}$/
   if (phonePattern.test(info)) {
     return info
@@ -190,12 +282,13 @@ function updateTimeAgo() {
     isExpired.value = false
     return
   }
-  const createdSecs = props.request.createdAt.seconds || (new Date(props.request.createdAt).getTime() / 1000)
-  const diffMs = Date.now() - (createdSecs * 1000)
-  
+  const createdSecs =
+    props.request.createdAt.seconds || new Date(props.request.createdAt).getTime() / 1000
+  const diffMs = Date.now() - createdSecs * 1000
+
   // Expiry threshold: 720 hours (30 days) to keep demo & live requests active
   let thresholdHours = 720
-  
+
   const thresholdMs = thresholdHours * 60 * 60 * 1000
   if (diffMs >= thresholdMs) {
     isExpired.value = true
@@ -242,23 +335,21 @@ function handleMouseEnter() {
   animate(
     cardElement.value,
     { scale: 1.018, y: -4 },
-    { type: "spring", stiffness: 260, damping: 20 }
+    { type: 'spring', stiffness: 260, damping: 20 }
   )
 }
 
 function handleMouseLeave() {
-  animate(
-    cardElement.value,
-    { scale: 1, y: 0 },
-    { type: "spring", stiffness: 260, damping: 20 }
-  )
+  animate(cardElement.value, { scale: 1, y: 0 }, { type: 'spring', stiffness: 260, damping: 20 })
 }
 </script>
 
 <style scoped>
 .ll-request-card {
   border-top: 4px solid transparent !important;
-  transition: box-shadow var(--ll-transition), border-color var(--ll-transition) !important;
+  transition:
+    box-shadow var(--ll-transition),
+    border-color var(--ll-transition) !important;
 }
 .ll-request-card:hover {
   transform: none !important;

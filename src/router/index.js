@@ -33,13 +33,52 @@ const Profile = () => import('@/views/Profile.vue')
 
 const LiveNetworkMap = () => import('@/views/LiveNetworkMap.vue')
 
+/**
+ * Validates a redirect URL to prevent open redirect attacks.
+ * Only allows relative paths starting with '/' and rejects protocol-relative URLs.
+ * @param {string} url - The redirect URL to validate.
+ * @returns {string} A safe redirect path.
+ */
+function validateRedirect(url) {
+  if (!url || typeof url !== 'string') return '/dashboard'
+  // Must start with a single slash (relative path) and not be protocol-relative
+  if (!url.startsWith('/') || url.startsWith('//') || url.includes('://')) {
+    return '/dashboard'
+  }
+  // Only allow path characters, query params, and hash fragments
+  if (!/^\/[a-zA-Z0-9\/\-_.~:@!$&'()*+,;=/?#]*$/.test(url)) {
+    return '/dashboard'
+  }
+  return url
+}
+
 const routes = [
-  { path: '/', name: 'Home', component: Home, meta: { title: 'LifeLink - Connected Lives Vietnam' } },
-  { path: '/news', name: 'News', component: News, meta: { title: 'LifeLink - Blood Donation News' } },
+  {
+    path: '/',
+    name: 'Home',
+    component: Home,
+    meta: { title: 'LifeLink - Connected Lives Vietnam' }
+  },
+  {
+    path: '/news',
+    name: 'News',
+    component: News,
+    meta: { title: 'LifeLink - Blood Donation News' }
+  },
   { path: '/about', name: 'About', component: About, meta: { title: 'LifeLink - About Us' } },
   { path: '/login', name: 'Login', component: Login, meta: { title: 'LifeLink - Sign In' } },
-  { path: '/register', name: 'Register', component: Register, meta: { title: 'LifeLink - Create Account' } },
-  { path: '/events', name: 'DonationEvents', component: DonationEvents, meta: { title: 'LifeLink - Donation Events' } },
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register,
+    meta: { title: 'LifeLink - Create Account' }
+  },
+  {
+    path: '/events',
+    name: 'DonationEvents',
+    component: DonationEvents,
+    meta: { title: 'LifeLink - Donation Events' }
+  },
   {
     path: '/dashboard',
     name: 'Dashboard',
@@ -58,7 +97,6 @@ const routes = [
     component: LiveNetworkMap,
     meta: { title: 'LifeLink - Live Network Map' }
   },
-
 
   {
     path: '/profile',
@@ -102,7 +140,12 @@ export async function navigationGuard(to, from, next) {
   if (to.path === '/' && !currentUser && !from.name) {
     const { getGuestSession } = useGuestSession()
     const session = getGuestSession()
-    if (session.lastRoute && session.lastRoute !== '/' && session.lastRoute !== '/login' && session.lastRoute !== '/register') {
+    if (
+      session.lastRoute &&
+      session.lastRoute !== '/' &&
+      session.lastRoute !== '/login' &&
+      session.lastRoute !== '/register'
+    ) {
       next(session.lastRoute)
       return
     }
@@ -117,7 +160,9 @@ export async function navigationGuard(to, from, next) {
   }
 
   if (!currentUser) {
-    next({ name: 'Login', query: { redirect: to.fullPath } })
+    // Validate redirect URL to prevent open redirect attacks
+    const safeRedirect = validateRedirect(to.fullPath)
+    next({ name: 'Login', query: { redirect: safeRedirect } })
     return
   }
 

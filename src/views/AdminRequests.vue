@@ -2,10 +2,14 @@
   <div class="ll-page-container">
     <div class="ll-section-header">
       <div>
-        <h1 class="ll-section-title"><i class="bi bi-shield-lock me-2 text-danger"></i> Admin Request Management</h1>
+        <h1 class="ll-section-title">
+          <i class="bi bi-shield-lock me-2 text-danger"></i> Admin Request Management
+        </h1>
         <p class="ll-text-meta mb-0">Create, edit, fulfil, cancel, or delete emergency requests.</p>
       </div>
-      <button class="ll-btn-primary" type="button" @click="openCreateForm"><i class="bi bi-plus-lg me-1"></i> New Request</button>
+      <button class="ll-btn-primary" type="button" @click="openCreateForm">
+        <i class="bi bi-plus-lg me-1"></i> New Request
+      </button>
     </div>
 
     <div class="ll-tabs mb-4" role="tablist" aria-label="Request status filters">
@@ -44,8 +48,14 @@
             <tr v-for="request in filteredAdminRequests" :key="request.id">
               <td>{{ request.hospitalName }}</td>
               <td>{{ request.city }}</td>
-              <td><span class="ll-badge-blood">{{ request.bloodType }}</span></td>
-              <td><span class="ll-badge" v-highlight-urgency="request.urgency">{{ request.urgency }}</span></td>
+              <td>
+                <span class="ll-badge-blood">{{ request.bloodType }}</span>
+              </td>
+              <td>
+                <span v-highlight-urgency="request.urgency" class="ll-badge">{{
+                  request.urgency
+                }}</span>
+              </td>
               <td>
                 <select
                   class="form-select form-select-sm"
@@ -63,8 +73,22 @@
               <td>{{ formatDate(request.createdAt) }}</td>
               <td>
                 <div class="d-flex gap-2">
-                  <button class="ll-icon-button" type="button" title="Edit request" @click="openEditForm(request)"><i class="bi bi-pencil-fill"></i><span class="ll-sr-only">Edit request</span></button>
-                  <button class="ll-icon-button ll-icon-button--danger" type="button" title="Delete request" @click="handleDelete(request.id)"><i class="bi bi-trash-fill"></i><span class="ll-sr-only">Delete request</span></button>
+                  <button
+                    class="ll-icon-button"
+                    type="button"
+                    title="Edit request"
+                    @click="openEditForm(request)"
+                  >
+                    <i class="bi bi-pencil-fill"></i><span class="ll-sr-only">Edit request</span>
+                  </button>
+                  <button
+                    class="ll-icon-button ll-icon-button--danger"
+                    type="button"
+                    title="Delete request"
+                    @click="handleDelete(request.id)"
+                  >
+                    <i class="bi bi-trash-fill"></i><span class="ll-sr-only">Delete request</span>
+                  </button>
                 </div>
               </td>
             </tr>
@@ -113,7 +137,8 @@ import ConfirmModal from '@/components/ConfirmModal.vue'
 import { useToast } from '@/composables/useToast.js'
 
 const { user } = useAuth()
-const { requests, loading, error, fetchAllRequests, createRequest, updateRequest, deleteRequest } = useEmergencyRequests()
+const { requests, loading, error, fetchAllRequests, createRequest, updateRequest, deleteRequest } =
+  useEmergencyRequests()
 const { showToast } = useToast()
 
 const selectedStatus = ref('all')
@@ -131,7 +156,7 @@ const tabs = [
 
 const filteredAdminRequests = computed(() => {
   if (selectedStatus.value === 'all') return requests.value
-  return requests.value.filter(request => request.status === selectedStatus.value)
+  return requests.value.filter((request) => request.status === selectedStatus.value)
 })
 
 function formatDate(value) {
@@ -260,7 +285,7 @@ onMounted(() => {
 
 .ll-icon-button--danger {
   color: var(--ll-error);
-  border-color: #FECACA;
+  border-color: #fecaca;
 }
 
 .ll-admin-form-container {

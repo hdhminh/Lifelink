@@ -927,15 +927,17 @@ watch(loading, (newLoading) => {
         })
       })
     }
-    
-    if (route.query.respond) {
-      setTimeout(() => {
-        handleConfirm(route.query.respond)
-        router.replace({ query: { ...route.query, respond: undefined } })
-      }, 300)
-    }
   }
 })
+
+watch(() => route.query.respond, (reqId) => {
+  if (reqId) {
+    setTimeout(() => {
+      handleConfirm(reqId)
+      router.replace({ query: { ...route.query, respond: undefined } })
+    }, 100)
+  }
+}, { immediate: true })
 
 watch(
   [filterBloodType, filterCity, filterUrgency, filterCompatibleOnly, currentPage, viewMode],

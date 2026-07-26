@@ -18,14 +18,15 @@
       >
         <span
           v-if="enRouteCount > 0"
-          class="badge bg-primary text-white px-2 py-1"
+          class="badge text-white px-2 py-1"
           style="
+            background-color: var(--ll-wine-red, #8e2435);
             font-size: 0.68rem;
             border-radius: 12px;
             font-weight: 700;
-            letter-spacing: 0.02em;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
           "
         >
           <i class="bi bi-geo-alt-fill me-1"></i>{{ enRouteCount }} responder{{

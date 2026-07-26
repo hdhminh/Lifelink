@@ -43,9 +43,10 @@
               <button
                 type="button"
                 class="btn ll-btn-primary w-100 d-flex align-items-center justify-content-center gap-2"
+                style="color: #fff;"
                 @click="handleShareAndOpenMaps"
               >
-                <i class="bi bi-broadcast"></i> Share Live Location & Open Maps
+                <i class="bi bi-broadcast"></i> Share Live Location & Go to Map
               </button>
               <button
                 type="button"
@@ -67,6 +68,7 @@
               <button
                 type="button"
                 class="btn ll-btn-primary w-100 d-flex align-items-center justify-content-center gap-2"
+                style="color: #fff;"
                 @click="handleShareAndTrack"
               >
                 <i class="bi bi-broadcast"></i> Share Live Location
@@ -263,6 +265,7 @@ function handleOpenMaps() {
 }
 
 async function handleShareAndOpenMaps() {
+  const reqId = pendingRequestForTracking.value?.id
   if (pendingRequestForTracking.value && user.value && userProfile.value) {
     const req = pendingRequestForTracking.value
     const coords = getHospitalCoordinates(req.hospitalName, req.city)
@@ -275,10 +278,11 @@ async function handleShareAndOpenMaps() {
     })
   }
 
-  handleOpenMaps()
+  closeMapsConfirmModal()
 
+  // Navigate to internal /map page (NOT external Google Maps)
   if (router.currentRoute.value.path !== '/map') {
-    router.push({ path: '/map', query: { request: pendingRequestForTracking.value?.id } })
+    router.push({ path: '/map', query: { request: reqId } })
   }
 }
 

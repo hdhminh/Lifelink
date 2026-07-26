@@ -147,16 +147,14 @@
           <i class="bi bi-trash me-1"></i> Delete
         </button>
       </div>
-        <!-- When confirmed: show Open Maps button -->
-        <button
+        <!-- When confirmed: static non-clickable green badge -->
+        <div
           v-if="!isAdmin && hasConfirmed"
-          type="button"
-          class="btn w-100 fw-bold btn-success text-white"
-          style="background-color: #198754; border-color: #198754;"
-          @click="emit('open-maps')"
+          class="btn w-100 fw-bold text-white"
+          style="background-color: #198754; border-color: #198754; cursor: default; pointer-events: none;"
         >
-          <i class="bi bi-geo-alt-fill me-1"></i> Confirmed — Open Maps
-        </button>
+          <i class="bi bi-check-circle-fill me-1"></i> Confirmed
+        </div>
 
         <!-- When not confirmed: normal confirm flow -->
         <button

@@ -376,12 +376,19 @@ textarea {
 
 .ll-btn-primary:hover {
   background-color: var(--ll-wine-dark);
+  color: #fff;
   box-shadow: 0 6px 18px rgba(142, 36, 53, 0.4);
   transform: translateY(-2px);
 }
 
-.ll-btn-primary:active {
+.ll-btn-primary:active,
+.ll-btn-primary:focus,
+.ll-btn-primary:focus-visible {
+  color: #fff !important;
+  background-color: var(--ll-wine-dark);
   transform: scale(0.97);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(142, 36, 53, 0.3);
 }
 
 .ll-btn-primary:disabled {

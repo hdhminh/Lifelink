@@ -65,7 +65,7 @@
                 </div>
                 <div v-else-if="confirmations.length === 0" class="text-center py-4 text-slate-500">
                   <p class="mb-0">You haven't confirmed any emergency requests yet.</p>
-                  <RouterLink to="/emergency-board" class="btn btn-sm btn-outline-danger mt-2">View Board</RouterLink>
+                  <RouterLink to="/emergency-board" class="btn btn-sm mt-2" style="color: var(--ll-wine-red); border: 1px solid var(--ll-wine-red);">View Board</RouterLink>
                 </div>
                 <div v-else class="list-group list-group-flush">
                   <div v-for="conf in confirmations" :key="conf.id" class="list-group-item px-0 py-3 border-bottom border-slate-100">

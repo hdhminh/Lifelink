@@ -149,8 +149,12 @@
       <button
           v-else
           type="button"
-          class="ll-btn-primary ll-btn-block"
-          :class="{ 'll-btn-disabled': hasConfirmed || (!eligibility.eligible || isExpired) && stillNeeded > 0 }"
+          class="btn w-100 fw-bold"
+          :class="[
+            hasConfirmed ? 'btn-success text-white' : 'll-btn-primary',
+            { 'll-btn-disabled': (!eligibility.eligible || isExpired) && stillNeeded > 0 && !hasConfirmed }
+          ]"
+          :style="hasConfirmed ? 'background-color: #198754; border-color: #198754; opacity: 1; cursor: default;' : ''"
           :disabled="hasConfirmed || stillNeeded <= 0 || confirming || !eligibility.eligible || isExpired"
           @click="!hasConfirmed && emit('confirm')"
         >

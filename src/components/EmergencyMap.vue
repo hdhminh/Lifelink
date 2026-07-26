@@ -775,9 +775,11 @@ function renderHospitalMarkers() {
     hospitalCircles.set(String(req.id), [innerCircle, outerCircle])
   })
 
-  if (count > 0 && !selectedRequestId.value) {
-    leafletMap.fitBounds(bounds, { padding: [30, 30] })
-  }
+    if (count > 0 && !selectedRequestId.value) {
+      leafletMap.fitBounds(bounds, { padding: [30, 30] })
+    } else if (selectedRequestId.value && !selectedRequestId.value.startsWith('ev_')) {
+      setTimeout(() => centerMapOnSelected(), 50)
+    }
 }
 
 /**
@@ -839,6 +841,10 @@ function renderEventMarkers() {
 
     eventMarkers.set('ev_' + String(ev.id), marker)
   })
+
+    if (selectedRequestId.value && selectedRequestId.value.startsWith('ev_')) {
+      setTimeout(() => centerMapOnSelected(), 50)
+    }
 }
 
 /**

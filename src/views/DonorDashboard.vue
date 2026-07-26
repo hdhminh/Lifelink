@@ -69,9 +69,9 @@
                 </div>
                 <div v-else class="list-group list-group-flush">
                   <div v-for="conf in confirmations" :key="conf.id" class="list-group-item px-0 py-3 border-bottom border-slate-100">
-                    <div class="d-flex justify-content-between align-items-start gap-2">
+                    <div class="d-flex justify-content-between align-items-center gap-3">
                       <div>
-                        <h3 class="fw-bold mb-1 text-slate-900 fs-6">
+                        <h3 class="fw-bold mb-1 d-flex align-items-center" style="font-size: 0.95rem; color: var(--ll-slate-900);">
                           {{ conf.hospitalName || 'Emergency Request' }}
                           <span :class="['badge ms-2', getStatusBadgeClass(conf.status)]" style="font-size: 0.65rem; padding: 0.25em 0.5em; border-radius: 4px; font-weight: 700;">
                             {{ conf.status ? conf.status.toUpperCase() : 'CONFIRMED' }}
@@ -82,7 +82,7 @@
                         </p>
                         <p class="small text-slate-400 mb-0 mt-1">Confirmed on {{ formatDateTime(conf.createdAt) }}</p>
                       </div>
-                      <RouterLink to="/map" class="btn btn-sm btn-outline-secondary flex-shrink-0">
+                      <RouterLink to="/map" class="btn btn-sm flex-shrink-0" style="color: var(--ll-wine-red); border: 1px solid var(--ll-wine-red);">
                         <i class="bi bi-geo-alt-fill"></i> Map
                       </RouterLink>
                     </div>
@@ -105,7 +105,7 @@
                 </div>
                 <div v-else-if="registeredEvents.length === 0" class="text-center py-4 text-slate-500">
                   <p class="mb-0">You haven't registered for any events yet.</p>
-                  <RouterLink to="/events" class="btn btn-sm btn-outline-danger mt-2">Browse Events</RouterLink>
+                  <RouterLink to="/events" class="btn btn-sm mt-2" style="color: var(--ll-wine-red); border: 1px solid var(--ll-wine-red);">Browse Events</RouterLink>
                 </div>
                 <div v-else class="list-group list-group-flush">
                   <div v-for="ev in registeredEvents" :key="ev.id" class="list-group-item px-0 py-3 border-bottom border-slate-100">

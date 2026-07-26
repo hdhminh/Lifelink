@@ -77,7 +77,7 @@
               <td class="dashboard-style-22">
                 <select
                   class="form-select form-select-sm d-inline-block shadow-xs ll-select-button dashboard-style-24"
-                  style="height: 32px; padding-top: 0; padding-bottom: 0;"
+                  style="height: 32px; min-width: 100px;"
                   :value="u.role || 'donor'"
                   :disabled="u.uid === userProfile.uid"
                   :title="`Change role for ${u.displayName}`"
@@ -90,7 +90,7 @@
               <td class="dashboard-style-25">
                 <div class="d-flex justify-content-end align-items-center gap-2 dashboard-style-26">
                   <button
-                    class="ll-btn-secondary btn-sm px-2 py-0 d-inline-flex align-items-center justify-content-center dashboard-style-27"
+                    class="ll-btn-secondary btn-sm px-2 d-inline-flex align-items-center justify-content-center dashboard-style-27"
                     style="height: 32px;"
                     type="button"
                     title="View participation history"

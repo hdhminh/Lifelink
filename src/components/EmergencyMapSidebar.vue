@@ -101,12 +101,13 @@
           class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-slate-100 map-style-33"
         >
           <span class="text-slate-500">
-            <i class="bi bi-geo-alt me-1 map-style-6"></i> Distance:
-            <strong>{{ formatMeters(resp.distanceMeters) }}</strong>
+            <i class="bi bi-geo-alt me-1 map-style-6"></i>
+            <span v-if="resp.latitude != null">Distance: <strong>{{ formatMeters(resp.distanceMeters) }}</strong></span>
+            <span v-else class="text-warning"><i class="bi bi-clock me-1"></i>Awaiting GPS...</span>
           </span>
           <span class="font-weight-700 map-style-6">
             <i class="bi bi-clock-history me-1"></i> ETA:
-            <strong>~{{ resp.etaMins || 1 }} min</strong>
+            <strong>{{ resp.latitude != null ? `~${resp.etaMins || 1} min` : 'TBD' }}</strong>
           </span>
         </div>
       </div>

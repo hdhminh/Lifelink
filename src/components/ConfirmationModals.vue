@@ -38,7 +38,8 @@
             <p class="text-slate-500 mb-4 px-2" style="font-size: 0.95rem">
               Would you like to open Google Maps for immediate directions to the hospital?
             </p>
-            <div class="d-flex flex-column gap-2">
+            <!-- Only show map navigation buttons if NOT already on the map page -->
+            <div v-if="!isOnMapPage" class="d-flex flex-column gap-2">
               <button
                 type="button"
                 class="btn ll-btn-primary w-100 d-flex align-items-center justify-content-center gap-2"
@@ -52,6 +53,23 @@
                 @click="handleOpenMaps"
               >
                 <i class="bi bi-geo-alt-fill"></i> Just Open Google Maps
+              </button>
+              <button
+                type="button"
+                class="btn btn-link text-slate-400 text-decoration-none py-1"
+                @click="closeMapsConfirmModal"
+              >
+                No, thanks
+              </button>
+            </div>
+            <!-- On map page: just a dismiss button -->
+            <div v-else class="d-flex flex-column gap-2">
+              <button
+                type="button"
+                class="btn ll-btn-primary w-100 d-flex align-items-center justify-content-center gap-2"
+                @click="handleShareAndTrack"
+              >
+                <i class="bi bi-broadcast"></i> Share Live Location
               </button>
               <button
                 type="button"
@@ -183,8 +201,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '@/composables/useAuth.js'
 import { useGuestSession } from '@/composables/useGuestSession.js'
 import { useConfirmDonation } from '@/composables/useConfirmDonation.js'
@@ -192,6 +210,8 @@ import { useGeolocation } from '@/composables/useGeolocation.js'
 import { useLocationTracking } from '@/composables/useLocationTracking.js'
 import { useToast } from '@/composables/useToast.js'
 import { getHospitalCoordinates } from '@/data/hospitalCoordinates.js'
+import { ref as dbRef, set, onDisconnect, serverTimestamp } from 'firebase/database'
+import { rtdb } from '@/firebase.js'
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import AlertMessage from '@/components/AlertMessage.vue'
 
@@ -209,6 +229,9 @@ const { buildMapsUrl } = useGeolocation()
 const { startTracking } = useLocationTracking()
 const { showToast } = useToast()
 const router = useRouter()
+const route = useRoute()
+
+const isOnMapPage = computed(() => route.path === '/map')
 
 const showConfirmDonationModal = ref(false)
 const confirmingRequestId = ref(null)
@@ -247,8 +270,8 @@ async function handleShareAndOpenMaps() {
       requestId: req.id,
       donorId: user.value.uid,
       donorName: userProfile.value.displayName,
-      targetLat: coords.lat,
-      targetLng: coords.lng
+      bloodType: userProfile.value.bloodType,
+      hospitalLocation: { ...coords, hospitalName: req.hospitalName, city: req.city }
     })
   }
 
@@ -257,6 +280,22 @@ async function handleShareAndOpenMaps() {
   if (router.currentRoute.value.path !== '/map') {
     router.push({ path: '/map', query: { request: pendingRequestForTracking.value?.id } })
   }
+}
+
+async function handleShareAndTrack() {
+  // On map page: just share location without opening maps
+  if (pendingRequestForTracking.value && user.value && userProfile.value) {
+    const req = pendingRequestForTracking.value
+    const coords = getHospitalCoordinates(req.hospitalName, req.city)
+    startTracking({
+      requestId: req.id,
+      donorId: user.value.uid,
+      donorName: userProfile.value.displayName,
+      bloodType: userProfile.value.bloodType,
+      hospitalLocation: { ...coords, hospitalName: req.hospitalName, city: req.city }
+    })
+  }
+  closeMapsConfirmModal()
 }
 
 function handleOpenGuestMaps() {
@@ -297,6 +336,36 @@ async function commitConfirmDonation() {
       donorPhone: userProfile.value.phoneNumber || 'N/A',
       bloodType: userProfile.value.bloodType
     })
+
+    // Immediately write en_route record to RTDB so Response Status sidebar updates instantly
+    // GPS coordinates will be added later when donor clicks "Share Live Location"
+    if (targetRequest) {
+      const trackingKey = `${reqId}_${user.value.uid}`
+      const trackingRef = dbRef(rtdb, `liveTracking/${trackingKey}`)
+      const coords = getHospitalCoordinates(targetRequest.hospitalName, targetRequest.city)
+      const initialPayload = {
+        donorId: user.value.uid,
+        donorName: userProfile.value.displayName || 'Donor',
+        bloodType: userProfile.value.bloodType || 'O+',
+        requestId: reqId,
+        hospitalName: targetRequest.hospitalName || 'Hospital',
+        city: targetRequest.city || '',
+        hospitalLat: coords?.lat || null,
+        hospitalLng: coords?.lng || null,
+        latitude: null,
+        longitude: null,
+        accuracy: 0,
+        speed: null,
+        status: 'en_route',
+        distanceMeters: 0,
+        etaMins: 0,
+        updatedAt: serverTimestamp()
+      }
+      onDisconnect(trackingRef).remove().catch(() => {})
+      set(trackingRef, initialPayload).catch((err) => {
+        console.warn('[ConfirmationModals] RTDB initial write failed:', err)
+      })
+    }
 
     showToast('Availability confirmed successfully! The board will update live.', 'success')
     if (targetRequest) {

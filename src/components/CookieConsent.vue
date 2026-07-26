@@ -36,7 +36,7 @@ function savePreferences() {
       <button class="cookie-close-btn" @click="rejectAll" aria-label="Close">&times;</button>
     </div>
     <p class="cookie-toast-text">
-      We use cookies and similar technologies to enhance your browsing experience, serve personalized content, and analyze our traffic. By clicking "Accept All", you consent to our use of cookies.
+      We use cookies to improve your experience and analyze site traffic.
     </p>
 
     <div class="cookie-actions">

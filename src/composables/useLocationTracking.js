@@ -155,7 +155,7 @@ export function useLocationTracking() {
         trackingError.value = msg
       },
       {
-        enableHighAccuracy: true,
+        enableHighAccuracy: false,
         timeout: 15000,
         maximumAge: 0
       }

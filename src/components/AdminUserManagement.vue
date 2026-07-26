@@ -59,7 +59,7 @@
                 {{ u.city }}
               </td>
               <td class="dashboard-style-22">
-                <span class="ll-badge-blood d-inline-flex align-items-center justify-content-center" style="height: 32px; padding-left: 12px; padding-right: 12px;">{{ u.bloodType || 'N/A' }}</span>
+                <span class="ll-badge-blood d-inline-flex align-items-center justify-content-center" style="height: 32px !important; padding-left: 12px; padding-right: 12px;">{{ u.bloodType || 'N/A' }}</span>
               </td>
               <td class="dashboard-style-22">
                 <span
@@ -69,7 +69,7 @@
                       : 'badge bg-secondary text-white'
                   "
                   class="dashboard-style-23 d-inline-flex align-items-center justify-content-center px-3"
-                  style="height: 32px; font-size: 0.85rem;"
+                  style="height: 32px !important; font-size: 0.85rem;"
                 >
                   {{ u.canDonateNow !== false ? 'Ready' : 'Cooldown' }}
                 </span>
@@ -77,7 +77,7 @@
               <td class="dashboard-style-22">
                 <select
                   class="form-select form-select-sm d-inline-block shadow-xs ll-select-button dashboard-style-24"
-                  style="height: 32px; min-width: 100px;"
+                  style="height: 32px !important; min-height: 32px !important; min-width: 100px; padding-top: 0 !important; padding-bottom: 0 !important; line-height: 1.2 !important;"
                   :value="u.role || 'donor'"
                   :disabled="u.uid === userProfile.uid"
                   :title="`Change role for ${u.displayName}`"
@@ -91,7 +91,7 @@
                 <div class="d-flex justify-content-end align-items-center gap-2 dashboard-style-26">
                   <button
                     class="ll-btn-secondary btn-sm px-2 d-inline-flex align-items-center justify-content-center dashboard-style-27"
-                    style="height: 32px;"
+                    style="height: 32px !important; padding-top: 0 !important; padding-bottom: 0 !important;"
                     type="button"
                     title="View participation history"
                     @click="$emit('view-user-history', u)"
@@ -100,7 +100,7 @@
                   </button>
                   <button
                     class="ll-icon-button ll-icon-button--danger d-inline-flex align-items-center justify-content-center dashboard-style-28"
-                    style="height: 32px; width: 32px;"
+                    style="height: 32px !important; width: 32px !important;"
                     type="button"
                     title="Delete user"
                     :disabled="u.uid === userProfile.uid"

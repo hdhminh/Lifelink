@@ -996,12 +996,12 @@ async function changeConfirmationStatus(confId, newStatus) {
 }
 
 function getStatusBadgeClass(status) {
-  switch (status) {
-    case 'arrived': return 'bg-info text-white'
-    case 'donated': return 'bg-warning text-dark'
-    case 'completed': return 'bg-success text-white'
-    default: return 'bg-secondary text-white'
-  }
+    switch (status) {
+      case 'arrived': return 'bg-info text-white'
+      case 'donated': return 'bg-warning text-dark'
+      case 'completed': return 'bg-primary text-white'
+      default: return 'bg-success text-white'
+    }
 }
 
 async function handleCancelConfirmation(confId, reqId, donorName) {

@@ -142,7 +142,7 @@
                 :is-admin="isAdmin"
                 :confirming="confirmLoading"
                 :en-route-count="getEnRouteCountForRequest(request.id)"
-                :has-confirmed="confirmedRequestIds.includes(request.id)"
+                :has-confirmed="confirmedRequestIds.includes(String(request.id))"
                 @confirm="handleConfirm(request.id)"
                 @edit="openEditForm(request)"
                 @delete="handleDelete(request.id)"
@@ -477,6 +477,7 @@ import { useLocationTracking } from '@/composables/useLocationTracking.js'
 import { getHospitalCoordinates, HOSPITAL_DATABASE } from '@/data/hospitalCoordinates.js'
 
 const { user, userProfile, isAdmin } = useAuth()
+const { guestId } = useGuestSession()
 const router = useRouter()
 const { getEnRouteCountForRequest } = useActiveResponses()
 
@@ -614,23 +615,23 @@ const confirmedRequestIds = ref([])
 let unsubscribeConfirmations = null
 
 watch(
-  user,
-  (newUser) => {
+  [() => user.value, () => guestId.value],
+  ([newUser, newGuestId]) => {
     if (unsubscribeConfirmations) {
       unsubscribeConfirmations()
       unsubscribeConfirmations = null
     }
+
+    const updateConfirmed = (snap) => {
+      confirmedRequestIds.value = snap.docs.map((doc) => String(doc.data().requestId))
+    }
+
     if (newUser) {
       const q = query(collection(db, 'confirmations'), where('donorId', '==', newUser.uid))
-      unsubscribeConfirmations = onSnapshot(
-        q,
-        (snap) => {
-          confirmedRequestIds.value = snap.docs.map((doc) => doc.data().requestId)
-        },
-        (err) => {
-          console.error('[EmergencyBoard] Error listening to user confirmations:', err)
-        }
-      )
+      unsubscribeConfirmations = onSnapshot(q, updateConfirmed, (err) => console.error(err))
+    } else if (newGuestId) {
+      const q = query(collection(db, 'guestConfirmations'), where('guestSessionId', '==', newGuestId))
+      unsubscribeConfirmations = onSnapshot(q, updateConfirmed, (err) => console.error(err))
     } else {
       confirmedRequestIds.value = []
     }

@@ -23,10 +23,10 @@
     <!-- Single Unified User Accounts Table -->
     <div v-else class="ll-card ll-table-card shadow-sm border rounded-3 overflow-hidden">
       <div class="table-responsive dashboard-style-5">
-        <table class="table align-middle mb-0 ll-admin-table dashboard-style-6">
+        <table class="table table-sm align-middle mb-0 ll-admin-table dashboard-style-6">
           <thead class="sticky-top bg-slate-50 border-bottom border-slate-200 dashboard-style-7">
             <tr>
-              <th class="dashboard-style-8 text-center" scope="col" style="width: 60px;">No.</th>
+              <th class="dashboard-style-8 text-center" scope="col">No.</th>
               <th class="dashboard-style-9" scope="col">User Info</th>
               <th class="dashboard-style-10" scope="col">Phone</th>
               <th class="dashboard-style-11" scope="col">City</th>
@@ -59,7 +59,7 @@
                 {{ u.city }}
               </td>
               <td class="dashboard-style-22">
-                <span class="ll-badge-blood d-inline-flex align-items-center justify-content-center" style="height: 32px; min-width: 48px;">{{ u.bloodType || 'N/A' }}</span>
+                <span class="ll-badge-blood d-inline-flex align-items-center justify-content-center" style="height: 32px; padding-left: 12px; padding-right: 12px;">{{ u.bloodType || 'N/A' }}</span>
               </td>
               <td class="dashboard-style-22">
                 <span
@@ -68,8 +68,8 @@
                       ? 'badge bg-success text-white'
                       : 'badge bg-secondary text-white'
                   "
-                  class="dashboard-style-23 d-inline-flex align-items-center justify-content-center"
-                  style="height: 32px; min-width: 80px; font-size: 0.85rem;"
+                  class="dashboard-style-23 d-inline-flex align-items-center justify-content-center px-3"
+                  style="height: 32px; font-size: 0.85rem;"
                 >
                   {{ u.canDonateNow !== false ? 'Ready' : 'Cooldown' }}
                 </span>

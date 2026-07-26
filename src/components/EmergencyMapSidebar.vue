@@ -7,9 +7,19 @@
       class="fw-bold mb-3 d-flex justify-content-between align-items-center map-style-28"
     >
       <span><i class="bi bi-radar me-1"></i> RESPONSE STATUS</span>
-      <span class="badge bg-slate-200 text-slate-700 map-style-29">
-        {{ filteredResponders.length }} En-Route
-      </span>
+      <div class="d-flex gap-1 align-items-center">
+        <span
+          v-if="confirmedForSelectedRequest > 0"
+          class="badge text-white"
+          style="background-color: #198754; font-size: 0.72rem;"
+          title="Confirmed donors (awaiting en-route)"
+        >
+          {{ confirmedForSelectedRequest }} Confirmed
+        </span>
+        <span class="badge bg-slate-200 text-slate-700 map-style-29">
+          {{ filteredResponders.length }} En-Route
+        </span>
+      </div>
     </h2>
 
     <!-- Radar Scan Telemetry Card in Sidebar (Admin Only) -->
@@ -123,6 +133,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { formatDistance } from '@/utils/haversine.js'
 
 const props = defineProps({
@@ -130,7 +141,19 @@ const props = defineProps({
   isAdmin: { type: Boolean, default: false },
   selectedHospitalForRadar: { type: Object, default: null },
   radarCounts: { type: Object, default: () => ({ inner: 0, outer: 0 }) },
-  activityLogs: { type: Array, default: () => [] }
+  activityLogs: { type: Array, default: () => [] },
+  confirmedRequestIds: { type: Array, default: () => [] },
+  selectedRequestId: { type: String, default: '' }
+})
+
+const confirmedForSelectedRequest = computed(() => {
+  // Show total confirmed IDs the user has confirmed 
+  // (all confirmed requests visible = user's confirmed count)
+  if (!props.selectedRequestId || props.selectedRequestId.startsWith('ev_')) {
+    return props.confirmedRequestIds.length
+  }
+  // If focused on a specific request, show 1 if confirmed else 0
+  return props.confirmedRequestIds.includes(String(props.selectedRequestId)) ? 1 : 0
 })
 
 const emit = defineEmits(['focus-responder', 'center-map-on-selected'])

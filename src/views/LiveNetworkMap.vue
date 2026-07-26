@@ -30,6 +30,8 @@
         :is-visible="true"
         title-text="Live Map"
         @respond="handleRespond"
+        @open-maps="handleOpenMaps"
+        @register-event="handleEventRegister"
       />
     </div>
   </div>
@@ -123,6 +125,12 @@ const {
 function handleRespond(requestId) {
   if (modalsRef.value) {
     modalsRef.value.handleConfirm(requestId)
+  }
+}
+
+function handleOpenMaps(requestId) {
+  if (modalsRef.value) {
+    modalsRef.value.openMapsForRequest(requestId)
   }
 }
 

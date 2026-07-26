@@ -144,6 +144,7 @@
                 :en-route-count="getEnRouteCountForRequest(request.id)"
                 :has-confirmed="confirmedRequestIds.includes(String(request.id))"
                 @confirm="handleConfirm(request.id)"
+                @open-maps="handleOpenMaps(request.id)"
                 @edit="openEditForm(request)"
                 @delete="handleDelete(request.id)"
                 @status-change="handleStatusChange(request)"
@@ -379,6 +380,12 @@ const { showToast } = useToast()
 function handleConfirm(requestId) {
   if (modalsRef.value) {
     modalsRef.value.handleConfirm(requestId)
+  }
+}
+
+function handleOpenMaps(requestId) {
+  if (modalsRef.value) {
+    modalsRef.value.openMapsForRequest(requestId)
   }
 }
 

@@ -127,7 +127,8 @@ service cloud.firestore {
     }
 
     match /confirmations/{confirmationId} {
-      allow read: if isAdmin() || (signedIn() && resource.data.donorId == request.auth.uid);
+      allow get: if isAdmin() || (signedIn() && (resource == null || resource.data.donorId == request.auth.uid));
+      allow list: if isAdmin() || (signedIn() && resource.data.donorId == request.auth.uid);
       allow create: if isAdmin() || (signedIn() &&
         request.resource.data.donorId == request.auth.uid &&
         confirmationId == request.resource.data.requestId + "_" + request.auth.uid);

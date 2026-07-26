@@ -300,18 +300,25 @@ async function commitConfirmDonation() {
 
     showToast('Availability confirmed successfully! The board will update live.', 'success')
     if (targetRequest) {
-      const mapUrl = buildMapsUrl(
-        (targetRequest.hospitalName || 'Emergency Request') + ', ' + (targetRequest.city || '')
-      )
-      pendingMapUrl.value = mapUrl
-      pendingRequestForTracking.value = targetRequest
-      showMapsConfirmModal.value = true
+      openMapsForRequest(targetRequest.id)
     }
   } catch (err) {
     showToast(err.message || 'Confirmation failed.', 'danger')
   } finally {
     showConfirmDonationModal.value = false
     confirmingRequestId.value = null
+  }
+}
+
+function openMapsForRequest(requestId) {
+  const req = props.requests.find((r) => String(r.id) === String(requestId))
+  if (req) {
+    const mapUrl = buildMapsUrl(
+      (req.hospitalName || 'Emergency Request') + ', ' + (req.city || '')
+    )
+    pendingMapUrl.value = mapUrl
+    pendingRequestForTracking.value = req
+    showMapsConfirmModal.value = true
   }
 }
 
@@ -335,6 +342,7 @@ function handleConfirm(requestId) {
 }
 
 defineExpose({
-  handleConfirm
+  handleConfirm,
+  openMapsForRequest
 })
 </script>

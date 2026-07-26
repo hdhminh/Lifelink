@@ -160,6 +160,8 @@
         :selected-hospital-for-radar="selectedHospitalForRadar"
         :radar-counts="radarCounts"
         :activity-logs="activityLogs"
+        :confirmed-request-ids="confirmedRequestIds"
+        :selected-request-id="selectedRequestId"
         @focus-responder="focusResponder"
         @center-map-on-selected="centerMapOnSelected"
       />
@@ -224,7 +226,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['respond', 'register-event'])
+const emit = defineEmits(['respond', 'register-event', 'open-maps'])
 
 const { responses: activeResponses, startListening, stopListening } = useActiveResponses()
 const { userLocation, locationGranted, requestLocation } = useGeolocation()
@@ -654,6 +656,10 @@ function initMapEngine() {
         alert(locationError.value || 'Could not enable location.')
       }
     }
+    
+    window.handleHospitalPopupOpenMaps = (reqId) => {
+      emit('open-maps', reqId)
+    }
   }
 
   leafletMap.on('zoomend', () => {
@@ -754,9 +760,9 @@ function renderHospitalMarkers() {
         ${getDistanceBadgeHtml(coords.lat, coords.lng, '#8E2435')}
 
         ${props.confirmedRequestIds.includes(String(req.id)) 
-          ? `<div class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1" style="background-color: #198754; font-size: 0.72rem; border-radius: 6px; cursor: default;">
-               <i class="bi bi-check-circle-fill me-1"></i> Confirmed
-             </div>`
+          ? `<button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1" style="background-color: #198754; font-size: 0.72rem; border-radius: 6px;" onclick="window.handleHospitalPopupOpenMaps('${escapeHtml(String(req.id))}')">
+               <i class="bi bi-geo-alt-fill me-1"></i> Confirmed - Open Maps
+             </button>`
           : `<button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1 map-style-57" onclick="window.handleHospitalPopupRespond('${escapeHtml(String(req.id))}')">
                <i class="bi bi-droplet-fill me-1"></i> Confirm Availability
              </button>`

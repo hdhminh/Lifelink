@@ -147,43 +147,48 @@
           <i class="bi bi-trash me-1"></i> Delete
         </button>
       </div>
-      <button
-          v-else
+        <!-- When confirmed: show Open Maps button -->
+        <button
+          v-if="!isAdmin && hasConfirmed"
+          type="button"
+          class="btn w-100 fw-bold btn-success text-white"
+          style="background-color: #198754; border-color: #198754;"
+          @click="emit('open-maps')"
+        >
+          <i class="bi bi-geo-alt-fill me-1"></i> Confirmed — Open Maps
+        </button>
+
+        <!-- When not confirmed: normal confirm flow -->
+        <button
+          v-else-if="!isAdmin"
           type="button"
           class="btn w-100 fw-bold"
           :class="[
-            hasConfirmed ? 'btn-success text-white' : 'll-btn-primary',
+            'll-btn-primary',
             { 'll-btn-disabled': (!eligibility.eligible || isExpired) && stillNeeded > 0 && !hasConfirmed }
           ]"
-          :style="hasConfirmed ? 'background-color: #198754; border-color: #198754; opacity: 1; cursor: default;' : ''"
-          :disabled="hasConfirmed || stillNeeded <= 0 || confirming || !eligibility.eligible || isExpired"
-          @click="!hasConfirmed && emit('confirm')"
+          :disabled="stillNeeded <= 0 || confirming || !eligibility.eligible || isExpired"
+          @click="emit('confirm')"
         >
           <i
             class="bi"
             :class="
-              hasConfirmed
-                ? 'bi-check-circle-fill'
-                : isExpired
+              isExpired
                 ? 'bi-x-circle'
                 : stillNeeded <= 0
                 ? 'bi-check-circle-fill'
                 : 'bi-heart-fill'
             "
           ></i>
-          <span class="ms-1">
-            {{
-              hasConfirmed
-                ? 'Confirmed'
-                : isExpired
-                ? 'Expired'
-                : stillNeeded <= 0
-                ? 'Goal Met'
-                : eligibility.eligible
-                ? 'Confirm Availability'
-                : `Cooldown (${eligibility.daysLeft}d left)`
-            }}
-          </span>
+          <span class="ms-1">{{
+            isExpired
+              ? 'Expired'
+              : stillNeeded <= 0
+              ? 'Goal Met'
+              : eligibility.eligible
+              ? 'Confirm Availability'
+              : `Cooldown (${eligibility.daysLeft}d left)`
+          }}</span>
         </button>
       <div
         v-if="!isAdmin && !eligibility.eligible"
@@ -233,7 +238,7 @@ const props = defineProps({
   hasConfirmed: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['confirm', 'edit', 'delete', 'status-change', 'focus-map'])
+const emit = defineEmits(['confirm', 'edit', 'delete', 'status-change', 'focus-map', 'open-maps'])
 
 const eligibility = computed(() => {
   if (!userProfile.value) return { eligible: true, daysLeft: 0, nextDateFormatted: '' }

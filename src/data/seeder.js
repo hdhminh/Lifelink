@@ -27,7 +27,7 @@ export async function seedDatabaseIfEmpty() {
           confirmedCount: 1,
           status: 'active',
           description:
-            'A patient in emergency surgery after a severe traffic accident requires immediate O negative blood transfusion.',
+            'A patient in emergency surgery after a severe traffic accident requires immediate O positive blood transfusion.',
           contactInfo: '0989123456',
           createdAt: serverTimestamp()
         },
@@ -114,7 +114,7 @@ export async function seedDatabaseIfEmpty() {
           unitsNeeded: 2,
           confirmedCount: 0,
           status: 'active',
-          description: 'Gastrointestinal bleeding patient requires urgent O negative blood units.',
+          description: 'Gastrointestinal bleeding patient requires urgent A positive blood units.',
           contactInfo: '0977123456',
           createdAt: serverTimestamp()
         }

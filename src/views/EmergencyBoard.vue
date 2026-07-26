@@ -297,6 +297,7 @@ const { user, userProfile, isAdmin } = useAuth()
 const { guestId } = useGuestSession()
 const router = useRouter()
 const route = useRoute()
+const modalsRef = ref(null)
 const { getEnRouteCountForRequest } = useActiveResponses()
 
 const props = defineProps({
@@ -325,8 +326,8 @@ const {
   confirmGuestAvailability
 } = useConfirmDonation()
 const { buildMapsUrl } = useGeolocation()
-const { updateGuestSession } = useGuestSession()
-const { isTracking, stopTracking, markArrived } = useLocationTracking()
+const { getGuestSession, updateGuestSession } = useGuestSession()
+const { isTracking, startTracking, stopTracking, markArrived } = useLocationTracking()
 
 // -------------------------------------------------------------
 // Live Simulation Mode
@@ -378,6 +379,205 @@ const { showToast } = useToast()
 function handleConfirm(requestId) {
   if (modalsRef.value) {
     modalsRef.value.handleConfirm(requestId)
+  }
+}
+
+const mapComponentRef = ref(null)
+
+function handleFocusMap(requestId) {
+  router.push({ path: '/map', query: { request: requestId } })
+}
+
+const confirmedRequestIds = ref([])
+
+let unsubscribeConfirmations = null
+
+watch(
+  [() => user.value, () => guestId.value],
+  ([newUser, newGuestId]) => {
+    if (unsubscribeConfirmations) {
+      unsubscribeConfirmations()
+      unsubscribeConfirmations = null
+    }
+
+    // We will listen to both collections if possible
+    let userUnsub = null
+    let guestUnsub = null
+    const localUserIds = []
+    const localGuestIds = []
+
+    const syncIds = () => {
+      confirmedRequestIds.value = [...new Set([...localUserIds, ...localGuestIds])]
+    }
+
+    if (newUser) {
+      const q = query(collection(db, 'confirmations'), where('donorId', '==', newUser.uid))
+      userUnsub = onSnapshot(q, (snap) => {
+        localUserIds.length = 0
+        snap.docs.forEach(d => localUserIds.push(String(d.data().requestId)))
+        syncIds()
+      })
+    }
+
+    if (newGuestId) {
+      const q2 = query(collection(db, 'guestConfirmations'), where('guestSessionId', '==', newGuestId))
+      guestUnsub = onSnapshot(q2, (snap) => {
+        localGuestIds.length = 0
+        snap.docs.forEach(d => localGuestIds.push(String(d.data().requestId)))
+        syncIds()
+      })
+    }
+
+    unsubscribeConfirmations = () => {
+      if (userUnsub) userUnsub()
+      if (guestUnsub) guestUnsub()
+    }
+  },
+  { immediate: true }
+)
+
+const filterBloodType = ref('')
+const filterCity = ref('')
+const filterUrgency = ref('')
+const filterCompatibleOnly = ref(false)
+const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Any']
+
+const currentPage = ref(1)
+const ITEMS_PER_PAGE = 4
+
+watch([filterBloodType, filterCity, filterUrgency, filterCompatibleOnly], () => {
+  currentPage.value = 1
+})
+
+watch([filterBloodType, filterCity, filterUrgency], () => {
+  if (!user.value) {
+    const updates = {
+      emergencyFilters: {
+        bloodType: filterBloodType.value,
+        city: filterCity.value,
+        urgency: filterUrgency.value
+      }
+    }
+    if (filterBloodType.value) {
+      updates.preferredBloodType = filterBloodType.value
+    }
+    updateGuestSession(updates)
+  }
+})
+
+const filteredRequests = computed(() => {
+  const urgencyOrder = { critical: 0, urgent: 1, moderate: 2 }
+  let list = filterRequests(filterBloodType.value, filterCity.value, filterUrgency.value)
+
+  // Apply compatible only filter if active
+  if (userProfile.value && filterCompatibleOnly.value) {
+    list = list.filter((req) => canDonateTo(userProfile.value.bloodType, req.bloodType))
+  }
+
+  // Keep confirmed requests visible, they will be disabled via has-confirmed prop
+  
+  return list.sort((a, b) => {
+    // 1. Sort compatible requests to top for logged-in donors
+    if (userProfile.value && !isAdmin.value) {
+      const compatA = canDonateTo(userProfile.value.bloodType, a.bloodType)
+      const compatB = canDonateTo(userProfile.value.bloodType, b.bloodType)
+      if (compatA !== compatB) {
+        return compatA ? -1 : 1
+      }
+    }
+    // 2. Sort by urgency level
+    return urgencyOrder[a.urgency] - urgencyOrder[b.urgency]
+  })
+})
+
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(filteredRequests.value.length / ITEMS_PER_PAGE))
+)
+const paginatedRequests = computed(() => {
+  const start = (currentPage.value - 1) * ITEMS_PER_PAGE
+  return filteredRequests.value.slice(start, start + ITEMS_PER_PAGE)
+})
+
+function handlePageChange(newPage) {
+  if (newPage >= 1 && newPage <= totalPages.value) {
+    currentPage.value = newPage
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
+
+const hasFilters = computed(
+  () =>
+    filterBloodType.value || filterCity.value || filterUrgency.value || filterCompatibleOnly.value
+)
+
+function clearFilters() {
+  filterBloodType.value = ''
+  filterCity.value = ''
+  filterUrgency.value = ''
+  filterCompatibleOnly.value = false
+}
+
+const showForm = ref(false)
+const editingRequest = ref(null)
+
+function openCreateForm() {
+  editingRequest.value = null
+  showForm.value = true
+}
+
+function openEditForm(request) {
+  editingRequest.value = { ...request }
+  showForm.value = true
+}
+
+function closeForm() {
+  showForm.value = false
+  editingRequest.value = null
+}
+
+async function handleFormSubmit(formData) {
+  try {
+    if (editingRequest.value) {
+      await updateRequest(editingRequest.value.id, formData)
+      showToast('Request updated successfully.', 'success')
+    } else {
+      await createRequest(formData, user.value.uid)
+      showToast('Request created successfully.', 'success')
+    }
+    closeForm()
+  } catch (err) {
+    showToast(err.message || 'Request operation failed.', 'danger')
+  }
+}
+
+const showDeleteModal = ref(false)
+const deletingRequestId = ref(null)
+
+function handleDelete(requestId) {
+  deletingRequestId.value = requestId
+  showDeleteModal.value = true
+}
+
+async function confirmDelete() {
+  if (!deletingRequestId.value) return
+  try {
+    await deleteRequest(deletingRequestId.value)
+    showToast('Request deleted successfully.', 'success')
+  } catch (err) {
+    showToast(err.message || 'Could not delete request.', 'danger')
+  } finally {
+    showDeleteModal.value = false
+    deletingRequestId.value = null
+  }
+}
+
+async function handleStatusChange(request) {
+  try {
+    const nextStatus = request.status === 'active' ? 'fulfilled' : 'active'
+    await updateRequest(request.id, { status: nextStatus })
+    showToast(`Request marked as ${nextStatus}.`, 'success')
+  } catch (err) {
+    showToast(err.message || 'Could not update status.', 'danger')
   }
 }
 

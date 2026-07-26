@@ -148,7 +148,7 @@ watch(
   authLoading,
   (newVal) => {
     if (!newVal) {
-      reveal('.reveal-item', 60)
+      setTimeout(() => reveal('.reveal-item', 60), 100)
     }
   },
   { immediate: true }
@@ -157,7 +157,7 @@ watch(
 watch(isEditing, async (newVal) => {
   if (!newVal) {
     await nextTick()
-    reveal('.reveal-item', 60)
+    setTimeout(() => reveal('.reveal-item', 60), 100)
   }
 })
 </script>

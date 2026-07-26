@@ -51,7 +51,7 @@
          
         >
           <div
-            class="small fw-bold text-slate-800 d-flex justify-content-between align-items-center cursor-pointer map-style-23"
+            class="small fw-bold text-slate-800 d-flex justify-content-between align-items-center cursor-pointer gap-3 map-style-23"
            
             aria-label="Toggle Legend"
             @click.stop.prevent="showLegend = !showLegend"
@@ -130,14 +130,14 @@
               </svg>
               <span>En-Route Donor Marker (Live Location)</span>
             </div>
-            <div v-if="!isGuest" class="d-flex align-items-center gap-2 mt-1">
-              <span class="map-style-25"
-               
-              ></span>
-              <span>Compatible Donor (Ready)</span>
-            </div>
-            <div v-if="!isGuest" class="d-flex align-items-center gap-2">
-              <span class="map-style-26"
+              <div v-if="isAdmin" class="d-flex align-items-center gap-2 mt-1">
+                <span class="map-style-25"
+                 
+                ></span>
+                <span>Compatible Donor (Ready)</span>
+              </div>
+              <div v-if="isAdmin" class="d-flex align-items-center gap-2">
+                <span class="map-style-26"
                
               ></span>
               <span>Compatible Donor (On Cooldown)</span>
@@ -443,7 +443,7 @@ async function updateMeasurementPolyline(targetLat, targetLng, color = '#8E2435'
   }
 
   try {
-    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${osrmCoordString}?overview=full&geometries=geojson`
+    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${osrmCoordString}?overview=full&geometries=geojson&alternatives=3`
     const res = await fetch(osrmUrl)
     if (res.ok) {
       const data = await res.json()
@@ -463,6 +463,21 @@ async function updateMeasurementPolyline(targetLat, targetLng, color = '#8E2435'
           lineCap: 'round',
           lineJoin: 'round'
         }).addTo(leafletMap)
+
+        // Render alternative routes if they exist
+        for (let i = 1; i < data.routes.length; i++) {
+          const altRawCoords = data.routes[i].geometry.coordinates.map((c) => [c[1], c[0]])
+          const altRoadCoordinates = sanitizeVietnamCoordinates(altRawCoords)
+          const altPolyline = L.polyline(altRoadCoordinates, {
+            color: '#64748b',
+            weight: 4,
+            opacity: 0.6,
+            dashArray: '5, 8',
+            lineCap: 'round',
+            lineJoin: 'round'
+          }).addTo(leafletMap)
+          alternativePolylines.push(altPolyline)
+        }
       }
     }
   } catch (err) {
@@ -932,8 +947,8 @@ function renderRadarDonors() {
       if (dist <= innerRadius) innerCount++
       else if (dist <= outerRadius) outerCount++
 
-      // Render radar markers only for authenticated non-guest users and if zoomed in
-      if (!isGuest.value && currentZoom > 12 && dist <= outerRadius && renderedCount < 100) {
+      // Render radar markers only for Admin users and if zoomed in
+      if (isAdmin.value && currentZoom > 12 && dist <= outerRadius && renderedCount < 100) {
         renderedCount++
         const color = donor.canDonateNow ? '#198754' : '#6c757d'
 

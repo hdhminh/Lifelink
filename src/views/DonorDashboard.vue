@@ -1339,7 +1339,7 @@ const { reveal } = useScrollReveal()
 
 watch([authLoading, userProfile], ([newAuth, newProfile]) => {
   if (!newAuth && newProfile) {
-    reveal('.reveal-item', 60)
+    setTimeout(() => reveal('.reveal-item', 60), 100)
   }
 }, { immediate: true })
 

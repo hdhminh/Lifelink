@@ -23,30 +23,24 @@ function savePreferences() {
 <template>
   <div v-if="showBanner" class="cookie-consent-toast">
     <div class="cookie-toast-header">
-      <strong>🍪 Cookie Preferences</strong>
+      <div class="d-flex align-items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/>
+          <path d="M8.5 8.5v.01"/>
+          <path d="M16 12.5v.01"/>
+          <path d="M12 16v.01"/>
+          <path d="M11 12.5v.01"/>
+        </svg>
+        <strong>Cookie Preferences</strong>
+      </div>
       <button class="cookie-close-btn" @click="rejectAll" aria-label="Close">&times;</button>
     </div>
     <p class="cookie-toast-text">
-      We use cookies to improve your experience.
+      We use cookies and similar technologies to enhance your browsing experience, serve personalized content, and analyze our traffic. By clicking "Accept All", you consent to our use of cookies.
     </p>
 
-    <div class="cookie-options">
-      <label class="cookie-option">
-        <input type="checkbox" checked disabled />
-        <span>Necessary</span>
-      </label>
-      <label class="cookie-option">
-        <input v-model="consentState.location" type="checkbox" />
-        <span>Location</span>
-      </label>
-      <label class="cookie-option">
-        <input v-model="consentState.analytics" type="checkbox" />
-        <span>Analytics</span>
-      </label>
-    </div>
-
     <div class="cookie-actions">
-      <button class="btn-save" @click="savePreferences">Save</button>
+      <button class="btn-decline" @click="rejectAll">Decline</button>
       <button class="btn-accept" @click="acceptAll">Accept All</button>
     </div>
   </div>
@@ -56,8 +50,9 @@ function savePreferences() {
 .cookie-consent-toast {
   position: fixed;
   bottom: 20px;
-  left: 20px;
-  width: 320px;
+  right: 20px;
+  width: 360px;
+  max-width: calc(100vw - 40px);
   background-color: #FAF5EF;
   border-radius: 8px;
   border: 1px solid #722F37;
@@ -94,25 +89,6 @@ function savePreferences() {
   line-height: 1.4;
 }
 
-.cookie-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.cookie-option {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  cursor: pointer;
-  font-size: 0.8rem;
-  color: #333;
-}
-
-.cookie-option input[type="checkbox"] {
-  accent-color: #722F37;
-}
-
 .cookie-actions {
   display: flex;
   justify-content: flex-end;
@@ -121,12 +97,12 @@ function savePreferences() {
 }
 
 .btn-accept,
-.btn-save {
-  padding: 0.4rem 0.75rem;
+.btn-decline {
+  padding: 0.5rem 1rem;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
   transition: all 0.2s;
 }
@@ -136,14 +112,14 @@ function savePreferences() {
   color: #FAF5EF;
 }
 
-.btn-save {
+.btn-decline {
   background-color: transparent;
   color: #722F37;
   border: 1px solid #722F37;
 }
 
 .btn-accept:hover,
-.btn-save:hover {
+.btn-decline:hover {
   opacity: 0.85;
 }
 </style>

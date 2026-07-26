@@ -1,5 +1,9 @@
 import { describe, it, beforeAll, afterAll, beforeEach } from 'vitest'
-import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing'
+import {
+  initializeTestEnvironment,
+  assertFails,
+  assertSucceeds
+} from '@firebase/rules-unit-testing'
 import { readFileSync } from 'fs'
 import { doc, getDoc, setDoc, deleteDoc, updateDoc, runTransaction } from 'firebase/firestore'
 
@@ -39,22 +43,32 @@ describe('Firestore Security Rules Complete Suite (~89 tests)', () => {
 
     it('allows a signed-in user to create their own donor profile', async () => {
       const db = testEnv.authenticatedContext('user1').firestore()
-      await assertSucceeds(setDoc(doc(db, 'users/user1'), { uid: 'user1', displayName: 'User', role: 'donor' }))
+      await assertSucceeds(
+        setDoc(doc(db, 'users/user1'), { uid: 'user1', displayName: 'User', role: 'donor' })
+      )
     })
 
     it('denies a user from creating another user profile', async () => {
       const db = testEnv.authenticatedContext('user1').firestore()
-      await assertFails(setDoc(doc(db, 'users/user2'), { uid: 'user2', displayName: 'User2', role: 'donor' }))
+      await assertFails(
+        setDoc(doc(db, 'users/user2'), { uid: 'user2', displayName: 'User2', role: 'donor' })
+      )
     })
 
     it('denies a user from setting their own role to admin during creation (Bug 3 regression)', async () => {
       const db = testEnv.authenticatedContext('user1').firestore()
-      await assertFails(setDoc(doc(db, 'users/user1'), { uid: 'user1', displayName: 'User', role: 'admin' }))
+      await assertFails(
+        setDoc(doc(db, 'users/user1'), { uid: 'user1', displayName: 'User', role: 'admin' })
+      )
     })
 
     it('denies a donor from changing their role to admin', async () => {
       await testEnv.withSecurityRulesDisabled(async (context) => {
-        await setDoc(doc(context.firestore(), 'users/user1'), { uid: 'user1', displayName: 'User', role: 'donor' })
+        await setDoc(doc(context.firestore(), 'users/user1'), {
+          uid: 'user1',
+          displayName: 'User',
+          role: 'donor'
+        })
       })
       const db = testEnv.authenticatedContext('user1').firestore()
       await assertFails(updateDoc(doc(db, 'users/user1'), { role: 'admin' }))
@@ -62,7 +76,11 @@ describe('Firestore Security Rules Complete Suite (~89 tests)', () => {
 
     it('denies a donor from changing their uid field', async () => {
       await testEnv.withSecurityRulesDisabled(async (context) => {
-        await setDoc(doc(context.firestore(), 'users/user1'), { uid: 'user1', displayName: 'User', role: 'donor' })
+        await setDoc(doc(context.firestore(), 'users/user1'), {
+          uid: 'user1',
+          displayName: 'User',
+          role: 'donor'
+        })
       })
       const db = testEnv.authenticatedContext('user1').firestore()
       await assertFails(updateDoc(doc(db, 'users/user1'), { uid: 'user2' }))
@@ -70,10 +88,16 @@ describe('Firestore Security Rules Complete Suite (~89 tests)', () => {
 
     it('allows a donor to update approved profile fields', async () => {
       await testEnv.withSecurityRulesDisabled(async (context) => {
-        await setDoc(doc(context.firestore(), 'users/user1'), { uid: 'user1', displayName: 'User', role: 'donor' })
+        await setDoc(doc(context.firestore(), 'users/user1'), {
+          uid: 'user1',
+          displayName: 'User',
+          role: 'donor'
+        })
       })
       const db = testEnv.authenticatedContext('user1').firestore()
-      await assertSucceeds(updateDoc(doc(db, 'users/user1'), { displayName: 'Updated Name', city: 'Hanoi' }))
+      await assertSucceeds(
+        updateDoc(doc(db, 'users/user1'), { displayName: 'Updated Name', city: 'Hanoi' })
+      )
     })
 
     it('denies a donor from deleting their own profile', async () => {
@@ -128,7 +152,9 @@ describe('Firestore Security Rules Complete Suite (~89 tests)', () => {
         await setDoc(doc(context.firestore(), 'users/admin1'), { role: 'admin' })
       })
       const db = testEnv.authenticatedContext('admin1').firestore()
-      await assertSucceeds(setDoc(doc(db, 'emergencyRequests/req1'), { hospitalName: 'Cho Ray', status: 'active' }))
+      await assertSucceeds(
+        setDoc(doc(db, 'emergencyRequests/req1'), { hospitalName: 'Cho Ray', status: 'active' })
+      )
     })
 
     it('rejects an admin request with an invalid status', async () => {
@@ -136,7 +162,12 @@ describe('Firestore Security Rules Complete Suite (~89 tests)', () => {
         await setDoc(doc(context.firestore(), 'users/admin1'), { role: 'admin' })
       })
       const db = testEnv.authenticatedContext('admin1').firestore()
-      await assertFails(setDoc(doc(db, 'emergencyRequests/req1'), { hospitalName: 'Cho Ray', status: 'invalid_status' }))
+      await assertFails(
+        setDoc(doc(db, 'emergencyRequests/req1'), {
+          hospitalName: 'Cho Ray',
+          status: 'invalid_status'
+        })
+      )
     })
   })
 
@@ -144,17 +175,23 @@ describe('Firestore Security Rules Complete Suite (~89 tests)', () => {
   describe('confirmations Collection', () => {
     it('allows a donor to create their own deterministic confirmation document', async () => {
       const db = testEnv.authenticatedContext('donor1').firestore()
-      await assertSucceeds(setDoc(doc(db, 'confirmations/req1_donor1'), { requestId: 'req1', donorId: 'donor1' }))
+      await assertSucceeds(
+        setDoc(doc(db, 'confirmations/req1_donor1'), { requestId: 'req1', donorId: 'donor1' })
+      )
     })
 
     it('rejects a confirmation whose donorId differs from auth.uid', async () => {
       const db = testEnv.authenticatedContext('donor1').firestore()
-      await assertFails(setDoc(doc(db, 'confirmations/req1_donor2'), { requestId: 'req1', donorId: 'donor2' }))
+      await assertFails(
+        setDoc(doc(db, 'confirmations/req1_donor2'), { requestId: 'req1', donorId: 'donor2' })
+      )
     })
 
     it('rejects a confirmation whose document ID is not requestId_uid', async () => {
       const db = testEnv.authenticatedContext('donor1').firestore()
-      await assertFails(setDoc(doc(db, 'confirmations/random_id'), { requestId: 'req1', donorId: 'donor1' }))
+      await assertFails(
+        setDoc(doc(db, 'confirmations/random_id'), { requestId: 'req1', donorId: 'donor1' })
+      )
     })
   })
 
@@ -162,12 +199,22 @@ describe('Firestore Security Rules Complete Suite (~89 tests)', () => {
   describe('guestConfirmations Collection', () => {
     it('allows an unauthenticated guest to create requestId_guestSessionId', async () => {
       const db = testEnv.unauthenticatedContext().firestore()
-      await assertSucceeds(setDoc(doc(db, 'guestConfirmations/req1_guest_123'), { requestId: 'req1', guestSessionId: 'guest_123' }))
+      await assertSucceeds(
+        setDoc(doc(db, 'guestConfirmations/req1_guest_123'), {
+          requestId: 'req1',
+          guestSessionId: 'guest_123'
+        })
+      )
     })
 
     it('requires guestSessionId to start with guest_', async () => {
       const db = testEnv.unauthenticatedContext().firestore()
-      await assertFails(setDoc(doc(db, 'guestConfirmations/req1_user123'), { requestId: 'req1', guestSessionId: 'user123' }))
+      await assertFails(
+        setDoc(doc(db, 'guestConfirmations/req1_user123'), {
+          requestId: 'req1',
+          guestSessionId: 'user123'
+        })
+      )
     })
   })
 
@@ -180,13 +227,19 @@ describe('Firestore Security Rules Complete Suite (~89 tests)', () => {
 
     it('requires deterministic document ID userId_newsId', async () => {
       const db = testEnv.authenticatedContext('user1').firestore()
-      await assertSucceeds(setDoc(doc(db, 'newsLikes/user1_news1'), { userId: 'user1', newsId: 'news1' }))
-      await assertFails(setDoc(doc(db, 'newsLikes/random_id'), { userId: 'user1', newsId: 'news1' }))
+      await assertSucceeds(
+        setDoc(doc(db, 'newsLikes/user1_news1'), { userId: 'user1', newsId: 'news1' })
+      )
+      await assertFails(
+        setDoc(doc(db, 'newsLikes/random_id'), { userId: 'user1', newsId: 'news1' })
+      )
     })
 
     it('rejects a like using another userId', async () => {
       const db = testEnv.authenticatedContext('user1').firestore()
-      await assertFails(setDoc(doc(db, 'newsLikes/user2_news1'), { userId: 'user2', newsId: 'news1' }))
+      await assertFails(
+        setDoc(doc(db, 'newsLikes/user2_news1'), { userId: 'user2', newsId: 'news1' })
+      )
     })
   })
 })

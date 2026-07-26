@@ -18,13 +18,13 @@ describe('PaginationControls.vue', () => {
     const buttons = wrapper.findAll('.ll-page-button')
     // Previous, Page 1, 2, 3, 4, 5, Next -> 7 buttons total
     expect(buttons.length).toBe(7)
-    
+
     // Page 2 should be active
     const activeBtn = wrapper.find('.ll-page-button--active')
     expect(activeBtn.text()).toBe('2')
 
     // Click page 4 and assert emit
-    const page4Btn = buttons.find(btn => btn.text() === '4')
+    const page4Btn = buttons.find((btn) => btn.text() === '4')
     await page4Btn.trigger('click')
     expect(wrapper.emitted('page-change')[0]).toEqual([4])
   })

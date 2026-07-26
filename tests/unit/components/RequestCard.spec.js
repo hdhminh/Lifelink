@@ -108,8 +108,8 @@ describe('RequestCard.vue', () => {
     })
 
     const buttons = wrapper.findAll('button')
-    const editBtn = buttons.find(b => b.text().includes('Edit'))
-    const deleteBtn = buttons.find(b => b.text().includes('Delete'))
+    const editBtn = buttons.find((b) => b.text().includes('Edit'))
+    const deleteBtn = buttons.find((b) => b.text().includes('Delete'))
 
     expect(editBtn.exists()).toBe(true)
     expect(deleteBtn.exists()).toBe(true)

@@ -5,11 +5,14 @@ import Login from '@/views/Login.vue'
 import Register from '@/views/Register.vue'
 import Profile from '@/views/Profile.vue'
 
-vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({
-  matches: false,
-  addEventListener: vi.fn(),
-  removeEventListener: vi.fn()
-}))
+vi.stubGlobal(
+  'matchMedia',
+  vi.fn().mockReturnValue({
+    matches: false,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn()
+  })
+)
 
 const mockLogin = vi.fn()
 const mockRegister = vi.fn()
@@ -84,7 +87,12 @@ describe('Auth Views Integration Tests (4 Tests)', () => {
   describe('Profile.vue', () => {
     it('renders donor profile summary and ready to donate badge', () => {
       mockUser.value = { uid: 'user1', email: 'donor@lifelink.vn' }
-      mockUserProfile.value = { displayName: 'Jane Donor', bloodType: 'O+', city: 'Hanoi', canDonateNow: true }
+      mockUserProfile.value = {
+        displayName: 'Jane Donor',
+        bloodType: 'O+',
+        city: 'Hanoi',
+        canDonateNow: true
+      }
 
       const wrapper = mount(Profile, { global: { stubs: commonStubs } })
       expect(wrapper.text()).toContain('Jane Donor')

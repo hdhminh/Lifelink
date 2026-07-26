@@ -9,7 +9,9 @@ const mockOnSnapshot = vi.fn()
 const mockWriteBatch = vi.fn()
 
 vi.mock('firebase/firestore', () => ({
-  collection: vi.fn((db, path, ...sub) => ({ path: sub.length ? `${path}/${sub.join('/')}` : path })),
+  collection: vi.fn((db, path, ...sub) => ({
+    path: sub.length ? `${path}/${sub.join('/')}` : path
+  })),
   doc: vi.fn((db, path, id) => ({ path: `${path}/${id}`, id })),
   getDoc: (...args) => mockGetDoc(...args),
   setDoc: (...args) => mockSetDoc(...args),

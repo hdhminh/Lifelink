@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { getHospitalCoordinates, HOSPITAL_DATABASE, EVENT_VENUES_DATABASE } from '@/data/hospitalCoordinates.js'
+import {
+  getHospitalCoordinates,
+  HOSPITAL_DATABASE,
+  EVENT_VENUES_DATABASE
+} from '@/data/hospitalCoordinates.js'
 
 describe('hospitalCoordinates.js Advanced Edge Cases & Boundary Conditions', () => {
   it('handles case-insensitive and whitespace-padded hospital names', () => {
@@ -8,7 +12,7 @@ describe('hospitalCoordinates.js Advanced Edge Cases & Boundary Conditions', () 
     expect(coords1.lng).toBe(106.6601)
 
     const coords2 = getHospitalCoordinates('BACH MAI HOSPITAL')
-    expect(coords2.lat).toBe(21.0000)
+    expect(coords2.lat).toBe(21.0)
     expect(coords2.lng).toBe(105.8426)
   })
 
@@ -29,8 +33,20 @@ describe('hospitalCoordinates.js Advanced Edge Cases & Boundary Conditions', () 
   })
 
   it('returns valid numbers for all city fallback coordinates', () => {
-    const cities = ['lang son', 'binh duong', 'da nang', 'hue', 'can tho', 'hai phong', 'nha trang', 'phu tho', 'hoa binh', 'dak lak', 'dong nai']
-    cities.forEach(city => {
+    const cities = [
+      'lang son',
+      'binh duong',
+      'da nang',
+      'hue',
+      'can tho',
+      'hai phong',
+      'nha trang',
+      'phu tho',
+      'hoa binh',
+      'dak lak',
+      'dong nai'
+    ]
+    cities.forEach((city) => {
       const res = getHospitalCoordinates('Random Clinic', city)
       expect(typeof res.lat).toBe('number')
       expect(typeof res.lng).toBe('number')
@@ -40,7 +56,7 @@ describe('hospitalCoordinates.js Advanced Edge Cases & Boundary Conditions', () 
   })
 
   it('ensures no duplicate hospital names exist in HOSPITAL_DATABASE except intended aliases', () => {
-    const names = HOSPITAL_DATABASE.map(h => h.name.toLowerCase())
+    const names = HOSPITAL_DATABASE.map((h) => h.name.toLowerCase())
     const uniqueNames = new Set(names)
     expect(uniqueNames.size).toBeGreaterThanOrEqual(names.length - 2)
   })

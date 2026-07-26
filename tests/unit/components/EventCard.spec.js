@@ -44,7 +44,6 @@ describe('EventCard.vue', () => {
     expect(wrapper.text()).toContain('15 people interested')
   })
 
-
   it('strips non-topic location suffix correctly via displayTitle computed prop', () => {
     const wrapper = mount(EventCard, {
       props: { event: sampleEventWithLocationSuffix },

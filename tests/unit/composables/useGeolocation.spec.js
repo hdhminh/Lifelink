@@ -27,14 +27,14 @@ describe('useGeolocation.js', () => {
     userLocation.value = { lat: 10.762622, lng: 106.660172 }
 
     const url = buildMapsUrl('Cho Ray Hospital')
-    expect(url).toBe('https://www.google.com/maps/dir/?api=1&origin=10.762622,106.660172&destination=Cho%20Ray%20Hospital')
+    expect(url).toBe(
+      'https://www.google.com/maps/dir/?api=1&origin=10.762622,106.660172&destination=Cho%20Ray%20Hospital'
+    )
   })
 
   it('handles successful location request', async () => {
     const mockCoords = { latitude: 10.77, longitude: 106.69 }
-    const getCurrentPositionMock = vi.fn((success) =>
-      success({ coords: mockCoords })
-    )
+    const getCurrentPositionMock = vi.fn((success) => success({ coords: mockCoords }))
 
     vi.stubGlobal('navigator', {
       geolocation: { getCurrentPosition: getCurrentPositionMock }

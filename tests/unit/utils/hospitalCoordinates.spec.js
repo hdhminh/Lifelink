@@ -1,11 +1,15 @@
 import { describe, it, expect } from 'vitest'
-import { getHospitalCoordinates, HOSPITAL_DATABASE, EVENT_VENUES_DATABASE } from '@/data/hospitalCoordinates.js'
+import {
+  getHospitalCoordinates,
+  HOSPITAL_DATABASE,
+  EVENT_VENUES_DATABASE
+} from '@/data/hospitalCoordinates.js'
 
 describe('hospitalCoordinates.js Unit Tests', () => {
   it('exports valid HOSPITAL_DATABASE array with lat and lng for all entries', () => {
     expect(Array.isArray(HOSPITAL_DATABASE)).toBe(true)
     expect(HOSPITAL_DATABASE.length).toBeGreaterThan(10)
-    HOSPITAL_DATABASE.forEach(item => {
+    HOSPITAL_DATABASE.forEach((item) => {
       expect(item.name).toBeDefined()
       expect(typeof item.lat).toBe('number')
       expect(typeof item.lng).toBe('number')
@@ -17,7 +21,7 @@ describe('hospitalCoordinates.js Unit Tests', () => {
   it('exports valid EVENT_VENUES_DATABASE array with lat and lng for all entries', () => {
     expect(Array.isArray(EVENT_VENUES_DATABASE)).toBe(true)
     expect(EVENT_VENUES_DATABASE.length).toBeGreaterThan(5)
-    EVENT_VENUES_DATABASE.forEach(item => {
+    EVENT_VENUES_DATABASE.forEach((item) => {
       expect(item.name).toBeDefined()
       expect(typeof item.lat).toBe('number')
       expect(typeof item.lng).toBe('number')
@@ -30,7 +34,7 @@ describe('hospitalCoordinates.js Unit Tests', () => {
     expect(choRay.lng).toBe(106.6601)
 
     const bachMai = getHospitalCoordinates('Bach Mai Hospital')
-    expect(bachMai.lat).toBe(21.0000)
+    expect(bachMai.lat).toBe(21.0)
     expect(bachMai.lng).toBe(105.8426)
   })
 
@@ -47,7 +51,7 @@ describe('hospitalCoordinates.js Unit Tests', () => {
 
     const daNangFallback = getHospitalCoordinates('Unknown Clinic', 'Da Nang')
     expect(daNangFallback.lat).toBe(16.0716)
-    expect(daNangFallback.lng).toBe(108.2200)
+    expect(daNangFallback.lng).toBe(108.22)
   })
 
   it('falls back to Cho Ray Hospital coordinates when hospital name and city are unknown', () => {

@@ -46,7 +46,7 @@ describe('useGuestSession.js', () => {
   it('updates session values correctly', () => {
     const { getGuestSession, updateGuestSession } = useGuestSession()
     const initialSession = getGuestSession()
-    
+
     updateGuestSession({ preferredBloodType: 'O-' })
     const updatedSession = getGuestSession()
     expect(updatedSession.guestId).toBe(initialSession.guestId)

@@ -48,7 +48,9 @@ describe('RequestForm.vue', () => {
     await wrapper.find('#request-blood-type').setValue('A+')
     await wrapper.find('#request-urgency').setValue('urgent')
     await wrapper.find('#request-units').setValue(3)
-    await wrapper.find('#request-description').setValue('Emergency blood needed for surgical procedure.')
+    await wrapper
+      .find('#request-description')
+      .setValue('Emergency blood needed for surgical procedure.')
     await wrapper.find('#request-contact').setValue('0987654321')
 
     await wrapper.find('form').trigger('submit.prevent')
@@ -68,7 +70,7 @@ describe('RequestForm.vue', () => {
 
   it('emits cancel event when cancel button is clicked', async () => {
     const wrapper = mount(RequestForm)
-    const cancelBtn = wrapper.findAll('button').find(b => b.text().includes('Cancel'))
+    const cancelBtn = wrapper.findAll('button').find((b) => b.text().includes('Cancel'))
 
     await cancelBtn?.trigger('click')
     expect(wrapper.emitted('cancel')).toBeDefined()

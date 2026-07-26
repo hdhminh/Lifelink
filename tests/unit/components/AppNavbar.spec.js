@@ -32,7 +32,6 @@ describe('AppNavbar.vue', () => {
     expect(wrapper.text()).toContain('LifeLink')
     expect(wrapper.text()).toContain('Emergency')
     expect(wrapper.text()).toContain('Events')
-
   })
 
   it('displays profile dashboard link and logout option when user is logged in', () => {

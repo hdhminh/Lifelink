@@ -3,11 +3,14 @@ import { mount } from '@vue/test-utils'
 import { ref } from 'vue'
 import DonationEvents from '@/views/DonationEvents.vue'
 
-vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({
-  matches: false,
-  addEventListener: vi.fn(),
-  removeEventListener: vi.fn()
-}))
+vi.stubGlobal(
+  'matchMedia',
+  vi.fn().mockReturnValue({
+    matches: false,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn()
+  })
+)
 
 vi.mock('@/firebase.js', () => ({ db: {}, rtdb: {} }))
 
@@ -21,8 +24,6 @@ vi.mock('firebase/database', () => ({
   serverTimestamp: vi.fn()
 }))
 
-
-
 const mockStartListening = vi.fn()
 const mockStopListening = vi.fn()
 const mockToggleInterested = vi.fn()
@@ -31,8 +32,26 @@ const mockUpdateEvent = vi.fn()
 const mockDeleteEvent = vi.fn()
 
 const mockEvents = ref([
-  { id: 'ev1', title: 'Annual Blood Drive', date: '2026-08-10', location: 'District 1', city: 'HCM', category: 'Drive', likedBy: [], interestedCount: 5 },
-  { id: 'ev2', title: 'Youth Campaign', date: '2026-09-15', location: 'District 3', city: 'HCM', category: 'Campaign', likedBy: ['user1'], interestedCount: 12 }
+  {
+    id: 'ev1',
+    title: 'Annual Blood Drive',
+    date: '2026-08-10',
+    location: 'District 1',
+    city: 'HCM',
+    category: 'Drive',
+    likedBy: [],
+    interestedCount: 5
+  },
+  {
+    id: 'ev2',
+    title: 'Youth Campaign',
+    date: '2026-09-15',
+    location: 'District 3',
+    city: 'HCM',
+    category: 'Campaign',
+    likedBy: ['user1'],
+    interestedCount: 12
+  }
 ])
 const mockLoading = ref(false)
 const mockError = ref(null)

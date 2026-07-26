@@ -3,11 +3,14 @@ import { mount } from '@vue/test-utils'
 import { ref } from 'vue'
 import EmergencyBoard from '@/views/EmergencyBoard.vue'
 
-vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({
-  matches: false,
-  addEventListener: vi.fn(),
-  removeEventListener: vi.fn()
-}))
+vi.stubGlobal(
+  'matchMedia',
+  vi.fn().mockReturnValue({
+    matches: false,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn()
+  })
+)
 
 vi.mock('@/firebase.js', () => ({ db: {}, rtdb: {} }))
 
@@ -28,20 +31,56 @@ vi.mock('firebase/firestore', () => ({
   onSnapshot: vi.fn().mockReturnValue(vi.fn())
 }))
 
-
 const mockStartListening = vi.fn()
 const mockStopListening = vi.fn()
 const mockFilterRequests = vi.fn().mockImplementation((bloodType, city, urgency) => {
   const all = [
-    { id: 'req1', hospitalName: 'Cho Ray', bloodType: 'O+', city: 'Ho Chi Minh City', urgency: 'critical', confirmedCount: 0, unitsNeeded: 5 },
-    { id: 'req2', hospitalName: 'Bach Mai', bloodType: 'A+', city: 'Hanoi', urgency: 'urgent', confirmedCount: 2, unitsNeeded: 3 }
+    {
+      id: 'req1',
+      hospitalName: 'Cho Ray',
+      bloodType: 'O+',
+      city: 'Ho Chi Minh City',
+      urgency: 'critical',
+      confirmedCount: 0,
+      unitsNeeded: 5
+    },
+    {
+      id: 'req2',
+      hospitalName: 'Bach Mai',
+      bloodType: 'A+',
+      city: 'Hanoi',
+      urgency: 'urgent',
+      confirmedCount: 2,
+      unitsNeeded: 3
+    }
   ]
-  return all.filter(r => (!bloodType || r.bloodType === bloodType) && (!city || r.city.includes(city)) && (!urgency || r.urgency === urgency))
+  return all.filter(
+    (r) =>
+      (!bloodType || r.bloodType === bloodType) &&
+      (!city || r.city.includes(city)) &&
+      (!urgency || r.urgency === urgency)
+  )
 })
 
 const mockRequests = ref([
-  { id: 'req1', hospitalName: 'Cho Ray', bloodType: 'O+', city: 'Ho Chi Minh City', urgency: 'critical', confirmedCount: 0, unitsNeeded: 5 },
-  { id: 'req2', hospitalName: 'Bach Mai', bloodType: 'A+', city: 'Hanoi', urgency: 'urgent', confirmedCount: 2, unitsNeeded: 3 }
+  {
+    id: 'req1',
+    hospitalName: 'Cho Ray',
+    bloodType: 'O+',
+    city: 'Ho Chi Minh City',
+    urgency: 'critical',
+    confirmedCount: 0,
+    unitsNeeded: 5
+  },
+  {
+    id: 'req2',
+    hospitalName: 'Bach Mai',
+    bloodType: 'A+',
+    city: 'Hanoi',
+    urgency: 'urgent',
+    confirmedCount: 2,
+    unitsNeeded: 3
+  }
 ])
 const mockLoading = ref(false)
 const mockError = ref(null)
@@ -107,7 +146,6 @@ describe('EmergencyBoard.vue View Integration Tests (30 Tests)', () => {
     const wrapper = mount(EmergencyBoard, { global: { stubs: commonStubs } })
     expect(wrapper.text()).toContain('Emergency Requests')
     expect(wrapper.text()).toContain('2 active requests')
-
   })
 
   it('renders filter controls for city, blood type and urgency', () => {

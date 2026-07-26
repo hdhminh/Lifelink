@@ -32,7 +32,16 @@ describe('useDonationEvents.js Unit Tests (~25 tests)', () => {
     mockOnSnapshot.mockImplementation((q, callback) => {
       callback({
         docs: [
-          { id: 'event1', data: () => ({ title: 'Blood Drive A', date: '2026-08-01', category: 'Drive', likedBy: [], interestedCount: 0 }) }
+          {
+            id: 'event1',
+            data: () => ({
+              title: 'Blood Drive A',
+              date: '2026-08-01',
+              category: 'Drive',
+              likedBy: [],
+              interestedCount: 0
+            })
+          }
         ]
       })
       return vi.fn()
@@ -91,7 +100,16 @@ describe('useDonationEvents.js Unit Tests (~25 tests)', () => {
     mockOnSnapshot.mockImplementation((q, callback) => {
       callback({
         docs: [
-          { id: 'event1', data: () => ({ title: 'Blood Drive A', date: '2026-08-01', category: 'Drive', likedBy: ['user1'], interestedCount: 1 }) }
+          {
+            id: 'event1',
+            data: () => ({
+              title: 'Blood Drive A',
+              date: '2026-08-01',
+              category: 'Drive',
+              likedBy: ['user1'],
+              interestedCount: 1
+            })
+          }
         ]
       })
       return vi.fn()
@@ -135,7 +153,13 @@ describe('useDonationEvents.js Unit Tests (~25 tests)', () => {
     const { useDonationEvents } = await import('@/composables/useDonationEvents.js')
     const { createEvent, loading, error } = useDonationEvents()
 
-    const payload = { title: 'New Drive', date: '2026-09-01', location: 'Cho Ray', city: 'HCM', category: 'Drive' }
+    const payload = {
+      title: 'New Drive',
+      date: '2026-09-01',
+      location: 'Cho Ray',
+      city: 'HCM',
+      category: 'Drive'
+    }
     await createEvent(payload)
 
     expect(loading.value).toBe(false)

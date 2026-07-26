@@ -39,7 +39,7 @@ describe('AlertMessage.vue', () => {
 
     vi.advanceTimersByTime(5000)
     await wrapper.vm.$nextTick()
-    
+
     expect(wrapper.find('.ll-alert').exists()).toBe(false)
     vi.useRealTimers()
   })

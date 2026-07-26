@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { calculateHaversineDistance, calculateRoadDistance, formatDistance } from '@/utils/haversine.js'
+import {
+  calculateHaversineDistance,
+  calculateRoadDistance,
+  formatDistance
+} from '@/utils/haversine.js'
 
 describe('EmergencyMap Live Distance Measurement Integration', () => {
   it('calculates exact Haversine distance between user location and hospital marker', () => {
@@ -35,8 +39,8 @@ describe('EmergencyMap Live Distance Measurement Integration', () => {
     const userLat = 10.8012
     const userLng = 106.6983
 
-    const destLat = 10.8030
-    const destLng = 106.6990
+    const destLat = 10.803
+    const destLng = 106.699
 
     const meters = calculateHaversineDistance(userLat, userLng, destLat, destLng)
     expect(meters).toBeLessThan(1000)

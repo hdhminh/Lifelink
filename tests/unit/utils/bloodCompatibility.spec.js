@@ -1,11 +1,15 @@
 import { describe, it, expect } from 'vitest'
-import { canDonateTo, getCompatibleRecipientTypes, getCompatibleDonorTypes } from '@/utils/bloodCompatibility.js'
+import {
+  canDonateTo,
+  getCompatibleRecipientTypes,
+  getCompatibleDonorTypes
+} from '@/utils/bloodCompatibility.js'
 
 describe('bloodCompatibility.js', () => {
   describe('canDonateTo', () => {
     it('returns true for O- to all blood types', () => {
       const types = ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+']
-      types.forEach(recipient => {
+      types.forEach((recipient) => {
         expect(canDonateTo('O-', recipient)).toBe(true)
       })
     })

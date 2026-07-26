@@ -4,13 +4,53 @@ import EmergencyMap from '@/components/EmergencyMap.vue'
 
 describe('EmergencyMap.vue Complex Edge Cases Unit Tests', () => {
   const mockRequests = [
-    { id: 'req_101', status: 'active', hospitalName: 'Cho Ray Hospital', bloodType: 'O-', unitsNeeded: 5, confirmedCount: 1, urgency: 'critical', city: 'Ho Chi Minh City', latitude: 10.7548, longitude: 106.6601 },
-    { id: 'req_102', status: 'active', hospitalName: 'Bach Mai Hospital', bloodType: 'AB+', unitsNeeded: 2, confirmedCount: 0, urgency: 'urgent', city: 'Ha Noi', latitude: 21.0000, longitude: 105.8426 }
+    {
+      id: 'req_101',
+      status: 'active',
+      hospitalName: 'Cho Ray Hospital',
+      bloodType: 'O-',
+      unitsNeeded: 5,
+      confirmedCount: 1,
+      urgency: 'critical',
+      city: 'Ho Chi Minh City',
+      latitude: 10.7548,
+      longitude: 106.6601
+    },
+    {
+      id: 'req_102',
+      status: 'active',
+      hospitalName: 'Bach Mai Hospital',
+      bloodType: 'AB+',
+      unitsNeeded: 2,
+      confirmedCount: 0,
+      urgency: 'urgent',
+      city: 'Ha Noi',
+      latitude: 21.0,
+      longitude: 105.8426
+    }
   ]
 
   const mockEvents = [
-    { id: 'ev_201', title: '"Red Journey 2026" — HCMC', category: 'Drive', date: '2026-09-01', location: 'Youth Cultural Center', city: 'Ho Chi Minh City', latitude: 10.7828, longitude: 106.6983 },
-    { id: 'ev_202', title: '"Lang Land Pink Drop" — Lang Son', category: 'Festival', date: '2026-09-15', location: 'Lang Son Convention Center', city: 'Lang Son', latitude: 21.8528, longitude: 106.7618 }
+    {
+      id: 'ev_201',
+      title: '"Red Journey 2026" — HCMC',
+      category: 'Drive',
+      date: '2026-09-01',
+      location: 'Youth Cultural Center',
+      city: 'Ho Chi Minh City',
+      latitude: 10.7828,
+      longitude: 106.6983
+    },
+    {
+      id: 'ev_202',
+      title: '"Lang Land Pink Drop" — Lang Son',
+      category: 'Festival',
+      date: '2026-09-15',
+      location: 'Lang Son Convention Center',
+      city: 'Lang Son',
+      latitude: 21.8528,
+      longitude: 106.7618
+    }
   ]
 
   it('renders unified LIVE pill badge with active responders count', () => {

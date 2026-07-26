@@ -48,7 +48,7 @@ describe('Complex End-to-End Emergency Workflow Integration Tests', () => {
 
     expect(distanceMeters).toBeGreaterThan(0)
     expect(typeof distanceMeters).toBe('number')
-    
+
     const formatted = formatDistance(distanceMeters)
     expect(formatted).toMatch(/km|m/)
   })
@@ -74,7 +74,7 @@ describe('Complex End-to-End Emergency Workflow Integration Tests', () => {
   it('handles invalid or malformed hospital names gracefully with fallback coordinates', () => {
     const malformedLocation = '   Bệnh Viện Chợ Rẫy  (Cổng Phụ) --  '
     const coords = getHospitalCoordinates(malformedLocation, 'Ho Chi Minh City')
-    
+
     expect(coords).toBeDefined()
     expect(coords.lat).toBeGreaterThan(0)
     expect(coords.lng).toBeGreaterThan(0)

@@ -8,8 +8,20 @@ vi.mock('firebase/database', () => ({
   onValue: vi.fn((ref, callback) => {
     callback({
       val: () => ({
-        req1_donor1: { donorId: 'donor1', requestId: 'req1', status: 'en_route', distanceMeters: 4000, etaMins: 10 },
-        req1_donor2: { donorId: 'donor2', requestId: 'req1', status: 'approaching', distanceMeters: 300, etaMins: 1 }
+        req1_donor1: {
+          donorId: 'donor1',
+          requestId: 'req1',
+          status: 'en_route',
+          distanceMeters: 4000,
+          etaMins: 10
+        },
+        req1_donor2: {
+          donorId: 'donor2',
+          requestId: 'req1',
+          status: 'approaching',
+          distanceMeters: 300,
+          etaMins: 1
+        }
       })
     })
     return vi.fn()

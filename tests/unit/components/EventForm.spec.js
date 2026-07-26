@@ -68,7 +68,7 @@ describe('EventForm.vue', () => {
 
   it('emits cancel event when cancel button is clicked', async () => {
     const wrapper = mount(EventForm)
-    const cancelBtn = wrapper.findAll('button').find(b => b.text().includes('Cancel'))
+    const cancelBtn = wrapper.findAll('button').find((b) => b.text().includes('Cancel'))
 
     await cancelBtn?.trigger('click')
     expect(wrapper.emitted('cancel')).toBeDefined()

@@ -5,10 +5,10 @@ import { defineComponent } from 'vue'
 
 describe('v-highlight-urgency directive', () => {
   const TestComponent = defineComponent({
-    props: ['level'],
     directives: {
       'highlight-urgency': vHighlightUrgency
     },
+    props: ['level'],
     template: `<div v-highlight-urgency="level" id="test-element">Badge</div>`
   })
 

@@ -13,7 +13,7 @@ describe('useScrollReveal.js', () => {
     mockMatchMedia = vi.fn().mockReturnValue({ matches: false })
 
     vi.stubGlobal('matchMedia', mockMatchMedia)
-    
+
     // Proper constructor class mock for Vitest
     class MockIntersectionObserver {
       observe = mockObserve
@@ -23,7 +23,7 @@ describe('useScrollReveal.js', () => {
         // mock instance
       }
     }
-    
+
     vi.stubGlobal('IntersectionObserver', MockIntersectionObserver)
   })
 

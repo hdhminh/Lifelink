@@ -2,11 +2,14 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import News from '@/views/News.vue'
 
-vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({
-  matches: false,
-  addEventListener: vi.fn(),
-  removeEventListener: vi.fn()
-}))
+vi.stubGlobal(
+  'matchMedia',
+  vi.fn().mockReturnValue({
+    matches: false,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn()
+  })
+)
 
 vi.mock('@/firebase.js', () => ({ db: {} }))
 

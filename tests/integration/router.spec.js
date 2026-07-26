@@ -137,11 +137,7 @@ describe('router/index.js Integration Tests (~19 tests)', () => {
     const next = vi.fn()
 
     const { navigationGuard } = await import('@/router/index.js')
-    await navigationGuard(
-      { path: '/', meta: {} },
-      { name: undefined },
-      next
-    )
+    await navigationGuard({ path: '/', meta: {} }, { name: undefined }, next)
 
     expect(next).toHaveBeenCalledWith('/events')
   })
@@ -152,11 +148,7 @@ describe('router/index.js Integration Tests (~19 tests)', () => {
     const next = vi.fn()
 
     const { navigationGuard } = await import('@/router/index.js')
-    await navigationGuard(
-      { path: '/', meta: {} },
-      { name: undefined },
-      next
-    )
+    await navigationGuard({ path: '/', meta: {} }, { name: undefined }, next)
 
     expect(next).toHaveBeenCalledWith()
   })

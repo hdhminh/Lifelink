@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { calculateHaversineDistance, formatDistance, calculateEtaMinutes } from '@/utils/haversine.js'
+import {
+  calculateHaversineDistance,
+  formatDistance,
+  calculateEtaMinutes
+} from '@/utils/haversine.js'
 
 describe('haversine.js', () => {
   it('returns 0 for identical coordinates', () => {

@@ -29,7 +29,17 @@ describe('useEmergencyRequests.js (Expanded 28 Unit Tests)', () => {
     mockOnSnapshot.mockImplementation((q, callback) => {
       callback({
         docs: [
-          { id: 'req1', data: () => ({ hospitalName: 'Hospital A', status: 'active', bloodType: 'O+', city: 'Hanoi', urgency: 'critical', createdAt: '2026-07-01' }) }
+          {
+            id: 'req1',
+            data: () => ({
+              hospitalName: 'Hospital A',
+              status: 'active',
+              bloodType: 'O+',
+              city: 'Hanoi',
+              urgency: 'critical',
+              createdAt: '2026-07-01'
+            })
+          }
         ]
       })
       return vi.fn()
@@ -70,9 +80,7 @@ describe('useEmergencyRequests.js (Expanded 28 Unit Tests)', () => {
     it('maps Firestore documents with their document IDs', async () => {
       mockOnSnapshot.mockImplementation((q, callback) => {
         callback({
-          docs: [
-            { id: 'doc_100', data: () => ({ hospitalName: 'Cho Ray', bloodType: 'A+' }) }
-          ]
+          docs: [{ id: 'doc_100', data: () => ({ hospitalName: 'Cho Ray', bloodType: 'A+' }) }]
         })
         return vi.fn()
       })
@@ -207,9 +215,7 @@ describe('useEmergencyRequests.js (Expanded 28 Unit Tests)', () => {
 
     it('maps all admin request documents with IDs', async () => {
       mockGetDocs.mockResolvedValueOnce({
-        docs: [
-          { id: 'admin_req_1', data: () => ({ hospitalName: 'Bach Mai', city: 'Hanoi' }) }
-        ]
+        docs: [{ id: 'admin_req_1', data: () => ({ hospitalName: 'Bach Mai', city: 'Hanoi' }) }]
       })
 
       const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
@@ -410,7 +416,9 @@ describe('useEmergencyRequests.js (Expanded 28 Unit Tests)', () => {
       const { useEmergencyRequests } = await import('@/composables/useEmergencyRequests.js')
       const { createRequest, error } = useEmergencyRequests()
 
-      await expect(createRequest({ hospitalName: 'Cho Ray' }, 'admin_123')).rejects.toThrow('Add failed')
+      await expect(createRequest({ hospitalName: 'Cho Ray' }, 'admin_123')).rejects.toThrow(
+        'Add failed'
+      )
       expect(error.value).toBe('Could not create the emergency request.')
     })
 

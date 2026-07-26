@@ -1137,6 +1137,14 @@ watch(
 )
 
 watch(
+  () => props.confirmedRequestIds,
+  () => {
+    renderHospitalMarkers()
+  },
+  { deep: true }
+)
+
+watch(
   activeEvents,
   () => {
     renderEventMarkers()

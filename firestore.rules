@@ -127,7 +127,7 @@ service cloud.firestore {
     }
 
     match /confirmations/{confirmationId} {
-      allow read: if isAdmin() || (signedIn() && (resource == null || resource.data.donorId == request.auth.uid));
+      allow read: if isAdmin() || (signedIn() && resource.data.donorId == request.auth.uid);
       allow create: if isAdmin() || (signedIn() &&
         request.resource.data.donorId == request.auth.uid &&
         confirmationId == request.resource.data.requestId + "_" + request.auth.uid);
@@ -136,7 +136,7 @@ service cloud.firestore {
     }
 
     match /guestConfirmations/{confId} {
-      allow read: if isAdmin();
+      allow read: if true;
       allow create: if !signedIn() &&
         confId == request.resource.data.requestId + "_" + request.resource.data.guestSessionId &&
         isGuestThreadId(request.resource.data.guestSessionId);

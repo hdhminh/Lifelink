@@ -461,7 +461,7 @@ import { useEmergencyRequests } from '@/composables/useEmergencyRequests.js'
 import { useConfirmDonation } from '@/composables/useConfirmDonation.js'
 import { useGeolocation } from '@/composables/useGeolocation.js'
 import { useGuestSession } from '@/composables/useGuestSession.js'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { animate, stagger } from 'motion'
 import RequestCard from '@/components/RequestCard.vue'
 import RequestForm from '@/components/RequestForm.vue'
@@ -479,6 +479,7 @@ import { getHospitalCoordinates, HOSPITAL_DATABASE } from '@/data/hospitalCoordi
 const { user, userProfile, isAdmin } = useAuth()
 const { guestId } = useGuestSession()
 const router = useRouter()
+const route = useRoute()
 const { getEnRouteCountForRequest } = useActiveResponses()
 
 const props = defineProps({
@@ -925,6 +926,13 @@ watch(loading, (newLoading) => {
           el.style.opacity = '1'
         })
       })
+    }
+    
+    if (route.query.respond) {
+      setTimeout(() => {
+        handleConfirm(route.query.respond)
+        router.replace({ query: { ...route.query, respond: undefined } })
+      }, 300)
     }
   }
 })

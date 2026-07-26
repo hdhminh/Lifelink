@@ -13,7 +13,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('node_modules/vue') || id.includes('node_modules/@vue') || id.includes('vue-router')) {
+          if (
+            id.includes('node_modules/vue') ||
+            id.includes('node_modules/@vue') ||
+            id.includes('vue-router')
+          ) {
             return 'vue'
           }
           if (id.includes('node_modules/firebase')) {
@@ -24,6 +28,13 @@ export default defineConfig({
           }
           return undefined
         }
+      }
+    },
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
       }
     }
   },

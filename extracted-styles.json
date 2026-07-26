@@ -1,0 +1,354 @@
+{
+  "{ transitionDelay: idx > 0 ? `${idx * 0.05}s` : '0s' }": [
+    "src/App.vue"
+  ],
+  "font-size: 0.8rem; box-shadow: none": [
+    "src/components/SupportChatWidget.vue"
+  ],
+  "font-size: 0.7rem; border-radius: 4px; flex-shrink: 0": [
+    "src/components/SupportChatWidget.vue"
+  ],
+  "overflow-y: auto": [
+    "src/components/SupportChatWidget.vue"
+  ],
+  "font-size: 0.7rem; opacity: 0.8; font-weight: bold; margin-bottom: 2px": [
+    "src/components/SupportChatWidget.vue"
+  ],
+  "flex-shrink: 0": [
+    "src/components/SupportChatWidget.vue",
+    "src/components/EmergencyMap.vue"
+  ],
+  "max-height: 82px; scrollbar-width: thin": [
+    "src/components/SupportChatWidget.vue"
+  ],
+  "font-size: 0.76rem; border-radius: 8px; font-weight: 500": [
+    "src/components/SupportChatWidget.vue"
+  ],
+  "height: 36px": [
+    "src/components/SupportChatWidget.vue"
+  ],
+  "position: relative;\n      z-index: 1;\n      border-color: #eae2df !important;\n      border-radius: 16px !important;\n      box-shadow: 0 10px 30px rgba(142, 36, 53, 0.06) !important;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "border-color: #eae2df;\n        position: relative;\n        z-index: 1050;\n        border-top-left-radius: 16px;\n        border-top-right-radius: 16px;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.76rem;\n            padding: 0.48rem 0.95rem;\n            line-height: 1;\n            background-color: #8e2435;\n            color: #ffffff;\n            font-weight: 700;\n            letter-spacing: 0.5px;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "opacity: 0.4; font-weight: 300": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "min-width: 140px;\n              min-height: 38px;\n              font-size: 0.82rem;\n              background-color: #faf5ef;\n              color: #2b2225;\n              border: 1px solid #eae2df;\n              border-radius: 8px;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "color: #8e2435": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "color: #0d6efd": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.72rem; flex-shrink: 0": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "min-width: 165px; z-index: 2000": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "min-width: 170px;\n              max-width: 220px;\n              min-height: 38px;\n              font-size: 0.82rem;\n              background-color: #faf5ef;\n              color: #2b2225;\n              border: 1px solid #eae2df;\n              border-radius: 8px;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "max-width: 170px": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "color: #8e2435; flex-shrink: 0": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "color: #0d6efd; flex-shrink: 0": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "min-width: 260px; max-height: 340px; overflow-y: auto; z-index: 2000": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.68rem; color: #8e2435": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.68rem; color: #0d6efd": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "min-height: 38px;\n            padding: 0 0.9rem;\n            font-size: 0.82rem;\n            background-color: #faf5ef;\n            color: #8e2435;\n            border: 1px solid #eae2df;\n            border-radius: 8px;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "position: relative;\n        z-index: 1;\n        border-bottom-left-radius: 16px;\n        border-bottom-right-radius: 16px;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "height: 660px; min-height: 660px; border-bottom-left-radius: 16px; overflow: hidden": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "width: 100%;\n            height: 660px;\n            min-height: 660px;\n            position: relative;\n            z-index: 1;\n            background-color: #f8f9fa;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "z-index: 1000; max-width: 290px": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.72rem": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "flex-shrink: 0; max-width: none": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "display: inline-block;\n                  width: 14px;\n                  height: 14px;\n                  background-color: #198754;\n                  border: 2px solid white;\n                  border-radius: 50%;\n                  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);\n                  margin-left: 2px;\n                  margin-right: 2px;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "display: inline-block;\n                  width: 14px;\n                  height: 14px;\n                  background-color: #6c757d;\n                  border: 2px solid white;\n                  border-radius: 50%;\n                  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);\n                  margin-left: 2px;\n                  margin-right: 2px;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "height: 660px; overflow-y: auto; border-bottom-right-radius: 16px": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.9rem; color: #8e2435": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.68rem": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.83rem": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.65rem; background-color: #8e2435": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.73rem": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.75rem": [
+    "src/components/EmergencyMap.vue",
+    "src/views/DonorDashboard.vue"
+  ],
+  "font-size: 0.88rem": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.78rem": [
+    "src/components/EmergencyMap.vue",
+    "src/views/DonorDashboard.vue"
+  ],
+  "font-size: 0.85rem": [
+    "src/components/EmergencyMap.vue",
+    "src/views/DonorDashboard.vue"
+  ],
+  "font-size: 0.65rem; text-transform: uppercase": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "position: relative; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; filter: drop-shadow(0 3px 6px rgba(25,135,84,0.4));": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "position: absolute; width: 38px; height: 38px; border-radius: 50%; background-color: rgba(25, 135, 84, 0.25); animation: pulse-white-dot 2s infinite;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "width: 24px; height: 24px; border-radius: 50%; background-color: #198754; border: 3px solid #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 13px;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-family: system-ui, sans-serif; padding: 4px; font-size: 0.8rem;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "color: #198754;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.72rem; border-radius: 6px; border: 1px solid ${themeColor}; color: ${themeColor}; background-color: ${bgLight};": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "color: ${themeColor};": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.75rem;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.71rem;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "color: ${traffic.color};": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "background-color: ${themeColor}; font-size: 0.70rem; border-radius: 6px;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "position: relative; width: 32px; height: 38px; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3)); cursor: pointer;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-family: system-ui, sans-serif; padding: 2px; width: 235px; min-width: 235px; box-sizing: border-box;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "color: #8E2435; font-size: 0.9rem; display: block; line-height: 1.25; margin-bottom: 2px;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.78rem; display: block;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "color: #8E2435;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.75rem; display: block;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.73rem;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "background-color: #8E2435; font-size: 0.72rem; border-radius: 6px;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "position: relative; width: 30px; height: 36px; filter: drop-shadow(0 3px 6px rgba(13,110,253,0.35)); cursor: pointer;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "color: #0D6EFD; font-size: 0.88rem; display: block; line-height: 1.25; margin-bottom: 2px;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.76rem; color: #555; display: block;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.75rem; color: #555; display: block;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.75rem; color: #0D6EFD; font-weight: bold; display: block;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "color: #0D6EFD;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "background-color: #0D6EFD; font-size: 0.72rem; border-radius: 6px;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "position: relative; width: 30px; height: 36px; filter: drop-shadow(0 3px 6px rgba(25,135,84,0.4)); cursor: pointer;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.78rem;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "position: relative; width: 14px; height: 14px; background-color: ${color}; border: 2px solid white; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3);": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "background-color: #198754; font-size: 0.72rem; border-radius: 6px;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.7rem;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.78rem; font-family: system-ui, sans-serif; padding: 2px;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "color: #198754; font-size: 0.85rem; display: block; margin-bottom: 2px;": [
+    "src/components/EmergencyMap.vue"
+  ],
+  "font-size: 0.65rem;\n                              padding: 0.25em 0.5em;\n                              border-radius: 4px;\n                              font-weight: 700;": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "background-color: var(--ll-wine-red); color: white": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "font-size: 0.7rem": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "max-width: 320px; width: 100%": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "max-height: 540px; overflow-y: auto": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "table-layout: fixed; width: 100%": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "z-index: 10": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "width: 5%; padding: 0.9rem 0.5rem; text-align: center": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "width: 20%; padding: 0.9rem 0.8rem": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "width: 14%; padding: 0.9rem 0.65rem": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "width: 13%; padding: 0.9rem 0.65rem": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "width: 10%; padding: 0.9rem 0.4rem; text-align: center": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "width: 11%; padding: 0.9rem 0.4rem; text-align: center": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "width: 13%; padding: 0.9rem 0.4rem; text-align: center": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "width: 14%; padding: 0.9rem 1rem; text-align: right": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "padding: 0.75rem 0.5rem;\n                          text-align: center;\n                          vertical-align: middle;\n                          font-weight: 600;\n                          color: var(--ll-slate-500);\n                          font-size: 0.8rem;": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "padding: 0.75rem 0.8rem": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "max-width: 180px": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "font-size: 0.78rem; max-width: 180px": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "padding: 0.75rem 0.65rem": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "font-size: 0.82rem": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "padding: 0.5rem 0.4rem; text-align: center; vertical-align: middle": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "font-size: 0.74rem;\n                            height: 28px !important;\n                            min-height: 28px !important;\n                            max-height: 28px !important;\n                            line-height: 28px !important;\n                            padding: 0 0.55rem;\n                            border-radius: 4px;\n                            display: inline-flex;\n                            align-items: center;\n                            justify-content: center;": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "font-size: 0.75rem;\n                            padding: 0 1.25rem 0 0.45rem !important;\n                            height: 28px !important;\n                            min-height: 28px !important;\n                            max-height: 28px !important;\n                            line-height: 26px !important;\n                            width: 82px;\n                            border-radius: 4px !important;\n                            border: 1px solid #cbd5e1;\n                            vertical-align: middle;\n                            background-position: right 0.25rem center;\n                            background-size: 10px 10px;\n                            cursor: pointer !important;": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "text-align: right;\n                          padding: 0.5rem 1rem 0.5rem 0;\n                          vertical-align: middle;": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "gap: 0.65rem": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "font-size: 0.73rem;\n                              border-radius: 4px;\n                              height: 28px !important;\n                              min-height: 28px !important;\n                              max-height: 28px !important;\n                              line-height: 26px !important;\n                              vertical-align: middle;": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "width: 28px !important;\n                              height: 28px !important;\n                              min-width: 28px !important;\n                              min-height: 28px !important;\n                              max-height: 28px !important;\n                              border-radius: 4px;\n                              padding: 0;\n                              line-height: 26px !important;\n                              vertical-align: middle;": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "background: #f8fafc": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "max-width: 120px;\n                                          font-size: 0.78rem;\n                                          cursor: pointer !important;": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "height: 520px": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "max-width: 200px": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "height: 350px": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "msg.senderId === 'admin'\n                            ? 'align-self: flex-end; align-items: flex-end; max-width: 75%;'\n                            : 'align-self: flex-start; align-items: flex-start; max-width: 75%;'": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "msg.senderId === 'admin'\n                              ? 'background-color: var(--ll-wine-red); color: white; border-bottom-right-radius: 2px;'\n                              : 'background-color: white; color: var(--ll-slate-900); border: 1px solid var(--ll-slate-200); border-bottom-left-radius: 2px;'": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "height: 38px": [
+    "src/views/DonorDashboard.vue"
+  ],
+  "max-width: 800px; padding-top: 3rem; padding-bottom: 3rem": [
+    "src/views/DonorDashboard.vue"
+  ]
+}

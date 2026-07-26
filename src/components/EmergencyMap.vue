@@ -651,7 +651,7 @@ function initMapEngine() {
       try {
         await requestLocation()
       } catch (err) {
-        alert('Could not enable location. Please check your browser permissions.')
+        alert(locationError.value || 'Could not enable location.')
       }
     }
   }

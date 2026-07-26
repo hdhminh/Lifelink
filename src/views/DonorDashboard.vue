@@ -505,7 +505,7 @@
  * Role-aware donor dashboard with profile summary and quick actions.
  */
 import { ref, watch, reactive, computed, onUnmounted, nextTick } from 'vue'
-import { collection, query, where, getDocs, doc, getDoc, updateDoc, deleteDoc, addDoc, serverTimestamp, arrayRemove, increment, orderBy } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, getDoc, updateDoc, deleteDoc, addDoc, serverTimestamp, arrayRemove, increment, orderBy, onSnapshot } from 'firebase/firestore'
 import { db } from '@/firebase.js'
 import { useAuth } from '@/composables/useAuth.js'
 import { useGeolocation } from '@/composables/useGeolocation.js'
@@ -700,6 +700,9 @@ const usersLoading = ref(false)
 const adminEventsLoading = ref(false)
 const confirmationsLoadingState = ref(false)
 
+let requestsUnsubscribe = null
+let confirmationsUnsubscribe = null
+
 // -----------------------------------------------------------------------------
 // SECTION 3: USER MANAGEMENT & PERMISSIONS
 // -----------------------------------------------------------------------------
@@ -768,14 +771,22 @@ async function fetchEvents(isSilent = false) {
 
 async function fetchAllConfirmations(isSilent = false) {
   if (!isSilent) confirmationsLoadingState.value = true
-  try {
-    const snap = await getDocs(collection(db, 'confirmations'))
-    allConfirmationsList.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-  } catch (err) {
-    console.error('Error fetching confirmations:', err)
-  } finally {
-    if (!isSilent) confirmationsLoadingState.value = false
-  }
+  return new Promise((resolve, reject) => {
+    if (confirmationsUnsubscribe) {
+      resolve()
+      return
+    }
+    confirmationsUnsubscribe = onSnapshot(collection(db, 'confirmations'), (snap) => {
+      allConfirmationsList.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      updateAdminStatsFromLists()
+      if (!isSilent) confirmationsLoadingState.value = false
+      resolve()
+    }, (err) => {
+      console.error('Error fetching confirmations:', err)
+      if (!isSilent) confirmationsLoadingState.value = false
+      reject(err)
+    })
+  })
 }
 
 const showRoleConfirmModal = ref(false)
@@ -884,16 +895,24 @@ const filteredAdminRequests = computed(() => {
 
 async function fetchRequests(isSilent = false) {
   if (!isSilent) requestsLoadingState.value = true
-  try {
+  return new Promise((resolve, reject) => {
+    if (requestsUnsubscribe) {
+      resolve()
+      return
+    }
     const q = query(collection(db, 'emergencyRequests'), orderBy('createdAt', 'desc'))
-    const snap = await getDocs(q)
-    requestList.value = snap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
-  } catch (err) {
-    console.error('Error fetching requests:', err)
-    showToast('Failed to fetch emergency requests.', 'danger')
-  } finally {
-    if (!isSilent) requestsLoadingState.value = false
-  }
+    requestsUnsubscribe = onSnapshot(q, (snap) => {
+      requestList.value = snap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
+      updateAdminStatsFromLists()
+      if (!isSilent) requestsLoadingState.value = false
+      resolve()
+    }, (err) => {
+      console.error('Error fetching requests:', err)
+      showToast('Failed to fetch emergency requests.', 'danger')
+      if (!isSilent) requestsLoadingState.value = false
+      reject(err)
+    })
+  })
 }
 
 function openCreateRequestForm() {
@@ -1184,7 +1203,7 @@ const uniqueChats = computed(() => {
       }
       let email = thread.participantEmail
       if (!email || email === 'Guest Session') {
-        email = thread.participantType === 'guest' ? defaultGuestEmail : 'N/A'
+        email = defaultGuestEmail
       }
 
       return {
@@ -1349,6 +1368,12 @@ onUnmounted(() => {
   }
   if (adminActiveThreadUnsubscribe) {
     adminActiveThreadUnsubscribe()
+  }
+  if (requestsUnsubscribe) {
+    requestsUnsubscribe()
+  }
+  if (confirmationsUnsubscribe) {
+    confirmationsUnsubscribe()
   }
 })
 </script>

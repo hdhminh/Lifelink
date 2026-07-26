@@ -91,7 +91,7 @@ watch(
       })
     }
     if (newGuestId && !newUser) {
-      const q2 = query(collection(db, 'confirmations'), where('guestId', '==', newGuestId))
+      const q2 = query(collection(db, 'guestConfirmations'), where('guestSessionId', '==', newGuestId))
       guestUnsub = onSnapshot(q2, (snap) => {
         localGuestIds = snap.docs.map((doc) => doc.data().requestId)
         syncIds()

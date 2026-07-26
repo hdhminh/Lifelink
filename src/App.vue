@@ -37,7 +37,7 @@
 import AppLoader from '@/components/AppLoader.vue'
 import { ref, watch, onUnmounted, nextTick, onMounted, computed } from 'vue'
 import { useAuth } from '@/composables/useAuth.js'
-import { useGeolocation } from '@/composables/useGeolocation.js'
+// Geolocation removed from App.vue mount
 import { useLiveSimulation } from '@/composables/useLiveSimulation.js'
 import AppNavbar from '@/components/AppNavbar.vue'
 import AppFooter from '@/components/AppFooter.vue'
@@ -48,24 +48,13 @@ import { useEmergencyNotifications } from '@/composables/useEmergencyNotificatio
 // Initialize notifications listener
 useEmergencyNotifications()
 
-const { requestLocation } = useGeolocation()
+// Geo prompt will be handled by components like LiveNetworkMap when needed
 
 onMounted(async () => {
   if (typeof window !== 'undefined') {
     // Initialize simulation engine
     const { initSimulation } = useLiveSimulation()
     initSimulation()
-
-    const geoPrompted = localStorage.getItem('ll_geo_prompted')
-    const geoGranted = localStorage.getItem('ll_geo_granted')
-    if (!geoPrompted && geoGranted !== 'true') {
-      localStorage.setItem('ll_geo_prompted', 'true')
-      try {
-        await requestLocation()
-      } catch (e) {
-        console.warn('Geolocation initial request denied:', e)
-      }
-    }
   }
 })
 

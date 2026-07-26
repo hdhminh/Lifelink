@@ -21,88 +21,91 @@ function savePreferences() {
 </script>
 
 <template>
-  <div v-if="showBanner" class="cookie-consent-banner">
-    <div class="cookie-consent-content">
-      <h3>Cookie & Privacy Preferences</h3>
-      <p>
-        We use cookies to enhance your experience. Necessary cookies are required for the app to function.
-        You can choose which optional cookies to allow.
-      </p>
+  <div v-if="showBanner" class="cookie-consent-toast">
+    <div class="cookie-toast-header">
+      <strong>🍪 Cookie Preferences</strong>
+      <button class="cookie-close-btn" @click="rejectAll" aria-label="Close">&times;</button>
+    </div>
+    <p class="cookie-toast-text">
+      We use cookies to improve your experience.
+    </p>
 
-      <div class="cookie-options">
-        <label class="cookie-option">
-          <input type="checkbox" checked disabled />
-          <span>Necessary (required)</span>
-        </label>
+    <div class="cookie-options">
+      <label class="cookie-option">
+        <input type="checkbox" checked disabled />
+        <span>Necessary</span>
+      </label>
+      <label class="cookie-option">
+        <input v-model="consentState.location" type="checkbox" />
+        <span>Location</span>
+      </label>
+      <label class="cookie-option">
+        <input v-model="consentState.analytics" type="checkbox" />
+        <span>Analytics</span>
+      </label>
+    </div>
 
-        <label class="cookie-option">
-          <input v-model="consentState.location" type="checkbox" />
-          <span>Location Services</span>
-        </label>
-
-        <label class="cookie-option">
-          <input v-model="consentState.analytics" type="checkbox" />
-          <span>Analytics</span>
-        </label>
-
-        <label class="cookie-option">
-          <input v-model="consentState.marketing" type="checkbox" />
-          <span>Marketing</span>
-        </label>
-      </div>
-
-      <div class="cookie-actions">
-        <button class="btn-accept" @click="acceptAll">Accept All</button>
-        <button class="btn-reject" @click="rejectAll">Reject All</button>
-        <button class="btn-save" @click="savePreferences">Save Preferences</button>
-      </div>
+    <div class="cookie-actions">
+      <button class="btn-save" @click="savePreferences">Save</button>
+      <button class="btn-accept" @click="acceptAll">Accept All</button>
     </div>
   </div>
 </template>
 
 <style scoped>
-.cookie-consent-banner {
+.cookie-consent-toast {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 20px;
+  left: 20px;
+  width: 320px;
   background-color: #FAF5EF;
-  border-top: 2px solid #722F37;
+  border-radius: 8px;
+  border: 1px solid #722F37;
   padding: 1rem;
   z-index: 9999;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-.cookie-consent-content {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.cookie-consent-content h3 {
+.cookie-toast-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   color: #722F37;
-  margin-bottom: 0.5rem;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
-.cookie-consent-content p {
-  color: #333;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
+.cookie-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: #722F37;
+  cursor: pointer;
+  padding: 0;
+}
+
+.cookie-toast-text {
+  color: #555;
+  font-size: 0.85rem;
+  margin: 0;
+  line-height: 1.4;
 }
 
 .cookie-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 0.5rem;
 }
 
 .cookie-option {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #333;
 }
 
@@ -112,20 +115,20 @@ function savePreferences() {
 
 .cookie-actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
 }
 
 .btn-accept,
-.btn-reject,
 .btn-save {
-  padding: 0.5rem 1.25rem;
+  padding: 0.4rem 0.75rem;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: opacity 0.2s;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s;
 }
 
 .btn-accept {
@@ -133,19 +136,13 @@ function savePreferences() {
   color: #FAF5EF;
 }
 
-.btn-reject {
-  background-color: #6c757d;
-  color: #fff;
-}
-
 .btn-save {
-  background-color: #FAF5EF;
+  background-color: transparent;
   color: #722F37;
   border: 1px solid #722F37;
 }
 
 .btn-accept:hover,
-.btn-reject:hover,
 .btn-save:hover {
   opacity: 0.85;
 }

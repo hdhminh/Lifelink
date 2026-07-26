@@ -21,7 +21,7 @@ export async function seedDatabaseIfEmpty() {
         {
           hospitalName: 'Cho Ray Hospital',
           city: 'Ho Chi Minh City',
-          bloodType: 'O-',
+          bloodType: 'O+',
           urgency: 'critical',
           unitsNeeded: 5,
           confirmedCount: 1,
@@ -109,7 +109,7 @@ export async function seedDatabaseIfEmpty() {
         {
           hospitalName: 'Gia Dinh People Hospital',
           city: 'Ho Chi Minh City',
-          bloodType: 'O-',
+          bloodType: 'A+',
           urgency: 'critical',
           unitsNeeded: 2,
           confirmedCount: 0,

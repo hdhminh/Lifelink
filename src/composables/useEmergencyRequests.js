@@ -55,22 +55,9 @@ export function useEmergencyRequests() {
       (snapshot) => {
         const list = snapshot.docs.map((docSnap) => {
           const data = docSnap.data()
-          // Map O- to common blood types for HCMC demo hospitals cleanly client-side
-          let bloodType = data.bloodType
-          if (data.hospitalName === 'Cho Ray Hospital' && bloodType === 'O-') {
-            bloodType = 'O+'
-          } else if (
-            (data.hospitalName === 'Gia Dinh People Hospital' ||
-              data.hospitalName === "Gia Dinh People's Hospital") &&
-            bloodType === 'O-'
-          ) {
-            bloodType = 'A+'
-          }
-
           return {
             id: docSnap.id,
-            ...data,
-            bloodType
+            ...data
           }
         })
         cachedRequests.value = list

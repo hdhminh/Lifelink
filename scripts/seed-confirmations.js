@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, doc, setDoc, query, where, serverTimestamp } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, query, where, serverTimestamp } from 'firebase/firestore';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import fs from 'fs';
 
@@ -25,25 +25,37 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+const mockDonors = JSON.parse(fs.readFileSync('src/data/mockDonors.json', 'utf-8'));
+
 async function run() {
   await signInWithEmailAndPassword(auth, 'admin@lifelink.vn', 'admin123');
-  console.log('Logged in as admin.');
 
-  console.log('Fetching requests...');
+  // Delete all old mock confirmations
+  const allConfSnap = await getDocs(collection(db, 'confirmations'));
+  for (const d of allConfSnap.docs) {
+    if (d.data().donorName && d.data().donorName.includes('Mock Donor')) {
+      await deleteDoc(doc(db, 'confirmations', d.id));
+    }
+  }
+
   const reqSnap = await getDocs(collection(db, 'emergencyRequests'));
+  let usedDonors = [];
+  
   for (const rDoc of reqSnap.docs) {
     const rData = rDoc.data();
     if (rData.confirmedCount > 0) {
       const confQuery = query(collection(db, 'confirmations'), where('requestId', '==', rDoc.id));
       const confSnap = await getDocs(confQuery);
+      
       if (confSnap.empty) {
-        console.log('Seeding confirmations for request', rDoc.id);
         for(let i=0; i<rData.confirmedCount; i++) {
-          const mockDonorId = 'mock-donor-' + (i+1);
-          await setDoc(doc(db, 'confirmations', rDoc.id + '_' + mockDonorId), {
+          let randomDonor = mockDonors.find(m => !usedDonors.includes(m.id)) || mockDonors[Math.floor(Math.random() * mockDonors.length)];
+          usedDonors.push(randomDonor.id);
+          
+          await setDoc(doc(db, 'confirmations', rDoc.id + '_' + randomDonor.id), {
             requestId: rDoc.id,
-            donorId: mockDonorId,
-            donorName: 'Mock Donor ' + (i+1),
+            donorId: randomDonor.id,
+            donorName: randomDonor.displayName,
             bloodType: rData.bloodType || 'A+',
             hospitalName: rData.hospitalName || '',
             city: rData.city || '',

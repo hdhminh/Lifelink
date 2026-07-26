@@ -760,9 +760,9 @@ function renderHospitalMarkers() {
         ${getDistanceBadgeHtml(coords.lat, coords.lng, '#8E2435')}
 
         ${props.confirmedRequestIds.includes(String(req.id)) 
-          ? `<button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1" style="background-color: #198754; font-size: 0.72rem; border-radius: 6px;" onclick="window.handleHospitalPopupOpenMaps('${escapeHtml(String(req.id))}')">
-               <i class="bi bi-geo-alt-fill me-1"></i> Confirmed - Open Maps
-             </button>`
+          ? `<div class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1" style="background-color: #198754; font-size: 0.72rem; border-radius: 6px; cursor: default; pointer-events: none;">
+               <i class="bi bi-check-circle-fill me-1"></i> Confirmed
+             </div>`
           : `<button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1 map-style-57" onclick="window.handleHospitalPopupRespond('${escapeHtml(String(req.id))}')">
                <i class="bi bi-droplet-fill me-1"></i> Confirm Availability
              </button>`

@@ -273,7 +273,9 @@
  */
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { collection, query, where, onSnapshot } from 'firebase/firestore'
+import { ref as dbRef, remove, get, query as dbQuery, orderByChild, equalTo } from 'firebase/database'
 import { db } from '@/firebase.js'
+import { rtdb } from '@/firebase.js'
 import { useAuth } from '@/composables/useAuth.js'
 import { useEmergencyRequests } from '@/composables/useEmergencyRequests.js'
 import { useConfirmDonation } from '@/composables/useConfirmDonation.js'
@@ -565,9 +567,29 @@ function handleDelete(requestId) {
   showDeleteModal.value = true
 }
 
+// Remove all RTDB liveTracking entries for a given requestId
+async function cleanTrackingForRequest(requestId) {
+  try {
+    const trackingRef = dbRef(rtdb, 'liveTracking')
+    const snap = await get(trackingRef)
+    if (snap.exists()) {
+      const removes = []
+      snap.forEach((child) => {
+        if (child.val().requestId === requestId) {
+          removes.push(remove(dbRef(rtdb, `liveTracking/${child.key}`)))
+        }
+      })
+      await Promise.all(removes)
+    }
+  } catch (err) {
+    console.warn('[EmergencyBoard] RTDB cleanup error:', err)
+  }
+}
+
 async function confirmDelete() {
   if (!deletingRequestId.value) return
   try {
+    await cleanTrackingForRequest(deletingRequestId.value)
     await deleteRequest(deletingRequestId.value)
     showToast('Request deleted successfully.', 'success')
   } catch (err) {
@@ -582,6 +604,10 @@ async function handleStatusChange(request) {
   try {
     const nextStatus = request.status === 'active' ? 'fulfilled' : 'active'
     await updateRequest(request.id, { status: nextStatus })
+    // If fulfilling (cancelling), clean up RTDB tracking entries
+    if (nextStatus === 'fulfilled') {
+      await cleanTrackingForRequest(request.id)
+    }
     showToast(`Request marked as ${nextStatus}.`, 'success')
   } catch (err) {
     showToast(err.message || 'Could not update status.', 'danger')

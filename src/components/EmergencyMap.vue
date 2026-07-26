@@ -214,6 +214,10 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
+  confirmedRequestIds: {
+    type: Array,
+    default: () => []
+  },
   titleText: {
     type: String,
     default: 'Live Map'
@@ -643,8 +647,12 @@ function initMapEngine() {
     window.handleEventPopupRegister = (eventId) => {
       emit('register-event', eventId)
     }
-    window.handleRequestUserLocation = () => {
-      requestLocation()
+    window.handleRequestUserLocation = async () => {
+      try {
+        await requestLocation()
+      } catch (err) {
+        alert('Could not enable location. Please check your browser permissions.')
+      }
     }
   }
 
@@ -745,9 +753,14 @@ function renderHospitalMarkers() {
         </div>
         ${getDistanceBadgeHtml(coords.lat, coords.lng, '#8E2435')}
 
-        <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1 map-style-57" onclick="window.handleHospitalPopupRespond('${escapeHtml(String(req.id))}')">
-          <i class="bi bi-droplet-fill me-1"></i> Confirm Availability
-        </button>
+        ${props.confirmedRequestIds.includes(String(req.id)) 
+          ? `<div class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1" style="background-color: #198754; font-size: 0.72rem; border-radius: 6px; cursor: default;">
+               <i class="bi bi-check-circle-fill me-1"></i> Confirmed
+             </div>`
+          : `<button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1 map-style-57" onclick="window.handleHospitalPopupRespond('${escapeHtml(String(req.id))}')">
+               <i class="bi bi-droplet-fill me-1"></i> Confirm Availability
+             </button>`
+        }
       </div>
     `)
 
@@ -1457,6 +1470,11 @@ defineExpose({
   background-color: #8E2435;
   font-size: 0.72rem;
   border-radius: 6px;
+  color: white !important;
+}
+.map-style-57:hover {
+  background-color: #6a1a27 !important;
+  color: white !important;
 }
 .map-style-58 {
   position: relative;

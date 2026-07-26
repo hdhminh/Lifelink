@@ -23,6 +23,7 @@
         ref="mapRef"
         :emergency-requests="requests"
         :events="events"
+        :confirmed-request-ids="confirmedRequestIds"
         :is-visible="true"
         title-text="Live Map"
         @respond="handleRespond"
@@ -40,6 +41,10 @@
 
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { collection, query, where, onSnapshot } from 'firebase/firestore'
+import { db } from '@/firebase.js'
+import { useAuth } from '@/composables/useAuth.js'
+import { useGuestSession } from '@/composables/useGuestSession.js'
 import { useEmergencyRequests } from '@/composables/useEmergencyRequests.js'
 import { useDonationEvents } from '@/composables/useDonationEvents.js'
 import EmergencyMap from '@/components/EmergencyMap.vue'
@@ -48,6 +53,53 @@ import AlertMessage from '@/components/AlertMessage.vue'
 const route = useRoute()
 const router = useRouter()
 const mapRef = ref(null)
+
+const { user } = useAuth()
+const { guestId } = useGuestSession()
+
+const confirmedRequestIds = ref([])
+let unsubscribeConfirmations = null
+
+watch(
+  [() => user.value, () => guestId.value],
+  ([newUser, newGuestId]) => {
+    if (unsubscribeConfirmations) {
+      unsubscribeConfirmations()
+      unsubscribeConfirmations = null
+    }
+
+    let userUnsub = null
+    let guestUnsub = null
+
+    let localUserIds = []
+    let localGuestIds = []
+
+    const syncIds = () => {
+      confirmedRequestIds.value = [...new Set([...localUserIds, ...localGuestIds])]
+    }
+
+    if (newUser) {
+      const q = query(collection(db, 'confirmations'), where('donorId', '==', newUser.uid))
+      userUnsub = onSnapshot(q, (snap) => {
+        localUserIds = snap.docs.map((doc) => doc.data().requestId)
+        syncIds()
+      })
+    }
+    if (newGuestId && !newUser) {
+      const q2 = query(collection(db, 'confirmations'), where('guestId', '==', newGuestId))
+      guestUnsub = onSnapshot(q2, (snap) => {
+        localGuestIds = snap.docs.map((doc) => doc.data().requestId)
+        syncIds()
+      })
+    }
+
+    unsubscribeConfirmations = () => {
+      if (userUnsub) userUnsub()
+      if (guestUnsub) guestUnsub()
+    }
+  },
+  { immediate: true }
+)
 
 const {
   requests,
@@ -96,5 +148,8 @@ onMounted(() => {
 onUnmounted(() => {
   stopRequests()
   stopEvents()
+  if (unsubscribeConfirmations) {
+    unsubscribeConfirmations()
+  }
 })
 </script>

@@ -162,7 +162,7 @@
             class="bi"
             :class="
               hasConfirmed
-                ? 'bi-check-circle'
+                ? 'bi-check-circle-fill'
                 : isExpired
                 ? 'bi-x-circle'
                 : stillNeeded <= 0

@@ -591,8 +591,11 @@ async function handleShareAndOpenMaps() {
       }
     })
     showToast('Live tracking started.', 'success')
+    router.push({ path: '/map', query: { request: req.id } })
+  } else if (pendingRequestForTracking.value) {
+    router.push({ path: '/map', query: { request: pendingRequestForTracking.value.id } })
   }
-  handleOpenMaps()
+  closeMapsConfirmModal()
 }
 
 function setMode(mode) {

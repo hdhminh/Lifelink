@@ -10,7 +10,6 @@ import { collection, getDocs, writeBatch, doc, serverTimestamp } from 'firebase/
 import { db } from '@/firebase.js'
 import { getHospitalCoordinates } from '@/data/hospitalCoordinates.js'
 
-
 export async function seedDatabaseIfEmpty() {
   try {
     // 1. Seed Emergency Requests if empty
@@ -27,7 +26,8 @@ export async function seedDatabaseIfEmpty() {
           unitsNeeded: 5,
           confirmedCount: 1,
           status: 'active',
-          description: 'A patient in emergency surgery after a severe traffic accident requires immediate O negative blood transfusion.',
+          description:
+            'A patient in emergency surgery after a severe traffic accident requires immediate O negative blood transfusion.',
           contactInfo: '0989123456',
           createdAt: serverTimestamp()
         },
@@ -39,7 +39,8 @@ export async function seedDatabaseIfEmpty() {
           unitsNeeded: 3,
           confirmedCount: 1,
           status: 'active',
-          description: 'A patient undergoing complex cardiac bypass surgery needs AB positive blood.',
+          description:
+            'A patient undergoing complex cardiac bypass surgery needs AB positive blood.',
           contactInfo: '0912345678',
           createdAt: serverTimestamp()
         },
@@ -87,7 +88,8 @@ export async function seedDatabaseIfEmpty() {
           unitsNeeded: 4,
           confirmedCount: 1,
           status: 'active',
-          description: 'Emergency brain surgery patient requires urgent A positive blood transfusion.',
+          description:
+            'Emergency brain surgery patient requires urgent A positive blood transfusion.',
           contactInfo: '0944123456',
           createdAt: serverTimestamp()
         },
@@ -99,7 +101,8 @@ export async function seedDatabaseIfEmpty() {
           unitsNeeded: 3,
           confirmedCount: 0,
           status: 'active',
-          description: 'Severe anemia patient needs matching B negative blood transfusion immediately.',
+          description:
+            'Severe anemia patient needs matching B negative blood transfusion immediately.',
           contactInfo: '0988123456',
           createdAt: serverTimestamp()
         },
@@ -117,7 +120,7 @@ export async function seedDatabaseIfEmpty() {
         }
       ]
 
-      seedRequests.forEach(req => {
+      seedRequests.forEach((req) => {
         const coords = getHospitalCoordinates(req.hospitalName, req.city)
         const newDocRef = doc(collection(db, 'emergencyRequests'))
         batch.set(newDocRef, {
@@ -128,7 +131,6 @@ export async function seedDatabaseIfEmpty() {
       })
       await batch.commit()
       console.log('[Seeder] Successfully seeded emergency requests.')
-
     }
 
     // 2. Seed Donation Events if empty
@@ -143,7 +145,8 @@ export async function seedDatabaseIfEmpty() {
           city: 'Ho Chi Minh City',
           category: 'Campaign',
           location: 'Youth Cultural Center HCMC',
-          description: 'National launch of the 14th edition of the Red Journey voluntary blood donation campaign and opening drive.',
+          description:
+            'National launch of the 14th edition of the Red Journey voluntary blood donation campaign and opening drive.',
           interestedCount: 0,
           likedBy: [],
           createdAt: serverTimestamp()
@@ -154,7 +157,8 @@ export async function seedDatabaseIfEmpty() {
           city: 'Buon Ma Thuot',
           category: 'Campaign',
           location: 'Dak Lak Provincial Cultural Center',
-          description: 'Regional blood donation festival under the national Red Journey 2026 campaign to address summer shortages.',
+          description:
+            'Regional blood donation festival under the national Red Journey 2026 campaign to address summer shortages.',
           interestedCount: 0,
           likedBy: [],
           createdAt: serverTimestamp()
@@ -165,7 +169,8 @@ export async function seedDatabaseIfEmpty() {
           city: 'Viet Tri',
           category: 'Drive',
           location: 'Phu Tho Provincial Sports Stadium',
-          description: 'Voluntary blood collection festival organized in collaboration with the provincial Red Cross and NIHBT.',
+          description:
+            'Voluntary blood collection festival organized in collaboration with the provincial Red Cross and NIHBT.',
           interestedCount: 0,
           likedBy: [],
           createdAt: serverTimestamp()
@@ -176,7 +181,8 @@ export async function seedDatabaseIfEmpty() {
           city: 'Hoa Binh',
           category: 'Drive',
           location: 'Hoa Binh Provincial Cultural Palace',
-          description: 'Annual community blood donation drive in Hoa Binh province supporting the national Red Journey campaign.',
+          description:
+            'Annual community blood donation drive in Hoa Binh province supporting the national Red Journey campaign.',
           interestedCount: 0,
           likedBy: [],
           createdAt: serverTimestamp()
@@ -187,7 +193,8 @@ export async function seedDatabaseIfEmpty() {
           city: 'Lang Son',
           category: 'Campaign',
           location: 'Lang Son Provincial Convention Center',
-          description: 'Humanitarian blood drive and public awareness campaign on voluntary blood donation and Thalassemia in Lang Son.',
+          description:
+            'Humanitarian blood drive and public awareness campaign on voluntary blood donation and Thalassemia in Lang Son.',
           interestedCount: 0,
           likedBy: [],
           createdAt: serverTimestamp()
@@ -198,7 +205,8 @@ export async function seedDatabaseIfEmpty() {
           city: 'Can Tho',
           category: 'Drive',
           location: 'Luu Huu Phuoc Park Can Tho',
-          description: 'The largest blood donation festival in the Mekong Delta region, marking the concluding leg of Red Journey 2026.',
+          description:
+            'The largest blood donation festival in the Mekong Delta region, marking the concluding leg of Red Journey 2026.',
           interestedCount: 0,
           likedBy: [],
           createdAt: serverTimestamp()
@@ -209,7 +217,8 @@ export async function seedDatabaseIfEmpty() {
           city: 'Binh Duong',
           category: 'Campaign',
           location: 'Binh Duong Youth Center',
-          description: 'Youth-led community blood donation drive focusing on young donors and first-time participants.',
+          description:
+            'Youth-led community blood donation drive focusing on young donors and first-time participants.',
           interestedCount: 0,
           likedBy: [],
           createdAt: serverTimestamp()
@@ -220,7 +229,8 @@ export async function seedDatabaseIfEmpty() {
           city: 'Bien Hoa',
           category: 'Drive',
           location: 'Dong Nai Children House',
-          description: 'Annual summer campaign collecting blood units from local workers and college students in Bien Hoa.',
+          description:
+            'Annual summer campaign collecting blood units from local workers and college students in Bien Hoa.',
           interestedCount: 0,
           likedBy: [],
           createdAt: serverTimestamp()
@@ -231,7 +241,8 @@ export async function seedDatabaseIfEmpty() {
           city: 'Nha Trang',
           category: 'Campaign',
           location: 'Nha Trang Youth Center',
-          description: 'Humanitarian blood festival gathering blood units for pediatric clinics and general hospitals.',
+          description:
+            'Humanitarian blood festival gathering blood units for pediatric clinics and general hospitals.',
           interestedCount: 0,
           likedBy: [],
           createdAt: serverTimestamp()
@@ -242,7 +253,8 @@ export async function seedDatabaseIfEmpty() {
           city: 'Ha Noi',
           category: 'Campaign',
           location: 'Hanoi Medical University',
-          description: 'Large-scale National Day campaign coordinating volunteers and students across Thang Long area.',
+          description:
+            'Large-scale National Day campaign coordinating volunteers and students across Thang Long area.',
           interestedCount: 0,
           likedBy: [],
           createdAt: serverTimestamp()
@@ -253,7 +265,8 @@ export async function seedDatabaseIfEmpty() {
           city: 'Hai Phong',
           category: 'Drive',
           location: 'Hai Phong Sports Stadium',
-          description: 'Joint voluntary blood donation campaign organized with local universities and industrial zones.',
+          description:
+            'Joint voluntary blood donation campaign organized with local universities and industrial zones.',
           interestedCount: 0,
           likedBy: [],
           createdAt: serverTimestamp()
@@ -264,14 +277,15 @@ export async function seedDatabaseIfEmpty() {
           city: 'Hue',
           category: 'Drive',
           location: 'Hue Cultural Palace',
-          description: 'Community blood donation drive to establish safety reserves for local Thua Thien Hue clinics.',
+          description:
+            'Community blood donation drive to establish safety reserves for local Thua Thien Hue clinics.',
           interestedCount: 0,
           likedBy: [],
           createdAt: serverTimestamp()
         }
       ]
 
-      seedEvents.forEach(evt => {
+      seedEvents.forEach((evt) => {
         const coords = getHospitalCoordinates(evt.location || evt.title, evt.city)
         const newDocRef = doc(collection(db, 'events'))
         batch.set(newDocRef, {

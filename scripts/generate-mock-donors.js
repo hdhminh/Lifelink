@@ -23,9 +23,59 @@ function getRandomBloodType() {
 }
 
 // Names
-const FIRST_NAMES = ['Nguyen', 'Tran', 'Le', 'Pham', 'Hoang', 'Huynh', 'Phan', 'Vu', 'Vo', 'Dang', 'Bui', 'Do', 'Ho', 'Ngo', 'Duong', 'Ly']
-const MIDDLE_NAMES = ['Van', 'Thi', 'Huu', 'Thanh', 'Ngoc', 'Minh', 'Tuan', 'Quang', 'Duc', 'Hoang', 'Xuan', 'Thu']
-const LAST_NAMES = ['Anh', 'Binh', 'Chau', 'Dung', 'Em', 'Giang', 'Hai', 'Linh', 'Minh', 'Nga', 'Phuc', 'Quang', 'Son', 'Tuan', 'Vy', 'Yen', 'Nam', 'Hoa', 'Thao']
+const FIRST_NAMES = [
+  'Nguyen',
+  'Tran',
+  'Le',
+  'Pham',
+  'Hoang',
+  'Huynh',
+  'Phan',
+  'Vu',
+  'Vo',
+  'Dang',
+  'Bui',
+  'Do',
+  'Ho',
+  'Ngo',
+  'Duong',
+  'Ly'
+]
+const MIDDLE_NAMES = [
+  'Van',
+  'Thi',
+  'Huu',
+  'Thanh',
+  'Ngoc',
+  'Minh',
+  'Tuan',
+  'Quang',
+  'Duc',
+  'Hoang',
+  'Xuan',
+  'Thu'
+]
+const LAST_NAMES = [
+  'Anh',
+  'Binh',
+  'Chau',
+  'Dung',
+  'Em',
+  'Giang',
+  'Hai',
+  'Linh',
+  'Minh',
+  'Nga',
+  'Phuc',
+  'Quang',
+  'Son',
+  'Tuan',
+  'Vy',
+  'Yen',
+  'Nam',
+  'Hoa',
+  'Thao'
+]
 
 function getRandomName() {
   const f = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)]
@@ -55,14 +105,16 @@ function getRandomLocation() {
     }
   }
 
-  const cityHospitals = HOSPITAL_DATABASE.filter(h => h.city === selectedCityName)
-  const baseHospital = cityHospitals.length > 0 
-    ? cityHospitals[Math.floor(Math.random() * cityHospitals.length)]
-    : HOSPITAL_DATABASE[0]
+  const cityHospitals = HOSPITAL_DATABASE.filter((h) => h.city === selectedCityName)
+  const baseHospital =
+    cityHospitals.length > 0
+      ? cityHospitals[Math.floor(Math.random() * cityHospitals.length)]
+      : HOSPITAL_DATABASE[0]
 
-  // Add small random spread (max 0.015 degrees ~ 1.5km) to stay on land
+  // Add small random spread (max 0.005 degrees ~ 500m) to stay on land
+  // Reduced from 0.015 to avoid placing donors in rivers
   const angle = Math.random() * Math.PI * 2
-  const distance = Math.random() * 0.015
+  const distance = Math.random() * 0.005
   const latOffset = Math.sin(angle) * distance
   const lngOffset = Math.cos(angle) * distance
 
@@ -98,7 +150,11 @@ function getRandomCooldown() {
 }
 
 function removeAccents(str) {
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D')
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
 }
 
 function getRandomEmail(name) {
@@ -122,7 +178,7 @@ for (let i = 0; i < NUM_USERS; i++) {
   const loc = getRandomLocation()
   const cooldown = getRandomCooldown()
   const name = getRandomName()
-  
+
   mockDonors.push({
     id: `mock_${String(i).padStart(4, '0')}`,
     displayName: name,

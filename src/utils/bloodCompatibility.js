@@ -18,23 +18,23 @@ export const COMPATIBILITY_MAP = {
 
 /**
  * Check if a donor blood type is compatible with a recipient blood type.
- * @param {string} donorType 
- * @param {string} recipientType 
+ * @param {string} donorType
+ * @param {string} recipientType
  * @returns {boolean} True if compatible.
  */
 export function canDonateTo(donorType, recipientType) {
   if (!donorType || !recipientType) return false
   if (recipientType === 'Any' || donorType === 'Any') return true
-  
+
   const compatibleRecipients = COMPATIBILITY_MAP[donorType]
   if (!compatibleRecipients) return false
-  
+
   return compatibleRecipients.includes(recipientType)
 }
 
 /**
  * Get all blood types that a specific donor type can donate to.
- * @param {string} donorType 
+ * @param {string} donorType
  * @returns {Array<string>} List of compatible recipient blood types.
  */
 export function getCompatibleRecipientTypes(donorType) {
@@ -45,13 +45,13 @@ export function getCompatibleRecipientTypes(donorType) {
 
 /**
  * Get all blood types that can donate to a specific recipient type.
- * @param {string} recipientType 
+ * @param {string} recipientType
  * @returns {Array<string>} List of compatible donor blood types.
  */
 export function getCompatibleDonorTypes(recipientType) {
   if (!recipientType) return []
   if (recipientType === 'Any') return Object.keys(COMPATIBILITY_MAP)
-  
+
   const compatibleDonors = []
   for (const [donor, recipients] of Object.entries(COMPATIBILITY_MAP)) {
     if (recipients.includes(recipientType)) {

@@ -1,0 +1,69 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "emergencyRequests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "confirmations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "donorId",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "confirmations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "requestId",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "guestConfirmations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "requestId",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "likedBy",
+          "arrayConfig": "CONTAINS"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "supportThreads",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "lastMessageAt",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

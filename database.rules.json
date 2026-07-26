@@ -1,10 +1,10 @@
 {
   "rules": {
     "liveTracking": {
-      ".read": "auth != null",
+      ".read": false,
       ".write": false,
       "$trackingId": {
-        ".read": "auth != null",
+        ".read": "auth != null && (newData.child('donorId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
         ".write": "auth != null && (newData.child('donorId').val() === auth.uid || data.child('donorId').val() === auth.uid)",
         ".validate": "newData.hasChildren(['donorId', 'requestId', 'status'])"
       }

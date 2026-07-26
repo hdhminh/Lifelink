@@ -8,10 +8,10 @@
 
 /**
  * Calculates distance between two coordinates in meters.
- * @param {number} lat1 
- * @param {number} lon1 
- * @param {number} lat2 
- * @param {number} lon2 
+ * @param {number} lat1
+ * @param {number} lon1
+ * @param {number} lat2
+ * @param {number} lon2
  * @returns {number} Distance in meters.
  */
 export function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
@@ -23,8 +23,7 @@ export function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
   const dLon = (lon2 - lon1) * rad
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * rad) * Math.cos(lat2 * rad) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2)
+    Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dLon / 2) * Math.sin(dLon / 2)
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
   return R * c
@@ -32,10 +31,10 @@ export function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
 
 /**
  * Calculates estimated driving road distance accounting for urban road network geometry (~1.32x factor).
- * @param {number} lat1 
- * @param {number} lon1 
- * @param {number} lat2 
- * @param {number} lon2 
+ * @param {number} lat1
+ * @param {number} lon1
+ * @param {number} lat2
+ * @param {number} lon2
  * @returns {number} Distance in meters over road network.
  */
 export function calculateRoadDistance(lat1, lon1, lat2, lon2) {
@@ -45,7 +44,7 @@ export function calculateRoadDistance(lat1, lon1, lat2, lon2) {
 
 /**
  * Formats distance into human-readable text (meters or kilometers).
- * @param {number} meters 
+ * @param {number} meters
  * @returns {string} E.g., "450 m" or "4.2 km"
  */
 export function formatDistance(meters) {
@@ -59,8 +58,8 @@ export function formatDistance(meters) {
 /**
  * Estimates Travel Time (ETA) in minutes based on distance in meters.
  * Assumes average urban emergency transit speed of 25 km/h (including traffic/signals).
- * @param {number} meters 
- * @param {number} [speedKmH=25] Average speed in km/h 
+ * @param {number} meters
+ * @param {number} [speedKmH=25] Average speed in km/h
  * @returns {number} Estimated minutes (minimum 1 min if distance > 0)
  */
 export function calculateEtaMinutes(meters, speedKmH = 25) {

@@ -65,7 +65,7 @@
         class="p-3 bg-white border border-slate-200 rounded shadow-xs position-relative hover-lift cursor-pointer"
         @click="$emit('focus-responder', resp)"
       >
-        <div class="d-flex justify-content-between align-items-start mb-1">
+        <div class="d-flex justify-content-between align-items-center mb-1">
           <div>
             <strong class="text-slate-900 font-weight-700 map-style-36">{{
               resp.donorName
@@ -76,7 +76,8 @@
             >
           </div>
           <span
-            :class="resp.status === 'approaching' ? 'badge bg-success map-style-37' : 'badge bg-primary map-style-37'"
+            :class="resp.status === 'approaching' ? 'badge bg-success map-style-37' : 'badge map-style-37'"
+            :style="resp.status !== 'approaching' ? 'background-color: #8E2435 !important;' : ''"
           >
             {{ resp.status === 'approaching' ? 'Approaching' : 'En Route' }}
           </span>

@@ -82,7 +82,7 @@
                         </p>
                         <p class="small text-slate-400 mb-0 mt-1">Confirmed on {{ formatDateTime(conf.createdAt) }}</p>
                       </div>
-                      <RouterLink to="/map" class="btn btn-sm flex-shrink-0" style="color: var(--ll-wine-red); border: 1px solid var(--ll-wine-red);">
+                      <RouterLink :to="{ path: '/map', query: { request: conf.requestId } }" class="btn btn-sm flex-shrink-0" style="color: var(--ll-wine-red); border: 1px solid var(--ll-wine-red);">
                         <i class="bi bi-geo-alt-fill"></i> Map
                       </RouterLink>
                     </div>

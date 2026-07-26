@@ -622,18 +622,37 @@ watch(
       unsubscribeConfirmations = null
     }
 
-    const updateConfirmed = (snap) => {
-      confirmedRequestIds.value = snap.docs.map((doc) => String(doc.data().requestId))
+    // We will listen to both collections if possible
+    let userUnsub = null
+    let guestUnsub = null
+    const localUserIds = []
+    const localGuestIds = []
+
+    const syncIds = () => {
+      confirmedRequestIds.value = [...new Set([...localUserIds, ...localGuestIds])]
     }
 
     if (newUser) {
       const q = query(collection(db, 'confirmations'), where('donorId', '==', newUser.uid))
-      unsubscribeConfirmations = onSnapshot(q, updateConfirmed, (err) => console.error(err))
-    } else if (newGuestId) {
-      const q = query(collection(db, 'guestConfirmations'), where('guestSessionId', '==', newGuestId))
-      unsubscribeConfirmations = onSnapshot(q, updateConfirmed, (err) => console.error(err))
-    } else {
-      confirmedRequestIds.value = []
+      userUnsub = onSnapshot(q, (snap) => {
+        localUserIds.length = 0
+        snap.docs.forEach(d => localUserIds.push(String(d.data().requestId)))
+        syncIds()
+      })
+    }
+
+    if (newGuestId) {
+      const q2 = query(collection(db, 'guestConfirmations'), where('guestSessionId', '==', newGuestId))
+      guestUnsub = onSnapshot(q2, (snap) => {
+        localGuestIds.length = 0
+        snap.docs.forEach(d => localGuestIds.push(String(d.data().requestId)))
+        syncIds()
+      })
+    }
+
+    unsubscribeConfirmations = () => {
+      if (userUnsub) userUnsub()
+      if (guestUnsub) guestUnsub()
     }
   },
   { immediate: true }

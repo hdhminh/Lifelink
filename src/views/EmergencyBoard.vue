@@ -958,7 +958,7 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
+<style>
 .ll-board-form-container {
   max-width: 720px;
   padding-top: 3rem;

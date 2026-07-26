@@ -230,7 +230,7 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style>
 .ll-tabs {
   display: flex;
   gap: 0.5rem;

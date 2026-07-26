@@ -1353,7 +1353,7 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
+<style>
 .text-wine {
   color: var(--ll-wine-red);
 }

@@ -63,7 +63,7 @@ const { isEligible, nextEligibleDate, daysUntilEligible } = useEligibility()
 const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 const isEditing = ref(false)
 const isSaving = ref(false)
-const errors = reactive({})
+
 const { showToast } = useToast()
 
 const eligibleInfo = computed(() => {
@@ -162,7 +162,7 @@ watch(isEditing, async (newVal) => {
 })
 </script>
 
-<style scoped>
+<style>
 .text-wine {
   color: var(--ll-wine-red);
 }

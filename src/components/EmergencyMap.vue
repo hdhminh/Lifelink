@@ -1165,7 +1165,7 @@ defineExpose({
 </script>
 
 
-<style scoped>
+<style>
 .map-style-1 {
   position: relative;
   z-index: 1;
@@ -1505,7 +1505,7 @@ defineExpose({
 }
 </style>
 
-<style scoped>
+<style>
 .ll-emergency-map-container {
   font-family: var(--ll-font-family, system-ui, sans-serif);
 }
@@ -1578,13 +1578,13 @@ defineExpose({
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-:deep(.leaflet-popup-content-wrapper) {
+.leaflet-popup-content-wrapper {
   border-radius: 12px !important;
   padding: 4px !important;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
 }
 
-:deep(.leaflet-popup-content) {
+.leaflet-popup-content {
   margin: 12px 14px !important;
   width: 245px !important;
   min-width: 245px !important;
@@ -1593,7 +1593,7 @@ defineExpose({
   box-sizing: border-box !important;
 }
 
-:deep(.leaflet-control-zoom a) {
+.leaflet-control-zoom a {
   min-width: 44px !important;
   min-height: 44px !important;
   line-height: 44px !important;
@@ -1603,7 +1603,7 @@ defineExpose({
   justify-content: center !important;
 }
 
-:deep(.leaflet-container a.leaflet-popup-close-button) {
+.leaflet-container a.leaflet-popup-close-button {
   top: 10px !important;
   right: 10px !important;
   font-size: 18px !important;
@@ -1618,17 +1618,17 @@ defineExpose({
   border-radius: 50% !important;
 }
 
-:deep(.leaflet-container a.leaflet-popup-close-button:hover) {
+.leaflet-container a.leaflet-popup-close-button:hover {
   color: #8e2435 !important;
   background-color: #faf5ef !important;
   transform: scale(1.1) !important;
 }
 
-:deep(.leaflet-overlay-pane svg) {
+.leaflet-overlay-pane svg {
   max-width: none !important;
 }
 
-:deep(.leaflet-marker-pane svg) {
+.leaflet-marker-pane svg {
   max-width: none !important;
 }
 </style>

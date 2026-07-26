@@ -379,7 +379,7 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
+<style>
 .ll-event-form-container {
   max-width: 720px;
   padding-top: 3rem;

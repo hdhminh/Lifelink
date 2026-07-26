@@ -18,6 +18,9 @@
       :message="requestsError || eventsError"
     />
 
+    <!-- Confirmation Modals Component -->
+    <ConfirmationModals ref="modalsRef" :requests="requests" />
+
     <div>
       <EmergencyMap
         ref="mapRef"
@@ -49,10 +52,12 @@ import { useEmergencyRequests } from '@/composables/useEmergencyRequests.js'
 import { useDonationEvents } from '@/composables/useDonationEvents.js'
 import EmergencyMap from '@/components/EmergencyMap.vue'
 import AlertMessage from '@/components/AlertMessage.vue'
+import ConfirmationModals from '@/components/ConfirmationModals.vue'
 
 const route = useRoute()
 const router = useRouter()
 const mapRef = ref(null)
+const modalsRef = ref(null)
 
 const { user } = useAuth()
 const { guestId } = useGuestSession()
@@ -116,7 +121,9 @@ const {
 } = useDonationEvents()
 
 function handleRespond(requestId) {
-  router.push({ path: '/emergency-board', query: { respond: requestId } })
+  if (modalsRef.value) {
+    modalsRef.value.handleConfirm(requestId)
+  }
 }
 
 watch([requests, events, () => route.query.request, () => route.query.event], () => {

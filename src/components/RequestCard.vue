@@ -147,35 +147,39 @@
         </button>
       </div>
       <button
-        v-else
-        type="button"
-        class="ll-btn-primary ll-btn-block"
-        :class="{ 'll-btn-disabled': (!eligibility.eligible || isExpired) && stillNeeded > 0 }"
-        :disabled="stillNeeded <= 0 || confirming || !eligibility.eligible || isExpired"
-        @click="emit('confirm')"
-      >
-        <i
-          class="bi"
-          :class="
-            isExpired
-              ? 'bi-x-circle'
-              : eligibility.eligible
-                ? 'bi-heart-fill'
-                : 'bi-hourglass-split'
-          "
-        ></i>
-        <span class="ms-1">
-          {{
-            confirming
-              ? 'Confirming...'
-              : isExpired
-                ? 'Request Expired'
+          v-else
+          type="button"
+          class="ll-btn-primary ll-btn-block"
+          :class="{ 'll-btn-disabled': hasConfirmed || (!eligibility.eligible || isExpired) && stillNeeded > 0 }"
+          :disabled="hasConfirmed || stillNeeded <= 0 || confirming || !eligibility.eligible || isExpired"
+          @click="!hasConfirmed && emit('confirm')"
+        >
+          <i
+            class="bi"
+            :class="
+              hasConfirmed
+                ? 'bi-check2-circle'
+                : isExpired
+                ? 'bi-x-circle'
+                : stillNeeded <= 0
+                ? 'bi-check-circle-fill'
+                : 'bi-heart-fill'
+            "
+          ></i>
+          <span class="ms-1">
+            {{
+              hasConfirmed
+                ? 'Confirmed'
+                : isExpired
+                ? 'Expired'
+                : stillNeeded <= 0
+                ? 'Goal Met'
                 : eligibility.eligible
-                  ? 'Confirm Availability'
-                  : `Cooldown (${eligibility.daysLeft}d left)`
-          }}
-        </span>
-      </button>
+                ? 'Confirm Availability'
+                : `Cooldown (${eligibility.daysLeft}d left)`
+            }}
+          </span>
+        </button>
       <div
         v-if="!isAdmin && !eligibility.eligible"
         class="text-center mt-2 text-warning small font-weight-500"
@@ -220,7 +224,8 @@ const props = defineProps({
   request: { type: Object, required: true },
   isAdmin: { type: Boolean, default: false },
   confirming: { type: Boolean, default: false },
-  enRouteCount: { type: Number, default: 0 }
+  enRouteCount: { type: Number, default: 0 },
+  hasConfirmed: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['confirm', 'edit', 'delete', 'status-change', 'focus-map'])

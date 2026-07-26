@@ -142,6 +142,7 @@
                 :is-admin="isAdmin"
                 :confirming="confirmLoading"
                 :en-route-count="getEnRouteCountForRequest(request.id)"
+                :has-confirmed="confirmedRequestIds.includes(request.id)"
                 @confirm="handleConfirm(request.id)"
                 @edit="openEditForm(request)"
                 @delete="handleDelete(request.id)"
@@ -675,10 +676,9 @@ const filteredRequests = computed(() => {
     list = list.filter((req) => canDonateTo(userProfile.value.bloodType, req.bloodType))
   }
 
-  // Hide already confirmed requests for the current user
-  const unconfirmed = list.filter((req) => !confirmedRequestIds.value.includes(req.id))
-
-  return unconfirmed.sort((a, b) => {
+  // Keep confirmed requests visible, they will be disabled via has-confirmed prop
+  
+  return list.sort((a, b) => {
     // 1. Sort compatible requests to top for logged-in donors
     if (userProfile.value && !isAdmin.value) {
       const compatA = canDonateTo(userProfile.value.bloodType, a.bloodType)

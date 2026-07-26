@@ -56,9 +56,9 @@
           <div class="col-md-6 col-12">
             <div class="ll-card h-100">
               <div class="ll-card__header d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0 text-wine"><i class="bi bi-heart-fill me-2"></i>Emergency Confirmations</h5>
-                <span class="badge bg-danger rounded-pill">{{ confirmations.length }}</span>
-              </div>
+                  <h5 class="fw-bold mb-0 text-wine"><i class="bi bi-heart-fill me-2"></i>Emergency Confirmations</h5>
+                  <span class="d-inline-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="background-color: var(--ll-wine-red); width: 24px; height: 24px; border-radius: 50%; font-size: 0.75rem;">{{ confirmations.length }}</span>
+                </div>
               <div class="ll-card__body">
                 <div v-if="confirmationsLoading" class="text-center py-4">
                   <div class="spinner-border spinner-border-sm text-danger" role="status"></div>
@@ -82,9 +82,9 @@
                         </p>
                         <p class="small text-slate-400 mb-0 mt-1">Confirmed on {{ formatDateTime(conf.createdAt) }}</p>
                       </div>
-                      <a :href="buildMapsUrl((conf.hospitalName || 'Emergency Request') + ', ' + (conf.city || ''))" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary flex-shrink-0">
+                      <RouterLink to="/map" class="btn btn-sm btn-outline-secondary flex-shrink-0">
                         <i class="bi bi-geo-alt-fill"></i> Map
-                      </a>
+                      </RouterLink>
                     </div>
                   </div>
                 </div>
@@ -96,9 +96,9 @@
           <div class="col-md-6 col-12">
             <div class="ll-card h-100">
               <div class="ll-card__header d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0 text-wine"><i class="bi bi-calendar-check-fill me-2"></i>Registered Events</h5>
-                <span class="badge rounded-pill" style="background-color: var(--ll-wine-red); color: white;">{{ registeredEvents.length }}</span>
-              </div>
+                  <h5 class="fw-bold mb-0 text-wine"><i class="bi bi-calendar-check-fill me-2"></i>Registered Events</h5>
+                  <span class="d-inline-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="background-color: var(--ll-wine-red); width: 24px; height: 24px; border-radius: 50%; font-size: 0.75rem;">{{ registeredEvents.length }}</span>
+                </div>
               <div class="ll-card__body">
                 <div v-if="eventsLoading" class="text-center py-4">
                   <div class="spinner-border spinner-border-sm text-danger" role="status"></div>

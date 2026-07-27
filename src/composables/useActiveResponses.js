@@ -9,6 +9,42 @@ import { ref, computed, onUnmounted } from 'vue'
 import { ref as rtdbRef, onValue } from 'firebase/database'
 import { rtdb } from '@/firebase.js'
 
+const LIVE_RESPONSE_TTL_MS = 2 * 60 * 1000
+
+function hasLiveCoordinates(response) {
+  if (response?.latitude == null || response?.longitude == null) return false
+  if (response.latitude === '' || response.longitude === '') return false
+
+  const latitude = Number(response?.latitude)
+  const longitude = Number(response?.longitude)
+  return Number.isFinite(latitude) && Number.isFinite(longitude)
+}
+
+function getUpdatedAtMs(response) {
+  const value = response?.updatedAt
+  if (typeof value === 'number') return value
+  if (value instanceof Date) return value.getTime()
+  if (typeof value === 'string') {
+    const parsed = Date.parse(value)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+  return 0
+}
+
+function isFreshResponder(response) {
+  const updatedAtMs = getUpdatedAtMs(response)
+  if (!updatedAtMs) return true
+  return Date.now() - updatedAtMs <= LIVE_RESPONSE_TTL_MS
+}
+
+function isLiveResponder(response) {
+  return (
+    hasLiveCoordinates(response) &&
+    isFreshResponder(response) &&
+    (response.status === 'en_route' || response.status === 'approaching')
+  )
+}
+
 export function useActiveResponses() {
   const responses = ref([])
   const loading = ref(true)
@@ -37,10 +73,12 @@ export function useActiveResponses() {
             return
           }
 
-          const list = Object.keys(val).map((key) => ({
-            trackingKey: key,
-            ...val[key]
-          }))
+          const list = Object.keys(val)
+            .map((key) => ({
+              trackingKey: key,
+              ...val[key]
+            }))
+            .filter(isLiveResponder)
 
           responses.value = list
           loading.value = false
@@ -84,9 +122,7 @@ export function useActiveResponses() {
    */
   function getEnRouteCountForRequest(requestId) {
     if (!requestId) return 0
-    return responses.value.filter(
-      (r) => r.requestId === requestId && (r.status === 'en_route' || r.status === 'approaching')
-    ).length
+    return responses.value.filter((r) => r.requestId === requestId).length
   }
 
   const totalActiveRespondersCount = computed(() => responses.value.length)

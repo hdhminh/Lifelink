@@ -16,6 +16,7 @@ import {
   collection,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   orderBy,
   query,
@@ -74,6 +75,18 @@ function buildThreadSeed({
   }
 }
 
+function buildParticipantMetadata({
+  participantType,
+  participantDisplayName,
+  participantEmail
+}) {
+  return {
+    participantDisplayName:
+      participantDisplayName || (participantType === 'guest' ? 'Guest User' : 'User'),
+    participantEmail: participantEmail || (participantType === 'guest' ? 'Guest Session' : '')
+  }
+}
+
 /**
  * Composable providing real-time support chat operations.
  * All message sends use Firestore writeBatch to atomically update both
@@ -117,11 +130,17 @@ export function useSupportChat() {
     loading.value = true
     error.value = null
     try {
+      await ensureThread(threadId, {
+        participantId,
+        participantType,
+        participantDisplayName,
+        participantEmail
+      })
+
       const batch = writeBatch(db)
       const threadRef = getThreadRef(threadId)
       const messageRef = doc(getMessagesCollection(threadId))
-      const threadSeed = buildThreadSeed({
-        participantId,
+      const participantMetadata = buildParticipantMetadata({
         participantType,
         participantDisplayName,
         participantEmail
@@ -130,7 +149,7 @@ export function useSupportChat() {
       batch.set(
         threadRef,
         {
-          ...threadSeed,
+          ...participantMetadata,
           lastMessage: text,
           lastMessageAt: serverTimestamp(),
           lastMessageSenderRole: 'participant',
@@ -144,7 +163,7 @@ export function useSupportChat() {
         threadId,
         senderId: participantId,
         senderRole: participantType === 'guest' ? 'guest' : 'user',
-        senderName: senderName || threadSeed.participantDisplayName,
+        senderName: senderName || participantMetadata.participantDisplayName,
         text,
         createdAt: serverTimestamp()
       })
@@ -177,11 +196,17 @@ export function useSupportChat() {
     loading.value = true
     error.value = null
     try {
+      await ensureThread(threadId, {
+        participantId,
+        participantType,
+        participantDisplayName,
+        participantEmail
+      })
+
       const batch = writeBatch(db)
       const threadRef = getThreadRef(threadId)
       const messageRef = doc(getMessagesCollection(threadId))
-      const threadSeed = buildThreadSeed({
-        participantId,
+      const participantMetadata = buildParticipantMetadata({
         participantType,
         participantDisplayName,
         participantEmail
@@ -190,7 +215,7 @@ export function useSupportChat() {
       batch.set(
         threadRef,
         {
-          ...threadSeed,
+          ...participantMetadata,
           lastMessage: text,
           lastMessageAt: serverTimestamp(),
           lastMessageSenderRole: senderRole,
@@ -233,11 +258,17 @@ export function useSupportChat() {
     loading.value = true
     error.value = null
     try {
+      await ensureThread(threadId, {
+        participantId,
+        participantType,
+        participantDisplayName,
+        participantEmail
+      })
+
       const batch = writeBatch(db)
       const threadRef = getThreadRef(threadId)
       const messageRef = doc(getMessagesCollection(threadId))
-      const threadSeed = buildThreadSeed({
-        participantId,
+      const participantMetadata = buildParticipantMetadata({
         participantType,
         participantDisplayName,
         participantEmail
@@ -246,7 +277,7 @@ export function useSupportChat() {
       batch.set(
         threadRef,
         {
-          ...threadSeed,
+          ...participantMetadata,
           lastMessage: text,
           lastMessageAt: serverTimestamp(),
           lastMessageSenderRole: 'admin',
@@ -333,6 +364,23 @@ export function useSupportChat() {
     })
   }
 
+  /**
+   * Deletes a support thread and its messages.
+   * @param {string} threadId - Thread document ID.
+   * @returns {Promise<void>}
+   */
+  async function deleteSupportThread(threadId) {
+    if (!threadId) return
+
+    const batch = writeBatch(db)
+    const messageSnap = await getDocs(getMessagesCollection(threadId))
+    messageSnap.docs.forEach((messageDoc) => {
+      batch.delete(messageDoc.ref)
+    })
+    batch.delete(getThreadRef(threadId))
+    await batch.commit()
+  }
+
   return {
     loading,
     error,
@@ -343,6 +391,7 @@ export function useSupportChat() {
     listenToThreadMessages,
     listenToThreads,
     markAdminThreadRead,
-    markParticipantThreadRead
+    markParticipantThreadRead,
+    deleteSupportThread
   }
 }

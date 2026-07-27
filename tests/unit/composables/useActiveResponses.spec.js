@@ -12,6 +12,8 @@ vi.mock('firebase/database', () => ({
           donorId: 'donor1',
           requestId: 'req1',
           status: 'en_route',
+          latitude: 10.78,
+          longitude: 106.69,
           distanceMeters: 4000,
           etaMins: 10
         },
@@ -19,8 +21,19 @@ vi.mock('firebase/database', () => ({
           donorId: 'donor2',
           requestId: 'req1',
           status: 'approaching',
+          latitude: 10.79,
+          longitude: 106.7,
           distanceMeters: 300,
           etaMins: 1
+        },
+        req1_donor3_stale: {
+          donorId: 'donor3',
+          requestId: 'req1',
+          status: 'en_route',
+          latitude: null,
+          longitude: null,
+          distanceMeters: 0,
+          etaMins: 0
         }
       })
     })
@@ -44,6 +57,11 @@ describe('useActiveResponses.js', () => {
     activeResp.startListening()
     expect(activeResp.responses.value.length).toBe(2)
     expect(activeResp.loading.value).toBe(false)
+  })
+
+  it('ignores en-route records that do not have live coordinates', () => {
+    activeResp.startListening()
+    expect(activeResp.responses.value.map((r) => r.donorId)).not.toContain('donor3')
   })
 
   it('filters responses by requestId', () => {

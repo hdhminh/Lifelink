@@ -1,15 +1,25 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
-vi.mock('@/firebase.js', () => ({ db: {} }))
+vi.mock('@/firebase.js', () => ({ db: {}, rtdb: {} }))
 
 const mockRunTransaction = vi.fn()
 const mockGetDoc = vi.fn()
+const mockRtdbGet = vi.fn()
+const mockRtdbRemove = vi.fn()
+const mockRtdbUpdate = vi.fn()
 
 vi.mock('firebase/firestore', () => ({
   doc: vi.fn((db, path, id) => ({ path: `${path}/${id}`, id })),
   getDoc: (...args) => mockGetDoc(...args),
   runTransaction: (...args) => mockRunTransaction(...args),
   serverTimestamp: () => 'MOCK_TIMESTAMP'
+}))
+
+vi.mock('firebase/database', () => ({
+  ref: vi.fn((db, path) => ({ path })),
+  get: (...args) => mockRtdbGet(...args),
+  remove: (...args) => mockRtdbRemove(...args),
+  update: (...args) => mockRtdbUpdate(...args)
 }))
 
 vi.mock('@/utils/bloodCompatibility.js', () => ({
@@ -24,6 +34,9 @@ describe('useConfirmDonation.js Full Suite (50 Tests)', () => {
   beforeEach(() => {
     vi.resetModules()
     vi.clearAllMocks()
+    mockRtdbGet.mockResolvedValue({ exists: () => false })
+    mockRtdbRemove.mockResolvedValue()
+    mockRtdbUpdate.mockResolvedValue()
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-07-23T00:00:00Z'))
   })
@@ -767,6 +780,30 @@ describe('useConfirmDonation.js Full Suite (50 Tests)', () => {
       await cancelConfirmation('conf1', 'req1')
       expect(mockTransaction.delete).toHaveBeenCalled()
       expect(success.value).toBe(true)
+    })
+
+    it('removes donor liveTracking record when cancelling confirmation', async () => {
+      const mockTransaction = {
+        get: vi.fn().mockImplementation((ref) => {
+          if (ref.id === 'conf1') {
+            return Promise.resolve({
+              exists: () => true,
+              data: () => ({ donorId: 'donor1', status: 'confirmed' })
+            })
+          }
+          return Promise.resolve({ exists: () => true, data: () => ({ confirmedCount: 2 }) })
+        }),
+        update: vi.fn(),
+        delete: vi.fn()
+      }
+      mockRunTransaction.mockImplementation(async (db, cb) => cb(mockTransaction))
+
+      const { useConfirmDonation } = await import('@/composables/useConfirmDonation.js')
+      const { cancelConfirmation } = useConfirmDonation()
+
+      await cancelConfirmation('conf1', 'req1')
+
+      expect(mockRtdbRemove).toHaveBeenCalledWith({ path: 'liveTracking/req1_donor1' })
     })
 
     it('decrements confirmedCount by one', async () => {

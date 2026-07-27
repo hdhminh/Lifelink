@@ -1,12 +1,11 @@
 {
   "rules": {
     "liveTracking": {
-      ".read": false,
+      ".read": true,
       ".write": false,
       "$trackingId": {
-        ".read": "auth != null && (newData.child('donorId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
-        ".write": "auth != null && (newData.child('donorId').val() === auth.uid || data.child('donorId').val() === auth.uid)",
-        ".validate": "newData.hasChildren(['donorId', 'requestId', 'status'])"
+        ".write": "(!newData.exists() && (auth != null || data.child('donorId').val().beginsWith('guest_'))) || (newData.exists() && newData.child('donorId').isString() && ((auth != null && newData.child('donorId').val() === auth.uid) || newData.child('donorId').val().beginsWith('guest_')))",
+        ".validate": "!newData.exists() || newData.hasChildren(['donorId', 'requestId', 'status'])"
       }
     }
   }

@@ -240,29 +240,13 @@
     />
 
     <!-- Confirmation Modals Component -->
-    <ConfirmationModals ref="modalsRef" :requests="requests" />
+    <ConfirmationModals
+      ref="modalsRef"
+      :requests="requests"
+      :confirmed-request-ids="confirmedRequestIds"
+      @confirmed="handleConfirmedRequest"
+    />
 
-    <!-- Floating Tracking Status -->
-    <div
-      v-if="isTracking"
-      class="ll-tracking-indicator shadow-lg rounded-pill px-3 py-2 bg-white border border-danger d-flex align-items-center gap-3"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <span
-          class="spinner-grow spinner-grow-sm text-danger"
-          role="status"
-          aria-hidden="true"
-        ></span>
-        <span class="fw-bold text-slate-800 small">Sharing Live Location</span>
-      </div>
-      <button
-        class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold"
-        type="button"
-        @click="stopTracking"
-      >
-        Stop Sharing
-      </button>
-    </div>
   </div>
 </template>
 
@@ -297,7 +281,8 @@ import { useLocationTracking } from '@/composables/useLocationTracking.js'
 import { getHospitalCoordinates, HOSPITAL_DATABASE } from '@/data/hospitalCoordinates.js'
 
 const { user, userProfile, isAdmin } = useAuth()
-const { guestId } = useGuestSession()
+const guestSession = useGuestSession()
+const guestId = ref(guestSession.getGuestSession().guestId)
 const router = useRouter()
 const route = useRoute()
 const modalsRef = ref(null)
@@ -329,7 +314,7 @@ const {
   confirmGuestAvailability
 } = useConfirmDonation()
 const { buildMapsUrl } = useGeolocation()
-const { getGuestSession, updateGuestSession } = useGuestSession()
+const { getGuestSession, updateGuestSession } = guestSession
 const { isTracking, startTracking, stopTracking, markArrived } = useLocationTracking()
 
 // -------------------------------------------------------------
@@ -388,6 +373,13 @@ function handleConfirm(requestId) {
 function handleOpenMaps(requestId) {
   if (modalsRef.value) {
     modalsRef.value.openMapsForRequest(requestId)
+  }
+}
+
+function handleConfirmedRequest(requestId) {
+  const id = String(requestId)
+  if (!confirmedRequestIds.value.includes(id)) {
+    confirmedRequestIds.value = [...confirmedRequestIds.value, id]
   }
 }
 

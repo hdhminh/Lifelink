@@ -19,7 +19,12 @@
     />
 
     <!-- Confirmation Modals Component -->
-    <ConfirmationModals ref="modalsRef" :requests="requests" />
+    <ConfirmationModals
+      ref="modalsRef"
+      :requests="requests"
+      :confirmed-request-ids="confirmedRequestIds"
+      @confirmed="handleConfirmedRequest"
+    />
 
     <div>
       <EmergencyMap
@@ -62,7 +67,8 @@ const mapRef = ref(null)
 const modalsRef = ref(null)
 
 const { user } = useAuth()
-const { guestId } = useGuestSession()
+const guestSession = useGuestSession()
+const guestId = ref(guestSession.getGuestSession().guestId)
 
 const confirmedRequestIds = ref([])
 let unsubscribeConfirmations = null
@@ -131,6 +137,13 @@ function handleRespond(requestId) {
 function handleOpenMaps(requestId) {
   if (modalsRef.value) {
     modalsRef.value.openMapsForRequest(requestId)
+  }
+}
+
+function handleConfirmedRequest(requestId) {
+  const id = String(requestId)
+  if (!confirmedRequestIds.value.includes(id)) {
+    confirmedRequestIds.value = [...confirmedRequestIds.value, id]
   }
 }
 

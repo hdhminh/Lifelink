@@ -9,9 +9,7 @@
     <main class="ll-main" role="main">
       <RouterView v-slot="{ Component, route }">
         <transition name="page-fade" mode="out-in">
-          <keep-alive max="5">
-            <component :is="Component" :key="route.fullPath" />
-          </keep-alive>
+          <component :is="Component" :key="route.fullPath" />
         </transition>
       </RouterView>
     </main>

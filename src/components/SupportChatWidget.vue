@@ -101,8 +101,7 @@
             />
             <button
               type="submit"
-              class="btn btn-sm btn-danger px-3 d-flex align-items-center justify-content-center chat-style-8"
-             
+              class="btn btn-sm px-3 d-flex align-items-center justify-content-center ll-chat-send-button chat-style-8"
               aria-label="Send message"
             >
               <i class="bi bi-send-fill"></i>
@@ -148,6 +147,12 @@ const chatScrollContainer = ref(null)
 let chatUnsubscribe = null
 
 const faqQuestions = [
+  {
+    id: 7,
+    question: 'How do I cancel event registration?',
+    answer:
+      'If you need to cancel an event registration, tell us the event name here. A support admin will review it and help remove your registration.'
+  },
   {
     id: 1,
     question: 'Accidental confirmation?',
@@ -197,7 +202,7 @@ const currentUserId = computed(() => {
 const systemKeywords = [
   'blood', 'mau', 'hien', 'donor', 'hospital', 'benh vien', 'emergency', 'khan cap',
   'register', 'dang ky', 'gps', 'location', 'vi tri', 'maps', 'ban do', 'cancel',
-  'huy', 'nham', 'mistake', 'accident', 'go', 'help', 'tro giup', 'admin', 'chao',
+  'huy', 'nham', 'mistake', 'accident', 'help', 'tro giup', 'admin', 'event', 'su kien',
   'hello', 'hi', 'xin chao'
 ]
 
@@ -274,6 +279,7 @@ async function sendChatMessage() {
       chatId,
       senderId: chatId,
       senderName,
+      senderRole: participantType === 'guest' ? 'guest' : 'user',
       receiverId: 'admin',
       text,
       createdAt: Date.now() / 1000
@@ -333,6 +339,7 @@ async function sendFaqMessage(q) {
       id: `local-q-${Date.now()}`,
       chatId,
       senderId: chatId,
+      senderRole: participantType === 'guest' ? 'guest' : 'user',
       senderName,
       receiverId: 'admin',
       text: q.question,
@@ -343,6 +350,7 @@ async function sendFaqMessage(q) {
         id: `local-a-${Date.now()}`,
         chatId,
         senderId: 'support_bot',
+        senderRole: 'support_bot',
         senderName: 'Support Bot',
         receiverId: chatId,
         text: q.answer,
@@ -376,25 +384,27 @@ function resolveParticipantContext(threadId) {
 
 function matchBotReplyText(userText) {
   const textLower = userText.toLowerCase()
+  const hasAny = (keywords) => keywords.some((kw) => textLower.includes(kw))
 
-  if (['cancel', 'huy', 'nham', 'mistake', 'accident', 'go'].some((kw) => textLower.includes(kw))) {
+  if (
+    hasAny(['event', 'su kien', 'registered event', 'event registration']) &&
+    hasAny(['cancel', 'huy', 'remove', 'delete', 'go', 'not go'])
+  ) {
+    return 'For event registration changes, please send the event name you want to cancel. A support admin will verify your registration and help remove it.'
+  } else if (hasAny(['confirmation', 'confirmed availability', 'confirm availability', 'accident', 'mistake', 'nham'])) {
     return 'If you accidentally confirmed availability, please write "cancel confirmation" or wait here. We will notify the hospital coordinator and remove your confirmation immediately.'
-  } else if (['register', 'dang ky', 'signup', 'tai khoan'].some((kw) => textLower.includes(kw))) {
+  } else if (hasAny(['cancel confirmation', 'huy xac nhan', 'huy confirm'])) {
+    return 'If you need to cancel a blood donation confirmation, please keep this chat open. A support admin will verify and remove the confirmation.'
+  } else if (hasAny(['register', 'dang ky', 'signup', 'tai khoan'])) {
     return 'To register as a donor, click on the "Register" button on the top right, select your blood type and city, and create your account to start receiving alerts.'
-  } else if (
-    ['requirement', 'yeu cau', 'tuoi', 'can', 'tattoo', 'xam'].some((kw) => textLower.includes(kw))
-  ) {
+  } else if (hasAny(['requirement', 'yeu cau', 'tuoi', 'can', 'tattoo', 'xam'])) {
     return 'Donors must be in good health, at least 18 years old, weigh at least 45kg, and have no recent tattoos/piercings (within 6 months).'
-  } else if (['often', 'bao lau', 'lan', 'interval'].some((kw) => textLower.includes(kw))) {
+  } else if (hasAny(['often', 'bao lau', 'lan', 'interval'])) {
     return 'The minimum interval between whole blood donations is 12 weeks for male donors and 16 weeks for female donors.'
-  } else if (
-    ['change', 'doi', 'sua', 'profile', 'blood type', 'nhom mau'].some((kw) =>
-      textLower.includes(kw)
-    )
-  ) {
+  } else if (hasAny(['change', 'doi', 'sua', 'profile', 'blood type', 'nhom mau'])) {
     return 'Yes, you can update your blood type, location, and contact information anytime under your Profile settings after logging in.'
   } else {
-    return 'Hi! I am the Support Bot. You can ask about: 1. Accidental confirmations, 2. Registration, 3. Donation requirements, 4. Donation intervals. Or type "admin" to connect with our human administrator.'
+    return 'Hi! I am the Support Bot. You can ask about confirmations, event registration changes, donation requirements, or type "admin" to connect with our human administrator.'
   }
 }
 
@@ -422,6 +432,7 @@ function processLocalBotReply(userText, chatId) {
       id: `local-bot-${Date.now()}`,
       chatId,
       senderId: 'support_bot',
+      senderRole: 'support_bot',
       senderName: 'Support Bot',
       receiverId: chatId,
       text: replyText,
@@ -463,7 +474,7 @@ function listenToChat() {
 }
 
 watch(
-  user,
+  currentUserId,
   () => {
     listenToChat()
   },
@@ -530,5 +541,16 @@ onUnmounted(() => {
 }
 .chat-style-8 {
   height: 36px;
+}
+.ll-chat-send-button {
+  background: var(--ll-wine-red);
+  border-color: var(--ll-wine-red);
+  color: #ffffff;
+}
+.ll-chat-send-button:hover,
+.ll-chat-send-button:focus {
+  background: #a3263d;
+  border-color: #a3263d;
+  color: #ffffff;
 }
 </style>

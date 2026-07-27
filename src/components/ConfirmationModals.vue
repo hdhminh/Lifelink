@@ -43,7 +43,7 @@
               <button
                 type="button"
                 class="btn ll-btn-primary w-100 d-flex align-items-center justify-content-center gap-2"
-                style="color: #fff;"
+                style="color: #fff"
                 @click="handleShareAndOpenMaps"
               >
                 <i class="bi bi-broadcast"></i> Share Live Location & Go to Map
@@ -68,7 +68,7 @@
               <button
                 type="button"
                 class="btn ll-btn-primary w-100 d-flex align-items-center justify-content-center gap-2"
-                style="color: #fff;"
+                style="color: #fff"
                 @click="handleShareAndTrack"
               >
                 <i class="bi bi-broadcast"></i> Share Live Location
@@ -115,40 +115,8 @@
               ></button>
             </div>
 
-            <!-- Success Screen -->
-            <div v-if="guestConfirmSuccess" class="text-center">
-              <div class="mb-3">
-                <div
-                  class="mx-auto d-flex align-items-center justify-content-center rounded-circle bg-success-bg text-success"
-                  style="width: 64px; height: 64px"
-                >
-                  <i class="bi bi-check-circle-fill" style="font-size: 2.5rem"></i>
-                </div>
-              </div>
-              <h5 class="fw-bold text-slate-900 mb-2">Thank you!</h5>
-              <p class="text-slate-500 mb-4 px-2" style="font-size: 0.95rem">
-                Your availability has been confirmed. Would you like to view directions?
-              </p>
-              <div class="d-flex flex-column gap-2">
-                <button
-                  type="button"
-                  class="btn ll-btn-primary w-100 d-flex align-items-center justify-content-center gap-2"
-                  @click="handleOpenGuestMaps"
-                >
-                  <i class="bi bi-geo-alt-fill"></i> View Google Maps
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-link text-slate-400 text-decoration-none py-1"
-                  @click="showGuestConfirmModal = false"
-                >
-                  No, thanks
-                </button>
-              </div>
-            </div>
-
             <!-- Form Screen -->
-            <div v-else>
+            <div>
               <p class="text-slate-500 mb-3 small">
                 Confirm your availability for <strong>{{ guestConfirmHospital }}</strong> in
                 <strong>{{ guestConfirmCity }}</strong
@@ -203,7 +171,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '@/composables/useAuth.js'
 import { useGuestSession } from '@/composables/useGuestSession.js'
@@ -212,8 +180,6 @@ import { useGeolocation } from '@/composables/useGeolocation.js'
 import { useLocationTracking } from '@/composables/useLocationTracking.js'
 import { useToast } from '@/composables/useToast.js'
 import { getHospitalCoordinates } from '@/data/hospitalCoordinates.js'
-import { ref as dbRef, set, onDisconnect, serverTimestamp } from 'firebase/database'
-import { rtdb } from '@/firebase.js'
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import AlertMessage from '@/components/AlertMessage.vue'
 
@@ -221,19 +187,26 @@ const props = defineProps({
   requests: {
     type: Array,
     required: true
+  },
+  confirmedRequestIds: {
+    type: Array,
+    default: () => []
   }
 })
+
+const emit = defineEmits(['confirmed'])
 
 const { user, userProfile } = useAuth()
 const { getGuestSession } = useGuestSession()
 const { confirmAvailability, confirmGuestAvailability } = useConfirmDonation()
 const { buildMapsUrl } = useGeolocation()
-const { startTracking } = useLocationTracking()
+const { startTracking, stopTracking, getStoredTrackingSession } = useLocationTracking()
 const { showToast } = useToast()
 const router = useRouter()
 const route = useRoute()
 
 const isOnMapPage = computed(() => route.path === '/map')
+const resumeAttemptedForKey = ref('')
 
 const showConfirmDonationModal = ref(false)
 const confirmingRequestId = ref(null)
@@ -245,7 +218,6 @@ const guestConfirmRequestId = ref('')
 const guestConfirmHospital = ref('')
 const guestConfirmCity = ref('')
 const guestConfirmError = ref('')
-const guestConfirmSuccess = ref(false)
 
 const showMapsConfirmModal = ref(false)
 const pendingMapUrl = ref('')
@@ -266,16 +238,8 @@ function handleOpenMaps() {
 
 async function handleShareAndOpenMaps() {
   const reqId = pendingRequestForTracking.value?.id
-  if (pendingRequestForTracking.value && user.value && userProfile.value) {
-    const req = pendingRequestForTracking.value
-    const coords = getHospitalCoordinates(req.hospitalName, req.city)
-    startTracking({
-      requestId: req.id,
-      donorId: user.value.uid,
-      donorName: userProfile.value.displayName,
-      bloodType: userProfile.value.bloodType,
-      hospitalLocation: { ...coords, hospitalName: req.hospitalName, city: req.city }
-    })
+  if (pendingRequestForTracking.value) {
+    startTrackingForRequest(pendingRequestForTracking.value)
   }
 
   closeMapsConfirmModal()
@@ -288,26 +252,74 @@ async function handleShareAndOpenMaps() {
 
 async function handleShareAndTrack() {
   // On map page: just share location without opening maps
-  if (pendingRequestForTracking.value && user.value && userProfile.value) {
-    const req = pendingRequestForTracking.value
-    const coords = getHospitalCoordinates(req.hospitalName, req.city)
-    startTracking({
-      requestId: req.id,
-      donorId: user.value.uid,
-      donorName: userProfile.value.displayName,
-      bloodType: userProfile.value.bloodType,
-      hospitalLocation: { ...coords, hospitalName: req.hospitalName, city: req.city }
-    })
+  if (pendingRequestForTracking.value) {
+    startTrackingForRequest(pendingRequestForTracking.value)
   }
   closeMapsConfirmModal()
 }
 
-function handleOpenGuestMaps() {
-  const queryText = `${guestConfirmHospital.value}, ${guestConfirmCity.value}, Vietnam`
-  const url = `https://maps.google.com/?q=${encodeURIComponent(queryText)}`
-  window.open(url, '_blank')
-  showGuestConfirmModal.value = false
+function startTrackingForRequest(req, fallbackSession = null) {
+  if (!req) return
+
+  const guestSession = !user.value ? getGuestSession() : null
+  const donorId = user.value?.uid || fallbackSession?.donorId || guestSession?.guestId
+  if (!donorId) return
+
+  const coords = getHospitalCoordinates(req.hospitalName, req.city)
+  startTracking({
+    requestId: req.id,
+    donorId,
+    donorName:
+      userProfile.value?.displayName ||
+      fallbackSession?.donorName ||
+      guestConfirmName.value.trim() ||
+      'Guest Donor',
+    bloodType:
+      userProfile.value?.bloodType ||
+      fallbackSession?.bloodType ||
+      'Guest',
+    hospitalLocation: { ...coords, hospitalName: req.hospitalName, city: req.city }
+  })
 }
+
+watch(
+  [
+    () => props.requests,
+    () => props.confirmedRequestIds,
+    () => user.value,
+    () => userProfile.value,
+    () => getGuestSession().guestId
+  ],
+  () => {
+    const session = getStoredTrackingSession()
+    if (!session) return
+
+    const activeDonorId = user.value?.uid || getGuestSession().guestId
+    if (!activeDonorId || String(session.donorId) !== String(activeDonorId)) {
+      stopTracking()
+      return
+    }
+
+    const confirmedIds = props.confirmedRequestIds.map(String)
+    if (confirmedIds.length === 0) return
+
+    const sessionRequestId = String(session.requestId)
+    if (!confirmedIds.includes(sessionRequestId)) {
+      stopTracking()
+      return
+    }
+
+    const req = props.requests.find((item) => String(item.id) === sessionRequestId)
+    if (!req) return
+
+    const resumeKey = `${sessionRequestId}_${session.donorId}`
+    if (resumeAttemptedForKey.value === resumeKey) return
+
+    resumeAttemptedForKey.value = resumeKey
+    startTrackingForRequest(req, session)
+  },
+  { immediate: true, deep: true }
+)
 
 async function commitGuestConfirm() {
   if (!guestConfirmName.value.trim()) {
@@ -321,7 +333,9 @@ async function commitGuestConfirm() {
       guestName: guestConfirmName.value.trim(),
       guestPhone: guestConfirmPhone.value.trim() || 'N/A'
     })
-    guestConfirmSuccess.value = true
+    emit('confirmed', reqId)
+    showGuestConfirmModal.value = false
+    openMapsForRequest(reqId)
     showToast('Availability confirmed successfully.', 'success')
   } catch (err) {
     console.error('Failed to commit guest confirmation:', err)
@@ -341,36 +355,6 @@ async function commitConfirmDonation() {
       bloodType: userProfile.value.bloodType
     })
 
-    // Immediately write en_route record to RTDB so Response Status sidebar updates instantly
-    // GPS coordinates will be added later when donor clicks "Share Live Location"
-    if (targetRequest) {
-      const trackingKey = `${reqId}_${user.value.uid}`
-      const trackingRef = dbRef(rtdb, `liveTracking/${trackingKey}`)
-      const coords = getHospitalCoordinates(targetRequest.hospitalName, targetRequest.city)
-      const initialPayload = {
-        donorId: user.value.uid,
-        donorName: userProfile.value.displayName || 'Donor',
-        bloodType: userProfile.value.bloodType || 'O+',
-        requestId: reqId,
-        hospitalName: targetRequest.hospitalName || 'Hospital',
-        city: targetRequest.city || '',
-        hospitalLat: coords?.lat || null,
-        hospitalLng: coords?.lng || null,
-        latitude: null,
-        longitude: null,
-        accuracy: 0,
-        speed: null,
-        status: 'en_route',
-        distanceMeters: 0,
-        etaMins: 0,
-        updatedAt: serverTimestamp()
-      }
-      onDisconnect(trackingRef).remove().catch(() => {})
-      set(trackingRef, initialPayload).catch((err) => {
-        console.warn('[ConfirmationModals] RTDB initial write failed:', err)
-      })
-    }
-
     showToast('Availability confirmed successfully! The board will update live.', 'success')
     if (targetRequest) {
       openMapsForRequest(targetRequest.id)
@@ -386,9 +370,7 @@ async function commitConfirmDonation() {
 function openMapsForRequest(requestId) {
   const req = props.requests.find((r) => String(r.id) === String(requestId))
   if (req) {
-    const mapUrl = buildMapsUrl(
-      (req.hospitalName || 'Emergency Request') + ', ' + (req.city || '')
-    )
+    const mapUrl = buildMapsUrl((req.hospitalName || 'Emergency Request') + ', ' + (req.city || ''))
     pendingMapUrl.value = mapUrl
     pendingRequestForTracking.value = req
     showMapsConfirmModal.value = true
@@ -406,7 +388,6 @@ function handleConfirm(requestId) {
     guestConfirmName.value = ''
     guestConfirmPhone.value = ''
     guestConfirmError.value = ''
-    guestConfirmSuccess.value = false
     showGuestConfirmModal.value = true
     return
   }

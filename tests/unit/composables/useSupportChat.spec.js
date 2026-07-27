@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 vi.mock('@/firebase.js', () => ({ db: {} }))
 
 const mockGetDoc = vi.fn()
+const mockGetDocs = vi.fn()
 const mockSetDoc = vi.fn()
 const mockUpdateDoc = vi.fn()
 const mockOnSnapshot = vi.fn()
@@ -14,6 +15,7 @@ vi.mock('firebase/firestore', () => ({
   })),
   doc: vi.fn((db, path, id) => ({ path: `${path}/${id}`, id })),
   getDoc: (...args) => mockGetDoc(...args),
+  getDocs: (...args) => mockGetDocs(...args),
   setDoc: (...args) => mockSetDoc(...args),
   updateDoc: (...args) => mockUpdateDoc(...args),
   onSnapshot: (...args) => mockOnSnapshot(...args),
@@ -32,6 +34,7 @@ describe('useSupportChat.js Unit Tests (~25 tests)', () => {
     mockBatch = {
       set: vi.fn(),
       update: vi.fn(),
+      delete: vi.fn(),
       commit: vi.fn().mockResolvedValue()
     }
     mockWriteBatch.mockReturnValue(mockBatch)
@@ -130,5 +133,24 @@ describe('useSupportChat.js Unit Tests (~25 tests)', () => {
         participantLastReadAt: 'MOCK_TIMESTAMP'
       })
     )
+  })
+
+  it('deletes a support thread document', async () => {
+    mockGetDocs.mockResolvedValueOnce({
+      docs: [
+        { ref: { path: 'supportThreads/thread1/messages/msg1' } },
+        { ref: { path: 'supportThreads/thread1/messages/msg2' } }
+      ]
+    })
+
+    const { useSupportChat } = await import('@/composables/useSupportChat.js')
+    const { deleteSupportThread } = useSupportChat()
+
+    await deleteSupportThread('thread1')
+
+    expect(mockBatch.delete).toHaveBeenCalledWith({ path: 'supportThreads/thread1/messages/msg1' })
+    expect(mockBatch.delete).toHaveBeenCalledWith({ path: 'supportThreads/thread1/messages/msg2' })
+    expect(mockBatch.delete).toHaveBeenCalledWith(expect.objectContaining({ id: 'thread1' }))
+    expect(mockBatch.commit).toHaveBeenCalledTimes(1)
   })
 })

@@ -64,7 +64,7 @@
                     class="form-select form-select-sm"
                     :value="req.status"
                     :title="`Change status for ${req.hospitalName}`"
-                    @change="$emit('handle-request-status-select', req, $event.target.value)"
+                    @change="$emit('handle-request-status-select', req, $event.target.value, $event)"
                   >
                     <option value="active">Active</option>
                     <option value="fulfilled">Fulfilled</option>
@@ -162,7 +162,7 @@
                                 class="form-select form-select-sm ll-select-button dashboard-style-33"
                                 :value="c.status || 'confirmed'"
                                 @change="
-                                  $emit('change-confirmation-status', c.id, $event.target.value)
+                                  $emit('change-confirmation-status', c, $event.target.value, $event)
                                 "
                               >
                                 <option value="confirmed">Confirmed</option>
@@ -175,7 +175,7 @@
                               <button
                                 class="btn btn-sm btn-outline-danger py-0 px-2 dashboard-style-31"
                                 type="button"
-                                @click="$emit('handle-cancel-confirmation', c.id, req.id, c.donorName)"
+                                @click="$emit('handle-cancel-confirmation', c)"
                               >
                                 <i class="bi bi-x-circle me-1"></i>Cancel Donation
                               </button>
@@ -235,3 +235,35 @@ defineEmits([
   'handle-cancel-confirmation'
 ])
 </script>
+
+<style scoped>
+.ll-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ll-tab-button {
+  border: 1px solid var(--ll-slate-200);
+  background: #ffffff;
+  color: var(--ll-slate-700);
+  border-radius: var(--ll-radius-sm);
+  font-weight: 700;
+  transition: all var(--ll-transition);
+}
+
+.ll-tab-button:hover,
+.ll-tab-button:focus {
+  border-color: var(--ll-wine-red);
+  color: var(--ll-wine-red);
+}
+
+.ll-tab-button--active,
+.ll-tab-button--active:hover,
+.ll-tab-button--active:focus {
+  border-color: var(--ll-wine-red);
+  background: var(--ll-wine-red);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(142, 36, 53, 0.18);
+}
+</style>

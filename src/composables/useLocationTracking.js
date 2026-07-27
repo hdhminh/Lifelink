@@ -12,8 +12,8 @@
  * - Proximity detection: Auto-flags 'approaching' when donor is within 500m of target hospital.
  */
 
-import { ref as vueRef, onUnmounted } from 'vue'
-import { ref as dbRef, set, update, remove, onDisconnect, serverTimestamp } from 'firebase/database'
+import { ref as vueRef } from 'vue'
+import { ref as dbRef, update, remove, onDisconnect, serverTimestamp } from 'firebase/database'
 import { rtdb } from '@/firebase.js'
 import {
   calculateHaversineDistance,
@@ -36,6 +36,51 @@ let lastWriteTimestamp = 0
 
 const MIN_WRITE_INTERVAL_MS = 5000 // 5 seconds
 const MIN_WRITE_DISTANCE_METERS = 30 // 30 meters
+const TRACKING_SESSION_STORAGE_KEY = 'lifelink.activeTrackingSession'
+
+function getStoredTrackingSession() {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const raw = window.localStorage.getItem(TRACKING_SESSION_STORAGE_KEY)
+    if (!raw) return null
+
+    const parsed = JSON.parse(raw)
+    if (!parsed?.requestId || !parsed?.donorId || !parsed?.hospitalLocation) {
+      return null
+    }
+    return parsed
+  } catch (err) {
+    console.warn('[useLocationTracking] Could not read stored tracking session:', err)
+    return null
+  }
+}
+
+function saveTrackingSession(session) {
+  if (typeof window === 'undefined') return
+
+  try {
+    window.localStorage.setItem(
+      TRACKING_SESSION_STORAGE_KEY,
+      JSON.stringify({
+        ...session,
+        savedAt: Date.now()
+      })
+    )
+  } catch (err) {
+    console.warn('[useLocationTracking] Could not persist tracking session:', err)
+  }
+}
+
+function clearTrackingSession() {
+  if (typeof window === 'undefined') return
+
+  try {
+    window.localStorage.removeItem(TRACKING_SESSION_STORAGE_KEY)
+  } catch (err) {
+    console.warn('[useLocationTracking] Could not clear tracking session:', err)
+  }
+}
 
 export function useLocationTracking() {
 
@@ -56,12 +101,19 @@ export function useLocationTracking() {
       return
     }
 
-    stopTracking()
+    stopTracking({ clearSession: false })
 
     trackingError.value = null
     isTracking.value = true
     trackingStatus.value = 'en_route'
     activeTrackingKey = getTrackingKey(requestId, donorId)
+    saveTrackingSession({
+      requestId,
+      donorId,
+      donorName: donorName || 'Donor',
+      bloodType: bloodType || 'O+',
+      hospitalLocation
+    })
 
     const trackingDocRef = dbRef(rtdb, `liveTracking/${activeTrackingKey}`)
 
@@ -143,6 +195,18 @@ export function useLocationTracking() {
           update(trackingDocRef, dataPayload).catch((err) => {
             console.error('[useLocationTracking] RTDB write error:', err)
           })
+
+          saveTrackingSession({
+            requestId,
+            donorId,
+            donorName: donorName || 'Donor',
+            bloodType: bloodType || 'O+',
+            hospitalLocation,
+            lastPosition: currentPosition.value,
+            distanceMeters: distanceToHospital.value || 0,
+            etaMins: estimatedEtaMins.value || 0,
+            status: trackingStatus.value
+          })
         }
       },
       (err) => {
@@ -161,23 +225,29 @@ export function useLocationTracking() {
       }
     )
 
-    // Window unload safety cleanup
-    if (typeof window !== 'undefined') {
-      window.addEventListener('beforeunload', stopTracking)
-    }
+    // Do not stop tracking on page reload. The browser may disconnect the RTDB socket,
+    // but the saved session lets the donor page resume live tracking after refresh.
   }
 
   /**
    * Stops active geolocation tracking and removes document from RTDB liveTracking.
    */
-  function stopTracking() {
+  function stopTracking(options = {}) {
+    const { clearSession = true, removeRemote = true } = options
+    const storedSession = getStoredTrackingSession()
+    const trackingKeyToRemove =
+      activeTrackingKey ||
+      (storedSession?.requestId && storedSession?.donorId
+        ? getTrackingKey(storedSession.requestId, storedSession.donorId)
+        : null)
+
     if (watchId !== null && typeof navigator !== 'undefined') {
       navigator.geolocation.clearWatch(watchId)
       watchId = null
     }
 
-    if (activeTrackingKey) {
-      const trackingDocRef = dbRef(rtdb, `liveTracking/${activeTrackingKey}`)
+    if (trackingKeyToRemove) {
+      const trackingDocRef = dbRef(rtdb, `liveTracking/${trackingKeyToRemove}`)
 
       // Cancel onDisconnect first so it doesn't fire unnecessarily
       onDisconnect(trackingDocRef)
@@ -186,15 +256,15 @@ export function useLocationTracking() {
           console.warn('[useLocationTracking] onDisconnect cancel warning:', err)
         })
 
-      remove(trackingDocRef).catch((err) => {
-        console.warn('[useLocationTracking] RTDB remove warning:', err)
-      })
-      activeTrackingKey = null
+      if (removeRemote) {
+        remove(trackingDocRef).catch((err) => {
+          console.warn('[useLocationTracking] RTDB remove warning:', err)
+        })
+      }
     }
+    activeTrackingKey = null
 
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('beforeunload', stopTracking)
-    }
+    if (clearSession) clearTrackingSession()
 
     isTracking.value = false
     currentPosition.value = null
@@ -202,6 +272,7 @@ export function useLocationTracking() {
     formattedDistance.value = ''
     estimatedEtaMins.value = null
     trackingStatus.value = 'idle'
+    trackingError.value = null
     lastRecordedPos = null
     lastWriteTimestamp = 0
   }
@@ -224,6 +295,8 @@ export function useLocationTracking() {
     trackingError,
     startTracking,
     stopTracking,
-    markArrived
+    markArrived,
+    getStoredTrackingSession,
+    clearTrackingSession
   }
 }

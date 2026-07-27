@@ -7,7 +7,13 @@
 
 import { ref } from 'vue'
 import { doc, getDoc, runTransaction, serverTimestamp } from 'firebase/firestore'
-import { db } from '@/firebase.js'
+import {
+  ref as rtdbRef,
+  get as rtdbGet,
+  remove as rtdbRemove,
+  update as rtdbUpdate
+} from 'firebase/database'
+import { db, rtdb } from '@/firebase.js'
 import { canDonateTo } from '@/utils/bloodCompatibility.js'
 import { COOLDOWN_MS } from '@/composables/useEligibility.js'
 
@@ -17,6 +23,43 @@ function getConfirmationId(requestId, donorId) {
 
 function getGuestConfirmationId(requestId, guestSessionId) {
   return `${requestId}_${guestSessionId}`
+}
+
+async function removeLiveTrackingForConfirmation(requestId, donorId) {
+  if (!rtdb || !requestId || !donorId) return
+
+  const expectedTrackingKey = getConfirmationId(requestId, donorId)
+  const expectedTrackingRef = rtdbRef(rtdb, `liveTracking/${expectedTrackingKey}`)
+
+  try {
+    await rtdbRemove(expectedTrackingRef)
+  } catch (err) {
+    console.warn('[useConfirmDonation] exact liveTracking cleanup warning:', err)
+  }
+
+  try {
+    const liveTrackingRef = rtdbRef(rtdb, 'liveTracking')
+    const snap = await rtdbGet(liveTrackingRef)
+    if (!snap.exists()) return
+
+    const updates = {}
+    snap.forEach((child) => {
+      const val = child.val()
+      if (
+        val &&
+        String(val.requestId) === String(requestId) &&
+        String(val.donorId) === String(donorId)
+      ) {
+        updates[child.key] = null
+      }
+    })
+
+    if (Object.keys(updates).length > 0) {
+      await rtdbUpdate(liveTrackingRef, updates)
+    }
+  } catch (err) {
+    console.warn('[useConfirmDonation] liveTracking scan cleanup warning:', err)
+  }
 }
 
 export function useConfirmDonation() {
@@ -186,6 +229,7 @@ export function useConfirmDonation() {
     try {
       const requestRef = doc(db, 'emergencyRequests', requestId)
       const confirmationRef = doc(db, 'confirmations', confirmationId)
+      let cancelledConfirmationData = null
 
       await runTransaction(db, async (transaction) => {
         const [requestSnap, confirmationSnap] = await Promise.all([
@@ -197,9 +241,11 @@ export function useConfirmDonation() {
           throw new Error('Confirmation no longer exists.')
         }
 
+        const confData = confirmationSnap.data()
+        cancelledConfirmationData = confData
+
         if (requestSnap.exists()) {
           const reqData = requestSnap.data()
-          const confData = confirmationSnap.data()
           const status = confData.status || 'confirmed'
           const currentCount = reqData.confirmedCount || 0
           const updates = {
@@ -220,6 +266,7 @@ export function useConfirmDonation() {
 
         transaction.delete(confirmationRef)
       })
+      await removeLiveTrackingForConfirmation(requestId, cancelledConfirmationData?.donorId)
       success.value = true
     } catch (err) {
       error.value = err.message

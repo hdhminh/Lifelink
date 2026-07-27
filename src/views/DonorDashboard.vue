@@ -237,21 +237,43 @@
               <div class="col-md-4 col-12 h-100 d-flex flex-column">
                 <h5 class="fw-bold mb-3 text-slate-900"><i class="bi bi-people-fill text-wine me-2"></i>Active Conversations</h5>
                 <div class="list-group list-group-flush flex-grow-1 overflow-y-auto border rounded bg-white">
-                  <button
+                  <div
                     v-for="chat in uniqueChats"
                     :key="chat.chatId"
-                    type="button"
-                    class="list-group-item list-group-item-action py-3 px-3 border-bottom border-slate-100 text-start"
+                    class="list-group-item ll-chat-thread-item py-3 px-3 border-bottom border-slate-100"
                     :class="{ 'active bg-danger-subtle text-dark border-danger-subtle': activeChatId === chat.chatId }"
-                    @click="activeChatId = chat.chatId"
                   >
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                      <strong class="text-slate-900 small">{{ chat.userDisplayName }}</strong>
+                    <div class="ll-chat-thread-header mb-1">
+                      <button
+                        type="button"
+                        class="ll-chat-thread-button text-start"
+                        @click="activeChatId = chat.chatId"
+                      >
+                        <strong class="text-slate-900 small text-truncate d-block">{{ chat.userDisplayName }}</strong>
+                      </button>
+                      <button
+                        type="button"
+                        class="ll-chat-delete-button"
+                        aria-label="Delete support chat"
+                        title="Delete chat"
+                        @click="promptDeleteSupportChat(chat.chatId)"
+                      >
+                        <i class="bi bi-trash-fill"></i>
+                      </button>
                     </div>
-                    <p class="mb-0 text-slate-500 text-truncate small" style="max-width: 200px;">
+                    <button
+                      type="button"
+                      class="ll-chat-thread-button text-start"
+                      @click="activeChatId = chat.chatId"
+                    >
+                      <span class="mb-0 text-slate-500 text-truncate small d-block" style="max-width: 200px;">
+                      <span :class="['ll-chat-role-badge', getThreadRoleBadgeClass(chat.lastMessageSenderRole)]">
+                        {{ getThreadLastSenderLabel(chat.lastMessageSenderRole) }}
+                      </span>
                       {{ chat.lastMessageText }}
-                    </p>
-                  </button>
+                      </span>
+                    </button>
+                  </div>
                   <div v-if="uniqueChats.length === 0" class="text-center py-5 text-slate-400 small">
                     No active support chats.
                   </div>
@@ -280,11 +302,17 @@
                         v-for="msg in activeChatMessages"
                         :key="msg.id"
                         class="d-flex flex-column"
-                        :style="msg.senderId === 'admin' ? 'align-self: flex-end; align-items: flex-end; max-width: 75%;' : 'align-self: flex-start; align-items: flex-start; max-width: 75%;'"
+                        :style="getAdminChatMessageFrameStyle(msg)"
                       >
                         <div
-                          class="p-2 rounded small"
-                          :style="msg.senderId === 'admin' ? 'background-color: var(--ll-wine-red); color: white; border-bottom-right-radius: 2px;' : 'background-color: white; color: var(--ll-slate-900); border: 1px solid var(--ll-slate-200); border-bottom-left-radius: 2px;'"
+                          class="ll-admin-chat-message-label"
+                          :class="getAdminChatLabelClass(msg)"
+                        >
+                          {{ getAdminChatSenderLabel(msg) }}
+                        </div>
+                        <div
+                          class="p-2 rounded small ll-admin-chat-bubble"
+                          :class="getAdminChatBubbleClass(msg)"
                         >
                           {{ msg.text }}
                         </div>
@@ -304,7 +332,13 @@
                           autocomplete="off"
                           style="height: 38px;"
                         />
-                        <button type="submit" class="btn btn-danger btn-sm px-4 d-flex align-items-center justify-content-center gap-1" style="height: 38px;"><i class="bi bi-send-fill"></i> Send</button>
+                        <button
+                          type="submit"
+                          class="btn btn-sm px-4 d-flex align-items-center justify-content-center gap-1 ll-admin-chat-send-button"
+                          style="height: 38px;"
+                        >
+                          <i class="bi bi-send-fill"></i> Send
+                        </button>
                       </form>
                     </div>
                   </div>
@@ -496,6 +530,51 @@
       @confirm="confirmDeleteEvent"
       @cancel="showEventDeleteModal = false"
     />
+
+    <ConfirmModal
+      :show="showRequestStatusConfirmModal"
+      title="Change Request Status"
+      :message="`Are you sure you want to mark '${pendingRequestStatusChange?.requestName}' as ${pendingRequestStatusChange?.status?.toUpperCase()}?`"
+      confirm-label="Change Status"
+      @confirm="confirmRequestStatusChange"
+      @cancel="cancelRequestStatusChange"
+    />
+
+    <ConfirmModal
+      :show="showConfirmationStatusConfirmModal"
+      title="Change Donation Status"
+      :message="`Are you sure you want to update ${pendingConfirmationStatusChange?.donorName || 'this donor'} to ${pendingConfirmationStatusChange?.status?.toUpperCase()}?`"
+      confirm-label="Update Status"
+      @confirm="confirmConfirmationStatusChange"
+      @cancel="cancelConfirmationStatusChange"
+    />
+
+    <ConfirmModal
+      :show="showCancelConfirmationModal"
+      title="Cancel Donation Confirmation"
+      :message="`Are you sure you want to cancel the blood donation confirmation for ${pendingCancelConfirmation?.donorName || 'this donor'}?`"
+      confirm-label="Cancel Confirmation"
+      @confirm="confirmCancelConfirmation"
+      @cancel="cancelCancelConfirmation"
+    />
+
+    <ConfirmModal
+      :show="showRemoveEventParticipantModal"
+      title="Remove Event Registration"
+      :message="`Are you sure you want to remove ${pendingRemoveEventParticipant?.userName || 'this attendee'} from this event?`"
+      confirm-label="Remove Registration"
+      @confirm="confirmRemoveUserFromEvent"
+      @cancel="cancelRemoveUserFromEvent"
+    />
+
+    <ConfirmModal
+      :show="showSupportChatDeleteModal"
+      title="Delete Support Chat"
+      message="Are you sure you want to permanently delete this support conversation and its messages?"
+      confirm-label="Delete Chat"
+      @confirm="confirmDeleteSupportChat"
+      @cancel="cancelDeleteSupportChat"
+    />
   </div>
 </template>
 
@@ -586,7 +665,8 @@ const {
   listenToThreads,
   listenToThreadMessages,
   sendAdminMessage,
-  markAdminThreadRead
+  markAdminThreadRead,
+  deleteSupportThread
 } = useSupportChat()
 
 // -----------------------------------------------------------------------------
@@ -629,23 +709,38 @@ const confirmations = ref([])
 const registeredEvents = ref([])
 const confirmationsLoading = ref(false)
 const eventsLoading = ref(false)
+let donorConfirmationsUnsubscribe = null
+let donorEventsUnsubscribe = null
+let donorHistoryListenToken = 0
 
-async function loadHistory() {
-  if (!userProfile.value) return
+function stopDonorHistoryListeners() {
+  donorHistoryListenToken += 1
+  if (donorConfirmationsUnsubscribe) {
+    donorConfirmationsUnsubscribe()
+    donorConfirmationsUnsubscribe = null
+  }
+  if (donorEventsUnsubscribe) {
+    donorEventsUnsubscribe()
+    donorEventsUnsubscribe = null
+  }
+}
+
+function listenToDonorHistory() {
+  if (!userProfile.value || isAdmin.value) return
   const userId = userProfile.value.uid || userProfile.value.id
+  stopDonorHistoryListeners()
+  const listenToken = donorHistoryListenToken
   
   confirmationsLoading.value = true
   eventsLoading.value = true
-  
-  try {
-    const qConf = query(
-      collection(db, 'confirmations'),
-      where('donorId', '==', userId)
-    )
-    const snapConf = await getDocs(qConf)
-    const listConf = []
-    
-    for (const docSnap of snapConf.docs) {
+
+  const qConf = query(
+    collection(db, 'confirmations'),
+    where('donorId', '==', userId)
+  )
+
+  donorConfirmationsUnsubscribe = onSnapshot(qConf, async (snapConf) => {
+    const listConf = await Promise.all(snapConf.docs.map(async (docSnap) => {
       const conf = { id: docSnap.id, ...docSnap.data() }
       if (!conf.hospitalName && conf.requestId) {
         try {
@@ -660,35 +755,48 @@ async function loadHistory() {
           console.error('Error backfilling request details:', err)
         }
       }
-      listConf.push(conf)
-    }
+      return conf
+    }))
 
+    if (listenToken !== donorHistoryListenToken) return
     listConf.sort((a, b) => {
       const timeA = a.createdAt?.seconds || 0
       const timeB = b.createdAt?.seconds || 0
       return timeB - timeA
     })
     confirmations.value = listConf
-  } catch (err) {
-    console.error('Error fetching confirmations:', err)
-  } finally {
     confirmationsLoading.value = false
-  }
+  }, (err) => {
+    console.error('Error listening to donor confirmations:', err)
+    if (listenToken === donorHistoryListenToken) {
+      confirmations.value = []
+      confirmationsLoading.value = false
+    }
+  })
 
-  try {
-    const qEv = query(
-      collection(db, 'events'),
-      where('likedBy', 'array-contains', userId)
-    )
-    const snapEv = await getDocs(qEv)
+  const qEv = query(
+    collection(db, 'events'),
+    where('likedBy', 'array-contains', userId)
+  )
+
+  donorEventsUnsubscribe = onSnapshot(qEv, (snapEv) => {
+    if (listenToken !== donorHistoryListenToken) return
     const listEv = snapEv.docs.map(doc => ({ id: doc.id, ...doc.data() }))
     listEv.sort((a, b) => new Date(a.date) - new Date(b.date))
     registeredEvents.value = listEv
-  } catch (err) {
-    console.error('Error fetching registered events:', err)
-  } finally {
     eventsLoading.value = false
-  }
+  }, (err) => {
+    console.error('Error listening to donor events:', err)
+    if (listenToken === donorHistoryListenToken) {
+      registeredEvents.value = []
+      eventsLoading.value = false
+    }
+  })
+}
+
+function loadHistory() {
+  if (isAdmin.value) return
+  listenToDonorHistory()
 }
 
 // System Administration Directory & Management
@@ -702,6 +810,7 @@ const confirmationsLoadingState = ref(false)
 
 let requestsUnsubscribe = null
 let confirmationsUnsubscribe = null
+let guestConfirmationsUnsubscribe = null
 
 // -----------------------------------------------------------------------------
 // SECTION 3: USER MANAGEMENT & PERMISSIONS
@@ -772,17 +881,59 @@ async function fetchEvents(isSilent = false) {
 async function fetchAllConfirmations(isSilent = false) {
   if (!isSilent) confirmationsLoadingState.value = true
   return new Promise((resolve, reject) => {
-    if (confirmationsUnsubscribe) {
+    if (confirmationsUnsubscribe || guestConfirmationsUnsubscribe) {
       resolve()
       return
     }
-    confirmationsUnsubscribe = onSnapshot(collection(db, 'confirmations'), (snap) => {
-      allConfirmationsList.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    let donorConfirmations = []
+    let guestConfirmations = []
+    let donorReady = false
+    let guestReady = false
+    let resolved = false
+
+    const syncAllConfirmations = () => {
+      allConfirmationsList.value = [...donorConfirmations, ...guestConfirmations]
       updateAdminStatsFromLists()
-      if (!isSilent) confirmationsLoadingState.value = false
-      resolve()
+      if (donorReady && guestReady) {
+        if (!isSilent) confirmationsLoadingState.value = false
+        if (!resolved) {
+          resolved = true
+          resolve()
+        }
+      }
+    }
+
+    confirmationsUnsubscribe = onSnapshot(collection(db, 'confirmations'), (snap) => {
+      donorReady = true
+      donorConfirmations = snap.docs.map(doc => ({
+        id: doc.id,
+        participantType: 'donor',
+        ...doc.data()
+      }))
+      syncAllConfirmations()
     }, (err) => {
       console.error('Error fetching confirmations:', err)
+      if (!isSilent) confirmationsLoadingState.value = false
+      reject(err)
+    })
+
+    guestConfirmationsUnsubscribe = onSnapshot(collection(db, 'guestConfirmations'), (snap) => {
+      guestReady = true
+      guestConfirmations = snap.docs.map(doc => {
+        const data = doc.data()
+        return {
+          id: doc.id,
+          participantType: 'guest',
+          donorName: data.guestName || 'Guest Donor',
+          donorPhone: data.guestPhone || 'N/A',
+          donorId: data.guestSessionId,
+          bloodType: data.bloodType || 'Guest',
+          ...data
+        }
+      })
+      syncAllConfirmations()
+    }, (err) => {
+      console.error('Error fetching guest confirmations:', err)
       if (!isSilent) confirmationsLoadingState.value = false
       reject(err)
     })
@@ -877,6 +1028,12 @@ const showRequestForm = ref(false)
 const editingRequest = ref(null)
 const showRequestDeleteModal = ref(false)
 const requestToDeleteId = ref(null)
+const showRequestStatusConfirmModal = ref(false)
+const pendingRequestStatusChange = ref(null)
+const showConfirmationStatusConfirmModal = ref(false)
+const pendingConfirmationStatusChange = ref(null)
+const showCancelConfirmationModal = ref(false)
+const pendingCancelConfirmation = ref(null)
 
 const requestStatusTabs = [
   { label: 'All', value: 'all' },
@@ -963,7 +1120,31 @@ async function handleRequestFormSubmit(formData) {
   }
 }
 
-async function handleRequestStatusSelect(req, status) {
+function handleRequestStatusSelect(req, status, event) {
+  if (req.status === status) return
+  pendingRequestStatusChange.value = {
+    req,
+    requestName: req.hospitalName || 'this request',
+    status,
+    previousStatus: req.status,
+    selectElement: event?.target || null
+  }
+  showRequestStatusConfirmModal.value = true
+}
+
+function cancelRequestStatusChange() {
+  if (pendingRequestStatusChange.value?.selectElement) {
+    pendingRequestStatusChange.value.selectElement.value =
+      pendingRequestStatusChange.value.previousStatus
+  }
+  pendingRequestStatusChange.value = null
+  showRequestStatusConfirmModal.value = false
+}
+
+async function confirmRequestStatusChange() {
+  if (!pendingRequestStatusChange.value) return
+  const { req, status } = pendingRequestStatusChange.value
+  showRequestStatusConfirmModal.value = false
   try {
     await updateDoc(doc(db, 'emergencyRequests', req.id), {
       status,
@@ -975,6 +1156,9 @@ async function handleRequestStatusSelect(req, status) {
   } catch (err) {
     console.error('Error updating request status:', err)
     showToast(err.message || 'Could not update status.', 'danger')
+    cancelRequestStatusChange()
+  } finally {
+    pendingRequestStatusChange.value = null
   }
 }
 
@@ -1002,15 +1186,51 @@ async function confirmDeleteRequest() {
 // Donor cancellation & status workflow logic
 const { cancelConfirmation, updateConfirmationStatus } = useConfirmDonation()
 
-async function changeConfirmationStatus(confId, newStatus) {
+function changeConfirmationStatus(conf, newStatus, event) {
+  const currentStatus = conf.status || 'confirmed'
+  if (currentStatus === newStatus) return
+  pendingConfirmationStatusChange.value = {
+    confId: conf.id,
+    conf,
+    donorName: conf.donorName,
+    status: newStatus,
+    previousStatus: currentStatus,
+    selectElement: event?.target || null
+  }
+  showConfirmationStatusConfirmModal.value = true
+}
+
+function cancelConfirmationStatusChange() {
+  if (pendingConfirmationStatusChange.value?.selectElement) {
+    pendingConfirmationStatusChange.value.selectElement.value =
+      pendingConfirmationStatusChange.value.previousStatus
+  }
+  pendingConfirmationStatusChange.value = null
+  showConfirmationStatusConfirmModal.value = false
+}
+
+async function confirmConfirmationStatusChange() {
+  if (!pendingConfirmationStatusChange.value) return
+  const { confId, conf, status } = pendingConfirmationStatusChange.value
+  showConfirmationStatusConfirmModal.value = false
   try {
-    await updateConfirmationStatus(confId, newStatus)
-    showToast(`Donation status updated to ${newStatus}.`, 'success')
+    if (conf?.participantType === 'guest') {
+      await updateDoc(doc(db, 'guestConfirmations', confId), {
+        status,
+        updatedAt: serverTimestamp()
+      })
+    } else {
+      await updateConfirmationStatus(confId, status)
+    }
+    showToast(`Donation status updated to ${status}.`, 'success')
     await fetchAllConfirmations(true)
     await loadHistory()
   } catch (err) {
     console.error('Error updating status:', err)
     showToast(err.message || 'Failed to update status.', 'danger')
+    cancelConfirmationStatusChange()
+  } finally {
+    pendingConfirmationStatusChange.value = null
   }
 }
 
@@ -1023,9 +1243,33 @@ function getStatusBadgeClass(status) {
     }
 }
 
-async function handleCancelConfirmation(confId, reqId, donorName) {
+function handleCancelConfirmation(confOrId, reqId, donorName) {
+  if (typeof confOrId === 'object' && confOrId) {
+    pendingCancelConfirmation.value = {
+      confId: confOrId.id,
+      reqId: confOrId.requestId,
+      donorName: confOrId.donorName || confOrId.guestName || 'this donor',
+      participantType: confOrId.participantType || 'donor'
+    }
+  } else {
+    pendingCancelConfirmation.value = { confId: confOrId, reqId, donorName, participantType: 'donor' }
+  }
+  showCancelConfirmationModal.value = true
+}
+
+async function confirmCancelConfirmation() {
+  if (!pendingCancelConfirmation.value) return
+  const { confId, reqId, donorName, participantType } = pendingCancelConfirmation.value
   try {
-    await cancelConfirmation(confId, reqId)
+    if (participantType === 'guest') {
+      await deleteDoc(doc(db, 'guestConfirmations', confId))
+      await updateDoc(doc(db, 'emergencyRequests', reqId), {
+        confirmedCount: increment(-1),
+        updatedAt: serverTimestamp()
+      })
+    } else {
+      await cancelConfirmation(confId, reqId)
+    }
     showToast(`Cancelled blood donation confirmation for donor ${donorName}.`, 'success')
     await fetchAllConfirmations(true)
     await fetchRequests(true)
@@ -1033,7 +1277,15 @@ async function handleCancelConfirmation(confId, reqId, donorName) {
   } catch (err) {
     console.error('Error cancelling confirmation:', err)
     showToast(err.message || 'Failed to cancel confirmation.', 'danger')
+  } finally {
+    showCancelConfirmationModal.value = false
+    pendingCancelConfirmation.value = null
   }
+}
+
+function cancelCancelConfirmation() {
+  showCancelConfirmationModal.value = false
+  pendingCancelConfirmation.value = null
 }
 
 // Event Management
@@ -1041,6 +1293,8 @@ const showEventForm = ref(false)
 const editingEvent = ref(null)
 const showEventDeleteModal = ref(false)
 const eventToDelete = ref(null)
+const showRemoveEventParticipantModal = ref(false)
+const pendingRemoveEventParticipant = ref(null)
 
 // -----------------------------------------------------------------------------
 // SECTION 5: DONATION EVENT MANAGEMENT
@@ -1142,7 +1396,14 @@ function getParticipantsForEvent(likedByArray) {
   })
 }
 
-async function removeUserFromEvent(eventId, userId, userName) {
+function removeUserFromEvent(eventId, userId, userName) {
+  pendingRemoveEventParticipant.value = { eventId, userId, userName }
+  showRemoveEventParticipantModal.value = true
+}
+
+async function confirmRemoveUserFromEvent() {
+  if (!pendingRemoveEventParticipant.value) return
+  const { eventId, userId, userName } = pendingRemoveEventParticipant.value
   try {
     const eventRef = doc(db, 'events', eventId)
     await updateDoc(eventRef, {
@@ -1155,7 +1416,15 @@ async function removeUserFromEvent(eventId, userId, userName) {
   } catch (err) {
     console.error('Error removing user from event:', err)
     showToast(err.message || 'Failed to remove user from event.', 'danger')
+  } finally {
+    showRemoveEventParticipantModal.value = false
+    pendingRemoveEventParticipant.value = null
   }
+}
+
+function cancelRemoveUserFromEvent() {
+  showRemoveEventParticipantModal.value = false
+  pendingRemoveEventParticipant.value = null
 }
 
 // User History Modal
@@ -1235,6 +1504,55 @@ const unreadChatsCount = computed(() => {
   return count
 })
 
+function getMessageRole(msg) {
+  if (msg?.senderRole) return msg.senderRole
+  if (msg?.senderId === 'admin') return 'admin'
+  if (msg?.senderId === 'support_bot') return 'support_bot'
+  return activeChatThread.value?.participantType || 'user'
+}
+
+function getThreadLastSenderLabel(role) {
+  if (role === 'admin') return 'Admin'
+  if (role === 'support_bot') return 'Bot'
+  if (role === 'guest') return 'Guest'
+  return 'User'
+}
+
+function getThreadRoleBadgeClass(role) {
+  if (role === 'admin') return 'll-chat-role-badge--admin'
+  if (role === 'support_bot') return 'll-chat-role-badge--bot'
+  return 'll-chat-role-badge--user'
+}
+
+function getAdminChatSenderLabel(msg) {
+  const role = getMessageRole(msg)
+  if (role === 'admin') return 'Admin'
+  if (role === 'support_bot') return 'Support Bot'
+  return msg.senderName || activeChatThread.value?.userDisplayName || 'Donor'
+}
+
+function getAdminChatMessageFrameStyle(msg) {
+  const role = getMessageRole(msg)
+  if (role === 'admin' || role === 'support_bot') {
+    return 'align-self: flex-end; align-items: flex-end; max-width: 75%;'
+  }
+  return 'align-self: flex-start; align-items: flex-start; max-width: 75%;'
+}
+
+function getAdminChatBubbleClass(msg) {
+  const role = getMessageRole(msg)
+  if (role === 'admin') return 'll-admin-chat-bubble--admin'
+  if (role === 'support_bot') return 'll-admin-chat-bubble--bot'
+  return 'll-admin-chat-bubble--user'
+}
+
+function getAdminChatLabelClass(msg) {
+  const role = getMessageRole(msg)
+  if (role === 'admin') return 'll-admin-chat-message-label--admin'
+  if (role === 'support_bot') return 'll-admin-chat-message-label--bot'
+  return 'll-admin-chat-message-label--user'
+}
+
 let adminChatUnsubscribe = null
 
 function listenToAllSupportMessages() {
@@ -1266,6 +1584,40 @@ async function sendAdminChatMessage() {
   } catch (err) {
     console.error('Error sending message as admin:', err)
   }
+}
+
+const showSupportChatDeleteModal = ref(false)
+const pendingSupportChatDeleteId = ref(null)
+
+function promptDeleteSupportChat(threadId) {
+  pendingSupportChatDeleteId.value = threadId
+  showSupportChatDeleteModal.value = true
+}
+
+async function confirmDeleteSupportChat() {
+  const threadId = pendingSupportChatDeleteId.value
+  if (!threadId) return
+
+  try {
+    await deleteSupportThread(threadId)
+    supportThreads.value = supportThreads.value.filter((thread) => thread.id !== threadId)
+    if (activeChatId.value === threadId) {
+      activeChatId.value = null
+      activeChatMessages.value = []
+    }
+    showToast('Support chat deleted.', 'success')
+  } catch (err) {
+    console.error('Error deleting support chat:', err)
+    showToast(err.message || 'Could not delete support chat.', 'danger')
+  } finally {
+    showSupportChatDeleteModal.value = false
+    pendingSupportChatDeleteId.value = null
+  }
+}
+
+function cancelDeleteSupportChat() {
+  showSupportChatDeleteModal.value = false
+  pendingSupportChatDeleteId.value = null
 }
 
 watch(activeChatId, async (threadId) => {
@@ -1301,12 +1653,14 @@ watch(activeChatMessages, () => {
 watch(userProfile, async (newProfile) => {
   if (newProfile) {
     if (isAdmin.value) {
+      stopDonorHistoryListeners()
       await loadAdminStats()
       listenToAllSupportMessages()
     } else {
-      loadHistory()
+      listenToDonorHistory()
     }
   } else {
+    stopDonorHistoryListeners()
     confirmations.value = []
     registeredEvents.value = []
     usersList.value = []
@@ -1323,6 +1677,14 @@ watch(userProfile, async (newProfile) => {
     if (adminActiveThreadUnsubscribe) {
       adminActiveThreadUnsubscribe()
       adminActiveThreadUnsubscribe = null
+    }
+    if (confirmationsUnsubscribe) {
+      confirmationsUnsubscribe()
+      confirmationsUnsubscribe = null
+    }
+    if (guestConfirmationsUnsubscribe) {
+      guestConfirmationsUnsubscribe()
+      guestConfirmationsUnsubscribe = null
     }
   }
 }, { immediate: true })
@@ -1375,6 +1737,10 @@ onUnmounted(() => {
   if (confirmationsUnsubscribe) {
     confirmationsUnsubscribe()
   }
+  if (guestConfirmationsUnsubscribe) {
+    guestConfirmationsUnsubscribe()
+  }
+  stopDonorHistoryListeners()
 })
 </script>
 
@@ -1571,14 +1937,26 @@ onUnmounted(() => {
   color: var(--ll-slate-700);
   border-radius: var(--ll-radius-sm);
   padding: 0.45rem 0.9rem;
-  font-weight: 600;
+  font-weight: 700;
   transition: all var(--ll-transition);
 }
 
 .ll-tab-button--active {
-  border-color: var(--ll-crimson);
-  background: var(--ll-crimson-light);
-  color: var(--ll-crimson-dark);
+  border-color: var(--ll-wine-red);
+  background: var(--ll-wine-red);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(142, 36, 53, 0.18);
+}
+
+.ll-tab-button:hover,
+.ll-tab-button:focus {
+  border-color: var(--ll-wine-red);
+  color: var(--ll-wine-red);
+}
+
+.ll-tab-button--active:hover,
+.ll-tab-button--active:focus {
+  color: #ffffff;
 }
 
 .ll-table-card {
@@ -1684,5 +2062,146 @@ onUnmounted(() => {
 
 .ll-expanded-row td {
   border-bottom: 1px solid var(--ll-slate-200);
+}
+
+.ll-admin-chat-send-button {
+  background: var(--ll-wine-red);
+  border-color: var(--ll-wine-red);
+  color: #ffffff;
+}
+
+.ll-admin-chat-send-button:hover,
+.ll-admin-chat-send-button:focus {
+  background: #a3263d;
+  border-color: #a3263d;
+  color: #ffffff;
+}
+
+.ll-chat-delete-button {
+  position: absolute;
+  top: 50%;
+  right: 0.85rem;
+  transform: translateY(-50%);
+  width: 1.65rem;
+  height: 1.65rem;
+  min-width: 1.65rem;
+  min-height: 1.65rem;
+  padding: 0;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  background: #fff5f5;
+  color: var(--ll-wine-red);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  line-height: 1;
+  z-index: 2;
+}
+
+.ll-chat-delete-button .bi {
+  display: block;
+  font-size: 0.86rem;
+  line-height: 1;
+}
+
+.ll-chat-delete-button:hover,
+.ll-chat-delete-button:focus {
+  background: var(--ll-wine-red);
+  border-color: var(--ll-wine-red);
+  color: #ffffff;
+}
+
+.ll-chat-delete-button:focus {
+  outline: 2px solid rgba(142, 36, 53, 0.28);
+  outline-offset: 2px;
+}
+
+.ll-chat-thread-button {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+.ll-chat-thread-button:focus {
+  outline: none;
+}
+
+.ll-chat-thread-header {
+  display: block;
+  min-height: 1.65rem;
+}
+
+.ll-chat-thread-item {
+  position: relative;
+  padding-right: 3rem !important;
+}
+
+.ll-chat-role-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 0.35rem;
+  margin-right: 0.35rem;
+  border-radius: 4px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ll-chat-role-badge--user {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.ll-chat-role-badge--bot {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.ll-chat-role-badge--admin {
+  background: var(--ll-wine-light);
+  color: var(--ll-wine-red);
+}
+
+.ll-admin-chat-message-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.ll-admin-chat-message-label--user {
+  color: #075985;
+}
+
+.ll-admin-chat-message-label--bot {
+  color: #92400e;
+}
+
+.ll-admin-chat-message-label--admin {
+  color: var(--ll-wine-red);
+}
+
+.ll-admin-chat-bubble--user {
+  background-color: #ffffff;
+  color: var(--ll-slate-900);
+  border: 1px solid #bae6fd;
+  border-bottom-left-radius: 2px;
+}
+
+.ll-admin-chat-bubble--bot {
+  background-color: #fffbeb;
+  color: var(--ll-slate-900);
+  border: 1px solid #fde68a;
+  border-bottom-right-radius: 2px;
+}
+
+.ll-admin-chat-bubble--admin {
+  background-color: var(--ll-wine-red);
+  color: #ffffff;
+  border-bottom-right-radius: 2px;
 }
 </style>

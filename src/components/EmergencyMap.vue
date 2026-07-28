@@ -1933,6 +1933,43 @@ defineExpose({
   transform: scale(1.1) !important;
 }
 
+@media (max-width: 576px) {
+  .leaflet-popup-content-wrapper {
+    padding: 2px !important;
+    border-radius: 10px !important;
+  }
+  .leaflet-popup-content {
+    margin: 8px 10px !important;
+    width: 210px !important;
+    min-width: 195px !important;
+    max-width: 220px !important;
+    font-size: 0.78rem !important;
+  }
+  .leaflet-popup-content button,
+  .leaflet-popup-content .btn {
+    padding: 0.35rem 0.5rem !important;
+    font-size: 0.78rem !important;
+    min-height: 36px !important;
+  }
+  .leaflet-control-zoom {
+    margin-top: 8px !important;
+    margin-left: 8px !important;
+  }
+  .leaflet-control-zoom a {
+    min-width: 32px !important;
+    min-height: 32px !important;
+    line-height: 32px !important;
+    font-size: 14px !important;
+  }
+  .leaflet-container a.leaflet-popup-close-button {
+    top: 6px !important;
+    right: 6px !important;
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 14px !important;
+  }
+}
+
 .leaflet-overlay-pane svg {
   max-width: none !important;
 }

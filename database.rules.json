@@ -1,12 +1,11 @@
 {
   "rules": {
     "liveTracking": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
-      ".write": false,
+      ".read": true,
       "$trackingId": {
-        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || data.child('donorId').val() === auth.uid)",
-        ".write": "auth != null && (newData.child('donorId').val() === auth.uid || (!newData.exists() && data.child('donorId').val() === auth.uid) || newData.child('donorId').val().beginsWith('guest_'))",
-        ".validate": "!newData.exists() || (newData.hasChildren(['donorId', 'requestId', 'status']) && $trackingId.matches(/^[a-zA-Z0-9_-]{10,120}$/))"
+        ".read": true,
+        ".write": "newData.child('donorId').val() === auth.uid || (!newData.exists() && data.child('donorId').val() === auth.uid) || (newData.exists() && newData.child('donorId').val().beginsWith('guest_')) || (!newData.exists() && data.child('donorId').val().beginsWith('guest_')) || (auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".validate": "!newData.exists() || (newData.hasChildren(['donorId', 'requestId', 'status']) && $trackingId.matches(/^[a-zA-Z0-9_-]{5,120}$/))"
       }
     }
   }

@@ -1172,8 +1172,12 @@ textarea {
   }
 }
 
-/* Mobile Touch Target & Responsiveness (Phase 7 Audit) */
+/* Mobile Touch Target, Font Scaling & Responsiveness (Phase 7 Audit) */
 @media (max-width: 768px) {
+  html, body {
+    font-size: 13.5px !important;
+  }
+
   button:not(.cookie-close-btn):not(.btn-close-custom):not(.btn-close),
   .btn,
   [role="button"] {
@@ -1181,67 +1185,85 @@ textarea {
   }
 
   .ll-page-container {
-    padding: 1.25rem 0.85rem !important;
+    padding: 1rem 0.75rem !important;
   }
   .ll-section-header {
-    margin-bottom: 1.25rem !important;
+    margin-bottom: 1rem !important;
     gap: 0.5rem !important;
   }
   .ll-section-title {
-    font-size: 1.35rem !important;
+    font-size: 1.3rem !important;
   }
   h1, .h1, .display-4, .display-5 {
-    font-size: 1.5rem !important;
+    font-size: 1.45rem !important;
   }
   h2, .h2 {
-    font-size: 1.25rem !important;
+    font-size: 1.2rem !important;
   }
   h3, .h3 {
-    font-size: 1.1rem !important;
+    font-size: 1.05rem !important;
   }
   .p-4 {
-    padding: 1rem !important;
+    padding: 0.85rem !important;
   }
   .p-5 {
-    padding: 1.15rem !important;
+    padding: 1rem !important;
   }
   .px-4 {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  .px-5 {
     padding-left: 0.85rem !important;
     padding-right: 0.85rem !important;
   }
-  .px-5 {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-  }
   .py-4 {
-    padding-top: 1rem !important;
-    padding-bottom: 1rem !important;
+    padding-top: 0.85rem !important;
+    padding-bottom: 0.85rem !important;
   }
   .py-5 {
-    padding-top: 1.25rem !important;
-    padding-bottom: 1.25rem !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
   }
   .ll-card__body,
   .ll-card__header,
   .ll-card__footer {
-    padding: 1rem !important;
+    padding: 0.85rem !important;
   }
   .ll-toolbar {
-    padding: 1rem !important;
-    margin-bottom: 1.25rem !important;
+    padding: 0.85rem !important;
+    margin-bottom: 1rem !important;
   }
   .ll-auth-page {
-    padding: 1.5rem 0.85rem !important;
+    padding: 1.25rem 0.75rem !important;
   }
   .form-control,
   .form-select {
-    font-size: 0.9rem !important;
-    height: 42px !important;
+    font-size: 0.875rem !important;
+    height: 40px !important;
   }
   .ll-btn-lg {
-    padding: 0.6rem 1.25rem !important;
-    font-size: 0.95rem !important;
+    padding: 0.5rem 1.15rem !important;
+    font-size: 0.9rem !important;
   }
 }
+
+@media (max-width: 576px) {
+  .ll-support-chat-wrapper {
+    bottom: 12px !important;
+    right: 12px !important;
+  }
+  .ll-chat-trigger {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 1.15rem !important;
+  }
+  .ll-chat-window {
+    width: calc(100vw - 24px) !important;
+    height: calc(100vh - 100px) !important;
+    max-height: 480px !important;
+  }
+}
+
 
 

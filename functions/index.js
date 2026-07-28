@@ -46,8 +46,8 @@ exports.onEmergencyCreated = onDocumentCreated('emergencyRequests/{requestId}', 
 
     const payload = {
       notification: {
-        title: `🚨 Máu khẩn cấp: Nhóm ${bloodType}`,
-        body: `${hospitalName} ${city ? '(' + city + ')' : ''} đang cần khẩn cấp ${requestData.unitsNeeded || 1} đơn vị máu!`
+        title: `🚨 Emergency Blood Need: Type ${bloodType}`,
+        body: `${hospitalName} ${city ? '(' + city + ')' : ''} urgently requires ${requestData.unitsNeeded || 1} unit(s) of blood!`
       },
       data: {
         requestId,

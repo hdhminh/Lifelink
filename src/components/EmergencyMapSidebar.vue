@@ -4,7 +4,7 @@
     class="col-lg-4 col-12 border-start border-slate-200 p-3 bg-slate-50 d-flex flex-column map-style-27"
   >
     <h2 class="fw-bold mb-3 d-flex justify-content-between align-items-center map-style-28">
-      <span><i class="bi bi-radar me-1 text-wine"></i> TRẠNG THÁI THEO DÕI</span>
+      <span><i class="bi bi-radar me-1 text-wine"></i> RESPONSE STATUS</span>
       <div class="d-flex gap-1 align-items-center">
         <span
           v-if="confirmedForSelectedRequest > 0"
@@ -12,10 +12,10 @@
           style="background-color: #198754; font-size: 0.72rem;"
           title="Confirmed donors"
         >
-          {{ confirmedForSelectedRequest }} Đã xác nhận
+          {{ confirmedForSelectedRequest }} Confirmed
         </span>
         <span class="badge bg-slate-200 text-slate-700 map-style-29">
-          {{ filteredResponders.length }} Đang di chuyển
+          {{ filteredResponders.length }} En Route
         </span>
       </div>
     </h2>
@@ -27,7 +27,7 @@
     >
       <div class="d-flex justify-content-between align-items-center mb-1">
         <h3 class="fw-bold mb-0 text-slate-800 map-style-30">
-          <i class="bi bi-broadcast me-1 text-wine"></i> Quét Radar Donor
+          <i class="bi bi-broadcast me-1 text-wine"></i> Radar Donor Scan
         </h3>
         <span class="badge text-white bg-wine">{{
           selectedHospitalForRadar.bloodType
@@ -39,12 +39,12 @@
       <div
         class="d-flex justify-content-between align-items-center py-1 border-bottom border-slate-100 map-style-33"
       >
-        <span class="text-slate-600">Bán kính trong (3 km):</span>
-        <strong class="text-success">{{ radarCounts.inner }} donor phù hợp</strong>
+        <span class="text-slate-600">Inner Radius (3 km):</span>
+        <strong class="text-success">{{ radarCounts.inner }} compatible donors</strong>
       </div>
       <div class="d-flex justify-content-between align-items-center py-1 map-style-33">
-        <span class="text-slate-600">Bán kính ngoài (10 km):</span>
-        <strong class="text-slate-800">{{ radarCounts.outer }} donor phù hợp</strong>
+        <span class="text-slate-600">Outer Radius (10 km):</span>
+        <strong class="text-slate-800">{{ radarCounts.outer }} compatible donors</strong>
       </div>
     </div>
 
@@ -55,10 +55,10 @@
     >
       <div class="mb-2 text-wine fs-1"><i class="bi bi-geo-alt"></i></div>
       <h3 class="fw-bold text-slate-700 mb-1 map-style-34">
-        Đang quét tín hiệu Donor
+        Searching for Active Responders
       </h3>
       <p class="small text-slate-500 mb-0 map-style-35">
-        Bán kính radar 10 km active. Các donor sẽ xuất hiện live trên bản đồ khi họ bấm xác nhận và chia sẻ GPS.
+        Radar active across 10 km radius. Responders will appear here live when they accept emergency requests and share location.
       </p>
     </div>
 
@@ -91,15 +91,15 @@
             <span
               v-else
               class="badge bg-warning-subtle text-dark border border-warning-subtle d-inline-flex align-items-center gap-1"
-              :title="'Cập nhật ' + (resp.lastSeenAgo || 0) + ' giây trước'"
+              :title="'Updated ' + (resp.lastSeenAgo || 0) + 's ago'"
             >
-              <i class="bi bi-wifi-off"></i> GPS YẾU ({{ resp.lastSeenAgo || 0 }}s)
+              <i class="bi bi-wifi-off"></i> WEAK GPS ({{ resp.lastSeenAgo || 0 }}s)
             </span>
 
             <span
               :class="resp.status === 'approaching' ? 'badge bg-success' : 'badge bg-wine'"
             >
-              {{ resp.status === 'approaching' ? 'Đang tới gần' : 'Đang di chuyển' }}
+              {{ resp.status === 'approaching' ? 'Approaching' : 'En Route' }}
             </span>
           </div>
         </div>
@@ -113,12 +113,12 @@
         >
           <span class="text-slate-500">
             <i class="bi bi-geo-alt me-1 text-wine"></i>
-            <span v-if="resp.latitude != null">Khoảng cách: <strong>{{ formatMeters(resp.distanceMeters) }}</strong></span>
-            <span v-else class="text-warning"><i class="bi bi-clock me-1"></i>Đang chờ vị trí GPS...</span>
+            <span v-if="resp.latitude != null">Distance: <strong>{{ formatMeters(resp.distanceMeters) }}</strong></span>
+            <span v-else class="text-warning"><i class="bi bi-clock me-1"></i>Awaiting GPS...</span>
           </span>
           <span class="font-weight-700">
             <i class="bi bi-clock-history me-1 text-wine"></i> ETA:
-            <strong>{{ resp.latitude != null ? `~${resp.etaMins || 1} phút` : 'TBD' }}</strong>
+            <strong>{{ resp.latitude != null ? `~${resp.etaMins || 1} min` : 'TBD' }}</strong>
           </span>
         </div>
       </div>
@@ -127,7 +127,7 @@
     <!-- Live Activity Log Ticker -->
     <div class="mt-3 pt-3 border-top border-slate-200">
       <div class="small font-weight-700 text-slate-700 mb-2 map-style-33">
-        <i class="bi bi-broadcast me-1 text-wine"></i> NHẬT KÝ HOẠT ĐỘNG
+        <i class="bi bi-broadcast me-1 text-wine"></i> RECENT ACTIVITY LOG
       </div>
       <ul class="list-unstyled mb-0 map-style-23">
         <li

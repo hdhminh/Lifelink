@@ -26,17 +26,17 @@ function declineAll() {
 </script>
 
 <template>
-  <div v-if="showBanner" class="cookie-consent-toast" role="dialog" aria-label="Cookie & Quyền ứng dụng">
+  <div v-if="showBanner" class="cookie-consent-toast" role="dialog" aria-label="Cookie & Application Permissions">
     <div class="cookie-toast-header">
       <div class="d-flex align-items-center gap-2">
         <i class="bi bi-shield-check fs-5 text-wine"></i>
-        <strong class="text-wine fs-6">LifeLink & Quyền riêng tư</strong>
+        <strong class="text-wine fs-6">LifeLink & Privacy Preferences</strong>
       </div>
       <button class="cookie-close-btn" @click="declineAll" aria-label="Close">&times;</button>
     </div>
 
     <p class="cookie-toast-text">
-      Chúng tôi dùng Cookie và xin phép quyền thiết bị để điều phối hiến máu khẩn cấp nhanh nhất:
+      We use cookies and device permissions to coordinate emergency blood donations efficiently:
     </p>
 
     <div class="cookie-options">
@@ -44,9 +44,9 @@ function declineAll() {
       <div class="cookie-opt-item">
         <div class="d-flex align-items-center gap-2">
           <i class="bi bi-check-circle-fill text-wine"></i>
-          <span class="fw-semibold">Cookie hệ thống</span>
+          <span class="fw-semibold">Essential System Cookies</span>
         </div>
-        <span class="badge bg-light text-dark border">Bắt buộc</span>
+        <span class="badge bg-light text-dark border">Required</span>
       </div>
 
       <!-- GPS Location -->
@@ -54,16 +54,16 @@ function declineAll() {
         <div class="d-flex align-items-center gap-2">
           <i class="bi bi-geo-alt-fill text-wine"></i>
           <div>
-            <div class="fw-semibold">Vị trí GPS</div>
-            <div class="small text-muted">Tính khoảng cách tới bệnh viện</div>
+            <div class="fw-semibold">GPS Location</div>
+            <div class="small text-muted">Calculate distance to target hospital</div>
           </div>
         </div>
         <div>
           <span v-if="gpsStatus === 'granted'" class="badge bg-success-subtle text-success border border-success-subtle">
-            <i class="bi bi-check me-1"></i>Đã cấp
+            <i class="bi bi-check me-1"></i>Granted
           </span>
           <span v-else-if="gpsStatus === 'denied'" class="badge bg-secondary-subtle text-secondary border">
-            Bị chặn (mở Cài đặt)
+            Blocked (Check Settings)
           </span>
           <div v-else class="form-check form-switch m-0">
             <input
@@ -82,16 +82,16 @@ function declineAll() {
         <div class="d-flex align-items-center gap-2">
           <i class="bi bi-bell-fill text-wine"></i>
           <div>
-            <div class="fw-semibold">Thông báo Push</div>
-            <div class="small text-muted">Nhận cảnh báo máu khẩn khi đóng app</div>
+            <div class="fw-semibold">Push Notifications</div>
+            <div class="small text-muted">Receive emergency blood alerts when app is closed</div>
           </div>
         </div>
         <div>
           <span v-if="notifStatus === 'granted'" class="badge bg-success-subtle text-success border border-success-subtle">
-            <i class="bi bi-check me-1"></i>Đã cấp
+            <i class="bi bi-check me-1"></i>Granted
           </span>
           <span v-else-if="notifStatus === 'denied'" class="badge bg-secondary-subtle text-secondary border">
-            Bị chặn (mở Cài đặt)
+            Blocked (Check Settings)
           </span>
           <div v-else class="form-check form-switch m-0">
             <input
@@ -108,10 +108,10 @@ function declineAll() {
 
     <div class="cookie-actions">
       <button class="btn btn-sm btn-outline-wine text-nowrap" @click="declineAll">
-        Từ chối tất cả
+        Decline All
       </button>
       <button class="btn btn-sm btn-wine text-nowrap" @click="acceptSelected">
-        <i class="bi bi-check-lg me-1"></i>Chấp nhận & Tiếp tục
+        <i class="bi bi-check-lg me-1"></i>Accept & Continue
       </button>
     </div>
   </div>

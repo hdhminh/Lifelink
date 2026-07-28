@@ -33,10 +33,10 @@
  * Root component. Renders global navbar, router view, and global footer.
  */
 import AppLoader from '@/components/AppLoader.vue'
-import { ref, watch, onUnmounted, nextTick, onMounted, computed } from 'vue'
-import { useAuth } from '@/composables/useAuth.js'
+import { onMounted, onUnmounted } from 'vue'
 // Geolocation removed from App.vue mount
 import { useLiveSimulation } from '@/composables/useLiveSimulation.js'
+import { useSessionTimeout } from '@/composables/useSessionTimeout.js'
 import AppNavbar from '@/components/AppNavbar.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import SupportChatWidget from '@/components/SupportChatWidget.vue'
@@ -45,6 +45,7 @@ import { useEmergencyNotifications } from '@/composables/useEmergencyNotificatio
 
 // Initialize notifications listener
 useEmergencyNotifications()
+const { startSessionMonitor, stopSessionMonitor } = useSessionTimeout()
 
 // Geo prompt will be handled by components like LiveNetworkMap when needed
 
@@ -53,7 +54,12 @@ onMounted(async () => {
     // Initialize simulation engine
     const { initSimulation } = useLiveSimulation()
     initSimulation()
+    startSessionMonitor()
   }
+})
+
+onUnmounted(() => {
+  stopSessionMonitor()
 })
 
 </script>

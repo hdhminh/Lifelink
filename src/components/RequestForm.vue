@@ -179,6 +179,10 @@
  * Autocomplete system for Vietnam hospitals and major cities included.
  */
 import { reactive, watch, ref, computed } from 'vue'
+import {
+  VIETNAM_PROVINCES_2025,
+  normalizeLocationRecord
+} from '@/data/vietnamLocations.js'
 
 const props = defineProps({
   initialData: { type: Object, default: null },
@@ -202,7 +206,7 @@ const form = reactive({
 const errors = reactive({})
 
 // Autocomplete database
-const cities = ['Ho Chi Minh City', 'Ha Noi', 'Da Nang', 'Hue', 'Can Tho', 'Hai Phong', 'Nha Trang']
+const cities = VIETNAM_PROVINCES_2025
 
 const hospitals = [
   { name: 'Cho Ray Hospital', city: 'Ho Chi Minh City' },
@@ -232,8 +236,8 @@ const hospitals = [
   { name: 'Hai Phong International Hospital', city: 'Hai Phong' },
   { name: 'Viet Tiep Friendship Hospital', city: 'Hai Phong' },
 
-  { name: 'Khanh Hoa Province General Hospital', city: 'Nha Trang' },
-  { name: 'Vinmec Nha Trang Hospital', city: 'Nha Trang' }
+  { name: 'Khanh Hoa Province General Hospital', city: 'Khanh Hoa' },
+  { name: 'Vinmec Nha Trang Hospital', city: 'Khanh Hoa' }
 ]
 
 const showCitySuggestions = ref(false)
@@ -296,15 +300,16 @@ function formatDateTimeLocal(value) {
 import { getHospitalCoordinates } from '@/data/hospitalCoordinates.js'
 
 function populateForm() {
+  const initial = normalizeLocationRecord(props.initialData || {})
   Object.assign(form, {
-    hospitalName: props.initialData?.hospitalName || '',
-    city: props.initialData?.city || '',
-    bloodType: props.initialData?.bloodType || '',
-    urgency: props.initialData?.urgency || '',
-    unitsNeeded: props.initialData?.unitsNeeded || 1,
-    description: props.initialData?.description || '',
-    contactInfo: props.initialData?.contactInfo || '',
-    createdAt: formatDateTimeLocal(props.initialData?.createdAt)
+    hospitalName: initial.hospitalName || '',
+    city: initial.city || '',
+    bloodType: initial.bloodType || '',
+    urgency: initial.urgency || '',
+    unitsNeeded: initial.unitsNeeded || 1,
+    description: initial.description || '',
+    contactInfo: initial.contactInfo || '',
+    createdAt: formatDateTimeLocal(initial.createdAt)
   })
 }
 
@@ -330,7 +335,7 @@ function validate() {
 
 function handleSubmit() {
   if (!validate()) return
-  const data = { ...form }
+  const data = normalizeLocationRecord({ ...form })
   if (!data.contactInfo || !data.contactInfo.trim()) {
     data.contactInfo = '115'
   }

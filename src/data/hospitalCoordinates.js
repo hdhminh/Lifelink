@@ -5,6 +5,8 @@
  * event venues, and regional centers across Vietnam.
  */
 
+import { normalizeAdministrativeLocation } from '@/data/vietnamLocations.js'
+
 export const HOSPITAL_DATABASE = [
   // Ho Chi Minh City
   { name: 'Cho Ray Hospital', city: 'Ho Chi Minh City', lat: 10.7548, lng: 106.6601 },
@@ -34,8 +36,8 @@ export const HOSPITAL_DATABASE = [
     lng: 105.7911
   },
 
-  // Binh Duong
-  { name: 'Binh Duong General Hospital', city: 'Binh Duong', lat: 10.9805, lng: 106.6519 },
+  // Former Binh Duong area, now under Ho Chi Minh City.
+  { name: 'Binh Duong General Hospital', city: 'Ho Chi Minh City', lat: 10.9805, lng: 106.6519 },
 
   // Da Nang
   { name: 'Da Nang General Hospital', city: 'Da Nang', lat: 16.0716, lng: 108.22 },
@@ -53,21 +55,21 @@ export const HOSPITAL_DATABASE = [
   { name: 'Hai Phong International Hospital', city: 'Hai Phong', lat: 20.8544, lng: 106.6778 },
   { name: 'Viet Tiep Friendship Hospital', city: 'Hai Phong', lat: 20.8572, lng: 106.6789 },
 
-  // Nha Trang / Khanh Hoa
-  { name: 'Khanh Hoa Province General Hospital', city: 'Nha Trang', lat: 12.2472, lng: 109.1917 },
-  { name: 'Vinmec Nha Trang Hospital', city: 'Nha Trang', lat: 12.2153, lng: 109.2081 }
+  // Khanh Hoa
+  { name: 'Khanh Hoa Province General Hospital', city: 'Khanh Hoa', lat: 12.2472, lng: 109.1917 },
+  { name: 'Vinmec Nha Trang Hospital', city: 'Khanh Hoa', lat: 12.2153, lng: 109.2081 }
 ]
 
 export const EVENT_VENUES_DATABASE = [
   { name: 'Youth Cultural Center HCMC', city: 'Ho Chi Minh City', lat: 10.7828, lng: 106.6983 },
-  { name: 'Dak Lak Provincial Cultural Center', city: 'Buon Ma Thuot', lat: 12.6667, lng: 108.05 },
-  { name: 'Phu Tho Provincial Sports Stadium', city: 'Viet Tri', lat: 21.3227, lng: 105.4019 },
-  { name: 'Hoa Binh Provincial Cultural Palace', city: 'Hoa Binh', lat: 20.8174, lng: 105.3382 },
+  { name: 'Dak Lak Provincial Cultural Center', city: 'Dak Lak', lat: 12.6667, lng: 108.05 },
+  { name: 'Phu Tho Provincial Sports Stadium', city: 'Phu Tho', lat: 21.3227, lng: 105.4019 },
+  { name: 'Phu Tho Cultural Palace', city: 'Phu Tho', lat: 20.8174, lng: 105.3382 },
   { name: 'Lang Son Provincial Convention Center', city: 'Lang Son', lat: 21.8528, lng: 106.7618 },
   { name: 'Luu Huu Phuoc Park Can Tho', city: 'Can Tho', lat: 10.0341, lng: 105.7811 },
-  { name: 'Binh Duong Youth Center', city: 'Binh Duong', lat: 10.9805, lng: 106.6519 },
-  { name: 'Dong Nai Children House', city: 'Bien Hoa', lat: 10.9458, lng: 106.8247 },
-  { name: 'Nha Trang Youth Center', city: 'Nha Trang', lat: 12.2472, lng: 109.1917 },
+  { name: 'Thu Dau Mot Youth Center', city: 'Ho Chi Minh City', lat: 10.9805, lng: 106.6519 },
+  { name: 'Dong Nai Children House', city: 'Dong Nai', lat: 10.9458, lng: 106.8247 },
+  { name: 'Khanh Hoa Youth Center', city: 'Khanh Hoa', lat: 12.2472, lng: 109.1917 },
   { name: 'Hanoi Medical University', city: 'Ha Noi', lat: 21.0031, lng: 105.8294 },
   { name: 'Hai Phong Sports Stadium', city: 'Hai Phong', lat: 20.8544, lng: 106.6778 }
 ]
@@ -125,7 +127,26 @@ const CITY_FALLBACKS = {
   'dong nai': { lat: 10.9458, lng: 106.8247 },
   'đồng nai': { lat: 10.9458, lng: 106.8247 },
   'bien hoa': { lat: 10.9458, lng: 106.8247 },
-  'biên hòa': { lat: 10.9458, lng: 106.8247 }
+  'biên hòa': { lat: 10.9458, lng: 106.8247 },
+  'an giang': { lat: 10.5216, lng: 105.1259 },
+  'bac ninh': { lat: 21.1861, lng: 106.0763 },
+  'ca mau': { lat: 9.1768, lng: 105.1524 },
+  'cao bang': { lat: 22.6666, lng: 106.2639 },
+  'dien bien': { lat: 21.386, lng: 103.023 },
+  'dong thap': { lat: 10.4938, lng: 105.6882 },
+  'gia lai': { lat: 13.9833, lng: 108.0 },
+  'ha tinh': { lat: 18.3428, lng: 105.9057 },
+  'hung yen': { lat: 20.8526, lng: 106.016 },
+  'lai chau': { lat: 22.3964, lng: 103.4582 },
+  'lao cai': { lat: 22.4856, lng: 103.9707 },
+  'ninh binh': { lat: 20.2539, lng: 105.975 },
+  'quang ngai': { lat: 15.1205, lng: 108.7924 },
+  'quang tri': { lat: 16.75, lng: 107.2 },
+  'son la': { lat: 21.327, lng: 103.9141 },
+  'tay ninh': { lat: 11.3101, lng: 106.0983 },
+  'thai nguyen': { lat: 21.5672, lng: 105.8252 },
+  'tuyen quang': { lat: 21.8233, lng: 105.2142 },
+  'vinh long': { lat: 10.2537, lng: 105.9722 }
 }
 
 /**
@@ -155,6 +176,11 @@ export function getHospitalCoordinates(hospitalName, cityName) {
   // 3. City fallback by explicit cityName
   if (cityLower && CITY_FALLBACKS[cityLower]) {
     return CITY_FALLBACKS[cityLower]
+  }
+
+  const normalizedCityLower = normalizeAdministrativeLocation(cityName || '').toLowerCase()
+  if (normalizedCityLower && CITY_FALLBACKS[normalizedCityLower]) {
+    return CITY_FALLBACKS[normalizedCityLower]
   }
 
   // 4. Check if hospitalName/location text contains any known city keyword

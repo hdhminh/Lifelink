@@ -22,8 +22,22 @@ import {
   serverTimestamp
 } from 'firebase/firestore'
 import { db } from '@/firebase.js'
+import { normalizeEventRecord } from '@/data/vietnamLocations.js'
 
 const cachedEvents = ref([])
+
+export function getGuestInterestId(guestSessionId) {
+  return guestSessionId ? `guest:${guestSessionId}` : ''
+}
+
+export function isGuestInterestId(value) {
+  return typeof value === 'string' && value.startsWith('guest:')
+}
+
+export function getGuestDisplayCode(value) {
+  const raw = String(value || '').replace(/^guest:/, '')
+  return raw.split('_')[1]?.slice(0, 4).toUpperCase() || raw.slice(0, 4).toUpperCase() || 'GUEST'
+}
 
 export function useDonationEvents() {
   const events = ref(cachedEvents.value)
@@ -50,7 +64,7 @@ export function useDonationEvents() {
       q,
       (snap) => {
         const sorted = sortEvents(
-          snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
+          snap.docs.map((docSnap) => normalizeEventRecord({ id: docSnap.id, ...docSnap.data() }))
         )
         cachedEvents.value = sorted
         events.value = sorted
@@ -133,12 +147,18 @@ export function useDonationEvents() {
     }
   }
 
+  async function toggleGuestInterested(eventId, guestSessionId) {
+    const guestInterestId = getGuestInterestId(guestSessionId)
+    if (!guestInterestId) return
+    return toggleInterested(eventId, guestInterestId)
+  }
+
   async function createEvent(data) {
     loading.value = true
     error.value = null
     try {
       await addDoc(collection(db, 'events'), {
-        ...data,
+        ...normalizeEventRecord(data),
         interestedCount: 0,
         likedBy: [],
         createdAt: serverTimestamp(),
@@ -158,7 +178,7 @@ export function useDonationEvents() {
     error.value = null
     try {
       await updateDoc(doc(db, 'events', eventId), {
-        ...updates,
+        ...normalizeEventRecord(updates),
         updatedAt: serverTimestamp()
       })
     } catch (err) {
@@ -197,6 +217,7 @@ export function useDonationEvents() {
     stopListening,
     fetchEvents,
     toggleInterested,
+    toggleGuestInterested,
     createEvent,
     updateEvent,
     deleteEvent

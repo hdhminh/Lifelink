@@ -35,8 +35,19 @@ let lastRecordedPos = null
 let lastWriteTimestamp = 0
 
 const MIN_WRITE_INTERVAL_MS = 5000 // 5 seconds
-const MIN_WRITE_DISTANCE_METERS = 30 // 30 meters
+const HIGH_ACCURACY_MIN_WRITE_DISTANCE_METERS = 15
+const LOW_ACCURACY_MIN_WRITE_DISTANCE_METERS = 30
 const TRACKING_SESSION_STORAGE_KEY = 'lifelink.activeTrackingSession'
+const HIGH_ACCURACY_OPTIONS = {
+  enableHighAccuracy: true,
+  timeout: 20000,
+  maximumAge: 0
+}
+const LOW_ACCURACY_OPTIONS = {
+  enableHighAccuracy: false,
+  timeout: 15000,
+  maximumAge: 30000
+}
 
 function getStoredTrackingSession() {
   if (typeof window === 'undefined') return null
@@ -124,105 +135,125 @@ export function useLocationTracking() {
         console.warn('[useLocationTracking] onDisconnect setup failed:', err)
       })
 
-    watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        const { latitude, longitude, accuracy, speed } = position.coords
-        const now = Date.now()
+    let usingHighAccuracy = true
 
-        currentPosition.value = {
-          lat: latitude,
-          lng: longitude,
-          accuracy: accuracy || 0,
-          speed: speed || null
-        }
+    const handlePositionUpdate = (position) => {
+      const { latitude, longitude, accuracy, speed } = position.coords
+      const now = Date.now()
 
-        // Calculate distance & ETA to target hospital
-        if (hospitalLocation && hospitalLocation.lat && hospitalLocation.lng) {
-          const dist = calculateHaversineDistance(
-            latitude,
-            longitude,
-            hospitalLocation.lat,
-            hospitalLocation.lng
-          )
-          distanceToHospital.value = dist
-          formattedDistance.value = formatDistance(dist)
-          estimatedEtaMins.value = calculateEtaMinutes(dist)
-
-          // Auto-detect approaching status when within 500m
-          if (dist <= 500 && trackingStatus.value === 'en_route') {
-            trackingStatus.value = 'approaching'
-          }
-        }
-
-        // Check throttling condition before writing
-        const timePassed = now - lastWriteTimestamp
-        const distMoved = lastRecordedPos
-          ? calculateHaversineDistance(
-              latitude,
-              longitude,
-              lastRecordedPos.lat,
-              lastRecordedPos.lng
-            )
-          : Infinity
-
-        if (
-          !lastRecordedPos ||
-          timePassed >= MIN_WRITE_INTERVAL_MS ||
-          distMoved >= MIN_WRITE_DISTANCE_METERS
-        ) {
-          lastWriteTimestamp = now
-          lastRecordedPos = { lat: latitude, lng: longitude }
-
-          const dataPayload = {
-            donorId,
-            donorName: donorName || 'Donor',
-            bloodType: bloodType || 'O+',
-            requestId,
-            hospitalName: hospitalLocation?.hospitalName || 'Hospital',
-            city: hospitalLocation?.city || '',
-            hospitalLat: hospitalLocation?.lat || null,
-            hospitalLng: hospitalLocation?.lng || null,
-            latitude,
-            longitude,
-            accuracy: accuracy || 0,
-            speed: speed || null,
-            status: trackingStatus.value,
-            distanceMeters: distanceToHospital.value || 0,
-            etaMins: estimatedEtaMins.value || 0,
-            updatedAt: serverTimestamp()
-          }
-
-          update(trackingDocRef, dataPayload).catch((err) => {
-            console.error('[useLocationTracking] RTDB write error:', err)
-          })
-
-          saveTrackingSession({
-            requestId,
-            donorId,
-            donorName: donorName || 'Donor',
-            bloodType: bloodType || 'O+',
-            hospitalLocation,
-            lastPosition: currentPosition.value,
-            distanceMeters: distanceToHospital.value || 0,
-            etaMins: estimatedEtaMins.value || 0,
-            status: trackingStatus.value
-          })
-        }
-      },
-      (err) => {
-        console.warn('[useLocationTracking] watchPosition error:', err)
-        let msg = 'Could not retrieve your live location.'
-        if (err.code === err.PERMISSION_DENIED) {
-          msg = 'Location permission was revoked.'
-          stopTracking()
-        }
-        trackingError.value = msg
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 15000,
-        maximumAge: 0
+      currentPosition.value = {
+        lat: latitude,
+        lng: longitude,
+        accuracy: accuracy || 0,
+        speed: speed || null
       }
+
+      // Calculate distance & ETA to target hospital
+      if (hospitalLocation && hospitalLocation.lat && hospitalLocation.lng) {
+        const dist = calculateHaversineDistance(
+          latitude,
+          longitude,
+          hospitalLocation.lat,
+          hospitalLocation.lng
+        )
+        distanceToHospital.value = dist
+        formattedDistance.value = formatDistance(dist)
+        estimatedEtaMins.value = calculateEtaMinutes(dist)
+
+        // Auto-detect approaching status when within 500m
+        if (dist <= 500 && trackingStatus.value === 'en_route') {
+          trackingStatus.value = 'approaching'
+        }
+      }
+
+      // Check throttling condition before writing
+      const timePassed = now - lastWriteTimestamp
+      const distMoved = lastRecordedPos
+        ? calculateHaversineDistance(
+            latitude,
+            longitude,
+            lastRecordedPos.lat,
+            lastRecordedPos.lng
+          )
+        : Infinity
+
+      const minWriteDistanceMeters = usingHighAccuracy
+        ? HIGH_ACCURACY_MIN_WRITE_DISTANCE_METERS
+        : LOW_ACCURACY_MIN_WRITE_DISTANCE_METERS
+
+      if (
+        !lastRecordedPos ||
+        timePassed >= MIN_WRITE_INTERVAL_MS ||
+        distMoved >= minWriteDistanceMeters
+      ) {
+        lastWriteTimestamp = now
+        lastRecordedPos = { lat: latitude, lng: longitude }
+
+        const dataPayload = {
+          donorId,
+          donorName: donorName || 'Donor',
+          bloodType: bloodType || 'O+',
+          requestId,
+          hospitalName: hospitalLocation?.hospitalName || 'Hospital',
+          city: hospitalLocation?.city || '',
+          hospitalLat: hospitalLocation?.lat || null,
+          hospitalLng: hospitalLocation?.lng || null,
+          latitude,
+          longitude,
+          accuracy: accuracy || 0,
+          accuracyMode: usingHighAccuracy ? 'high' : 'approximate',
+          speed: speed || null,
+          status: trackingStatus.value,
+          distanceMeters: distanceToHospital.value || 0,
+          etaMins: estimatedEtaMins.value || 0,
+          updatedAt: serverTimestamp()
+        }
+
+        update(trackingDocRef, dataPayload).catch((err) => {
+          console.error('[useLocationTracking] RTDB write error:', err)
+        })
+
+        saveTrackingSession({
+          requestId,
+          donorId,
+          donorName: donorName || 'Donor',
+          bloodType: bloodType || 'O+',
+          hospitalLocation,
+          lastPosition: currentPosition.value,
+          accuracyMode: usingHighAccuracy ? 'high' : 'approximate',
+          distanceMeters: distanceToHospital.value || 0,
+          etaMins: estimatedEtaMins.value || 0,
+          status: trackingStatus.value
+        })
+      }
+    }
+
+    const handlePositionError = (err) => {
+      console.warn('[useLocationTracking] watchPosition error:', err)
+      let msg = 'Could not retrieve your live location.'
+      if (err.code === err.PERMISSION_DENIED) {
+        msg = 'Location permission was revoked.'
+        stopTracking()
+      } else if (usingHighAccuracy) {
+        usingHighAccuracy = false
+        msg = 'Using approximate location.'
+        if (watchId !== null) {
+          navigator.geolocation.clearWatch(watchId)
+          watchId = null
+        }
+        watchId = navigator.geolocation.watchPosition(
+          handlePositionUpdate,
+          handlePositionError,
+          LOW_ACCURACY_OPTIONS
+        )
+      }
+      trackingError.value = msg
+    }
+
+    watchId = navigator.geolocation.watchPosition(
+      handlePositionUpdate,
+      handlePositionError,
+      HIGH_ACCURACY_OPTIONS
     )
 
     // Do not stop tracking on page reload. The browser may disconnect the RTDB socket,

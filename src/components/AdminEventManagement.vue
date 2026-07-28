@@ -56,7 +56,7 @@
                             : 'bi-people-fill'
                         "
                       ></i>
-                      Attendees ({{ ev.interestedCount || 0 }})
+                      Interested ({{ ev.interestedCount || 0 }})
                     </button>
                     <button
                       class="ll-icon-button"
@@ -78,14 +78,14 @@
                 </td>
               </tr>
 
-              <!-- Expandable Attendees Details Row -->
+              <!-- Expandable Interested Donors Details Row -->
               <tr v-if="expandedEventIds.includes(ev.id)" class="ll-expanded-row">
                 <td colspan="7" class="p-3 dashboard-style-32">
                   <div class="card shadow-none border border-slate-100 mb-0">
                     <div class="card-header py-2 bg-slate-50">
                       <span class="small fw-bold text-slate-800"
-                        ><i class="bi bi-people-fill text-wine me-1"></i>Registered
-                        Attendees for {{ formatEventTitle(ev.title) }}</span
+                        ><i class="bi bi-people-fill text-wine me-1"></i>Interested
+                        Donors for {{ formatEventTitle(ev.title) }}</span
                       >
                     </div>
                     <div class="card-body p-0">
@@ -93,7 +93,7 @@
                         v-if="getParticipantsForEvent(ev.likedBy).length === 0"
                         class="text-center py-3 text-slate-400 small"
                       >
-                        No attendees registered for this event yet.
+                        No donors interested in this event yet.
                       </div>
                       <table v-else class="table table-sm align-middle mb-0 small">
                         <thead>
@@ -120,7 +120,7 @@
                                   $emit('remove-user-from-event', ev.id, attendee.uid, attendee.displayName)
                                 "
                               >
-                                <i class="bi bi-x-circle me-1"></i>Remove Attendance
+                                <i class="bi bi-x-circle me-1"></i>Remove Interest
                               </button>
                             </td>
                           </tr>

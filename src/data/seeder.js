@@ -9,6 +9,7 @@
 import { collection, getDocs, writeBatch, doc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/firebase.js'
 import { getHospitalCoordinates } from '@/data/hospitalCoordinates.js'
+import { normalizeEventRecord, normalizeLocationRecord } from '@/data/vietnamLocations.js'
 
 export async function seedDatabaseIfEmpty() {
   try {
@@ -95,7 +96,7 @@ export async function seedDatabaseIfEmpty() {
         },
         {
           hospitalName: 'Binh Duong General Hospital',
-          city: 'Binh Duong',
+          city: 'Ho Chi Minh City',
           bloodType: 'B-',
           urgency: 'urgent',
           unitsNeeded: 3,
@@ -121,10 +122,11 @@ export async function seedDatabaseIfEmpty() {
       ]
 
       seedRequests.forEach((req) => {
-        const coords = getHospitalCoordinates(req.hospitalName, req.city)
+        const normalizedReq = normalizeLocationRecord(req)
+        const coords = getHospitalCoordinates(normalizedReq.hospitalName, normalizedReq.city)
         const newDocRef = doc(collection(db, 'emergencyRequests'))
         batch.set(newDocRef, {
-          ...req,
+          ...normalizedReq,
           latitude: coords.lat,
           longitude: coords.lng
         })
@@ -154,7 +156,7 @@ export async function seedDatabaseIfEmpty() {
         {
           title: '"Red Highlands" Blood Donation Festival — Dak Lak',
           date: '2026-07-02',
-          city: 'Buon Ma Thuot',
+          city: 'Dak Lak',
           category: 'Campaign',
           location: 'Dak Lak Provincial Cultural Center',
           description:
@@ -166,7 +168,7 @@ export async function seedDatabaseIfEmpty() {
         {
           title: '"Ancestral Land Pink Drop" Drive — Phu Tho',
           date: '2026-07-10',
-          city: 'Viet Tri',
+          city: 'Phu Tho',
           category: 'Drive',
           location: 'Phu Tho Provincial Sports Stadium',
           description:
@@ -176,13 +178,13 @@ export async function seedDatabaseIfEmpty() {
           createdAt: serverTimestamp()
         },
         {
-          title: '"Da River Pink Drop" Festival — Hoa Binh',
+          title: '"Da River Pink Drop" Festival — Phu Tho',
           date: '2026-07-15',
-          city: 'Hoa Binh',
+          city: 'Phu Tho',
           category: 'Drive',
-          location: 'Hoa Binh Provincial Cultural Palace',
+          location: 'Phu Tho Cultural Palace',
           description:
-            'Annual community blood donation drive in Hoa Binh province supporting the national Red Journey campaign.',
+            'Annual community blood donation drive in Phu Tho supporting the national Red Journey campaign.',
           interestedCount: 0,
           likedBy: [],
           createdAt: serverTimestamp()
@@ -212,11 +214,11 @@ export async function seedDatabaseIfEmpty() {
           createdAt: serverTimestamp()
         },
         {
-          title: '"Youth Blood Drive" Campaign — Binh Duong',
+          title: '"Youth Blood Drive" Campaign — Ho Chi Minh City',
           date: '2026-08-05',
-          city: 'Binh Duong',
+          city: 'Ho Chi Minh City',
           category: 'Campaign',
-          location: 'Binh Duong Youth Center',
+          location: 'Thu Dau Mot Youth Center',
           description:
             'Youth-led community blood donation drive focusing on young donors and first-time participants.',
           interestedCount: 0,
@@ -226,11 +228,11 @@ export async function seedDatabaseIfEmpty() {
         {
           title: '"Green Summer Donation" Drive — Dong Nai',
           date: '2026-08-12',
-          city: 'Bien Hoa',
+          city: 'Dong Nai',
           category: 'Drive',
           location: 'Dong Nai Children House',
           description:
-            'Annual summer campaign collecting blood units from local workers and college students in Bien Hoa.',
+            'Annual summer campaign collecting blood units from local workers and college students in Dong Nai.',
           interestedCount: 0,
           likedBy: [],
           createdAt: serverTimestamp()
@@ -238,9 +240,9 @@ export async function seedDatabaseIfEmpty() {
         {
           title: '"Coastal Pink Drop" Festival — Khanh Hoa',
           date: '2026-08-19',
-          city: 'Nha Trang',
+          city: 'Khanh Hoa',
           category: 'Campaign',
-          location: 'Nha Trang Youth Center',
+          location: 'Khanh Hoa Youth Center',
           description:
             'Humanitarian blood festival gathering blood units for pediatric clinics and general hospitals.',
           interestedCount: 0,
@@ -278,7 +280,7 @@ export async function seedDatabaseIfEmpty() {
           category: 'Drive',
           location: 'Hue Cultural Palace',
           description:
-            'Community blood donation drive to establish safety reserves for local Thua Thien Hue clinics.',
+            'Community blood donation drive to establish safety reserves for local Hue clinics.',
           interestedCount: 0,
           likedBy: [],
           createdAt: serverTimestamp()
@@ -286,10 +288,14 @@ export async function seedDatabaseIfEmpty() {
       ]
 
       seedEvents.forEach((evt) => {
-        const coords = getHospitalCoordinates(evt.location || evt.title, evt.city)
+        const normalizedEvt = normalizeEventRecord(evt)
+        const coords = getHospitalCoordinates(
+          normalizedEvt.location || normalizedEvt.title,
+          normalizedEvt.city
+        )
         const newDocRef = doc(collection(db, 'events'))
         batch.set(newDocRef, {
-          ...evt,
+          ...normalizedEvt,
           latitude: coords.lat,
           longitude: coords.lng
         })

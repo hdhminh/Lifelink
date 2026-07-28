@@ -148,8 +148,7 @@ service cloud.firestore {
       allow read: if true;
       allow create, delete: if isAdmin();
       allow update: if isAdmin() && isValidEventCategory(request.resource.data.category) ||
-        (signedIn() &&
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['interestedCount', 'likedBy', 'updatedAt']));
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['interestedCount', 'likedBy', 'updatedAt']);
     }
 
     match /supportThreads/{threadId} {

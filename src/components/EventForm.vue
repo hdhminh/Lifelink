@@ -65,15 +65,16 @@
         </div>
         <div class="col-md-6 ll-form-group">
           <label for="event-city">City</label>
-          <input
+          <select
             id="event-city"
-            v-model.trim="form.city"
-            class="form-control"
+            v-model="form.city"
+            class="form-select"
             :class="{ 'is-invalid': errors.city }"
-            type="text"
             aria-label="Event City"
-            autocomplete="address-level2"
-          />
+          >
+            <option value="">Select city</option>
+            <option v-for="city in cityOptions" :key="city" :value="city">{{ city }}</option>
+          </select>
           <div v-if="errors.city" class="invalid-feedback d-block">{{ errors.city }}</div>
         </div>
       </div>
@@ -107,6 +108,7 @@
  * Validated create/edit form for donation events.
  */
 import { reactive, watch } from 'vue'
+import { VIETNAM_PROVINCES_2025, normalizeEventRecord } from '@/data/vietnamLocations.js'
 
 const props = defineProps({
   initialData: { type: Object, default: null },
@@ -115,6 +117,7 @@ const props = defineProps({
 
 const emit = defineEmits(['submit', 'cancel'])
 const categories = ['Drive', 'Campaign', 'Workshop']
+const cityOptions = VIETNAM_PROVINCES_2025
 const form = reactive({
   title: '',
   date: '',
@@ -130,13 +133,14 @@ const errors = reactive({})
  * @returns {void}
  */
 function populateForm() {
+  const initial = normalizeEventRecord(props.initialData || {})
   Object.assign(form, {
-    title: props.initialData?.title || '',
-    date: props.initialData?.date || '',
-    location: props.initialData?.location || '',
-    city: props.initialData?.city || '',
-    category: props.initialData?.category || '',
-    description: props.initialData?.description || ''
+    title: initial.title || '',
+    date: initial.date || '',
+    location: initial.location || '',
+    city: initial.city || '',
+    category: initial.category || '',
+    description: initial.description || ''
   })
 }
 
@@ -162,7 +166,7 @@ function validate() {
  */
 function handleSubmit() {
   if (!validate()) return
-  emit('submit', { ...form })
+  emit('submit', normalizeEventRecord({ ...form }))
 }
 
 watch(() => props.initialData, populateForm, { immediate: true })

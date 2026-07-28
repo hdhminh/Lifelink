@@ -33,12 +33,21 @@
       <button
         v-else
         type="button"
-        :class="[isInterested ? 'll-btn-primary' : 'll-btn-secondary', 'll-btn-block']"
+        :class="[
+          'll-btn-block',
+          'll-event-interest-button',
+          isInterested ? 'll-event-interest-button--active' : 'll-event-interest-button--pending'
+        ]"
         :title="isLoggedIn ? 'Toggle Interested' : 'Log in to mark Interested'"
         @click="emit('toggle-interested')"
       >
-        <i :class="[isInterested ? 'bi bi-check-circle-fill text-white' : 'bi-heart', 'me-1']"></i>
-        {{ isInterested ? 'Interested (Registered)' : 'Interested' }}
+        <i
+          :class="[
+            isInterested ? 'bi bi-check-circle-fill text-white' : 'bi bi-heart-fill text-white',
+            'me-1'
+          ]"
+        ></i>
+        {{ isInterested ? 'Interested' : 'Interested' }}
       </button>
     </footer>
   </article>
@@ -127,5 +136,52 @@ const formattedDate = computed(() => {
 }
 .font-weight-700 {
   font-weight: 700;
+}
+
+.ll-event-interest-button {
+  border: 1px solid transparent;
+  min-height: 44px;
+  border-radius: var(--ll-radius-sm);
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  transition:
+    background-color var(--ll-transition-fast),
+    border-color var(--ll-transition-fast),
+    color var(--ll-transition-fast),
+    transform var(--ll-transition-fast),
+    box-shadow var(--ll-transition-fast);
+}
+
+.ll-event-interest-button--pending {
+  background: var(--ll-wine-red);
+  border-color: var(--ll-wine-red);
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(142, 36, 53, 0.16);
+}
+
+.ll-event-interest-button--pending:hover,
+.ll-event-interest-button--pending:focus {
+  background: #a3263d;
+  border-color: #a3263d;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.ll-event-interest-button--active {
+  background: #198754;
+  border-color: #198754;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(25, 135, 84, 0.16);
+}
+
+.ll-event-interest-button--active:hover,
+.ll-event-interest-button--active:focus {
+  background: #157347;
+  border-color: #157347;
+  color: #ffffff;
+  transform: translateY(-1px);
 }
 </style>

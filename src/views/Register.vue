@@ -204,6 +204,7 @@ import { reactive, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth.js'
 import { useToast } from '@/composables/useToast.js'
+import { VIETNAM_PROVINCES_2025 } from '@/data/vietnamLocations.js'
 
 const { register } = useAuth()
 const { showToast } = useToast()
@@ -214,19 +215,7 @@ const showPassword = ref(false)
 const isLoading = ref(false)
 
 const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
-const cities = [
-  'Ho Chi Minh City',
-  'Hanoi',
-  'Da Nang',
-  'Can Tho',
-  'Hai Phong',
-  'Binh Duong',
-  'Dong Nai',
-  'Hue',
-  'Nha Trang',
-  'Vung Tau',
-  'Other'
-]
+const cities = [...VIETNAM_PROVINCES_2025, 'Other']
 
 const form = reactive({
   displayName: '',
@@ -361,7 +350,9 @@ async function handleRegister() {
   if (!validateForm()) return
   isLoading.value = true
   try {
-    await register(form.email, form.password, {
+    await register({
+      email: form.email,
+      password: form.password,
       displayName: form.displayName,
       phoneNumber: form.phoneNumber,
       bloodType: form.bloodType,

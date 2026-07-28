@@ -15,6 +15,11 @@ import {
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from '@/firebase.js'
 import { useGuestSession } from '@/composables/useGuestSession.js'
+import { normalizeLocationRecord } from '@/data/vietnamLocations.js'
+import {
+  clearAuthenticatedSession,
+  markAuthenticatedSession
+} from '@/utils/authSessionStorage.js'
 
 const user = ref(null)
 const userProfile = ref(null)
@@ -27,7 +32,7 @@ const authLoading = ref(true)
  */
 async function fetchUserProfile(uid) {
   const snap = await getDoc(doc(db, 'users', uid))
-  return snap.exists() ? { id: snap.id, ...snap.data() } : null
+  return snap.exists() ? normalizeLocationRecord({ id: snap.id, ...snap.data() }) : null
 }
 
 onAuthStateChanged(auth, async (firebaseUser) => {
@@ -69,7 +74,9 @@ export function useAuth() {
    * @returns {Promise<void>}
    */
   async function login(email, password) {
-    await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password)
+    const credential = await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password)
+    const profile = await fetchUserProfile(credential.user.uid)
+    markAuthenticatedSession(profile?.role || 'donor')
     const { clearGuestSession } = useGuestSession()
     clearGuestSession()
   }
@@ -89,13 +96,14 @@ export function useAuth() {
       email,
       role: 'donor',
       bloodType,
-      city,
+      city: normalizeLocationRecord({ city }).city,
       phoneNumber: phoneNumber || '',
       canDonateNow: true,
       lastDonationDate: null,
       createdAt: serverTimestamp()
     })
     userProfile.value = await fetchUserProfile(uid)
+    markAuthenticatedSession(userProfile.value?.role || 'donor')
     const { clearGuestSession } = useGuestSession()
     clearGuestSession()
   }
@@ -105,6 +113,7 @@ export function useAuth() {
    * @returns {Promise<void>}
    */
   async function logout() {
+    clearAuthenticatedSession()
     await signOut(auth)
   }
 
@@ -129,6 +138,9 @@ export function useAuth() {
       if (allowedFields.includes(key)) {
         filteredUpdates[key] = updates[key]
       }
+    }
+    if (filteredUpdates.city) {
+      filteredUpdates.city = normalizeLocationRecord({ city: filteredUpdates.city }).city
     }
     await updateDoc(doc(db, 'users', user.value.uid), filteredUpdates)
     userProfile.value = await fetchUserProfile(user.value.uid)

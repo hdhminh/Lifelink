@@ -149,6 +149,18 @@
                   autocomplete="tel"
                 />
               </div>
+              <div class="mb-3">
+                <label for="guest-blood-type" class="form-label small fw-bold">Blood Type *</label>
+                <select
+                  id="guest-blood-type"
+                  v-model="guestConfirmBloodType"
+                  class="form-select"
+                  required
+                >
+                  <option value="" disabled>Select your blood type</option>
+                  <option v-for="type in bloodTypes" :key="type" :value="type">{{ type }}</option>
+                </select>
+              </div>
 
               <div class="d-flex gap-2 mt-4">
                 <button
@@ -197,7 +209,7 @@ const props = defineProps({
 const emit = defineEmits(['confirmed'])
 
 const { user, userProfile } = useAuth()
-const { getGuestSession } = useGuestSession()
+const { getGuestSession, updateGuestSession } = useGuestSession()
 const { confirmAvailability, confirmGuestAvailability } = useConfirmDonation()
 const { buildMapsUrl } = useGeolocation()
 const { startTracking, stopTracking, getStoredTrackingSession } = useLocationTracking()
@@ -214,6 +226,7 @@ const confirmingRequestId = ref(null)
 const showGuestConfirmModal = ref(false)
 const guestConfirmName = ref('')
 const guestConfirmPhone = ref('')
+const guestConfirmBloodType = ref('')
 const guestConfirmRequestId = ref('')
 const guestConfirmHospital = ref('')
 const guestConfirmCity = ref('')
@@ -222,6 +235,7 @@ const guestConfirmError = ref('')
 const showMapsConfirmModal = ref(false)
 const pendingMapUrl = ref('')
 const pendingRequestForTracking = ref(null)
+const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 
 function closeMapsConfirmModal() {
   showMapsConfirmModal.value = false
@@ -277,6 +291,8 @@ function startTrackingForRequest(req, fallbackSession = null) {
     bloodType:
       userProfile.value?.bloodType ||
       fallbackSession?.bloodType ||
+      guestConfirmBloodType.value ||
+      getGuestSession().preferredBloodType ||
       'Guest',
     hospitalLocation: { ...coords, hospitalName: req.hospitalName, city: req.city }
   })
@@ -326,20 +342,26 @@ async function commitGuestConfirm() {
     guestConfirmError.value = 'Please enter your name.'
     return
   }
+  if (!guestConfirmBloodType.value) {
+    guestConfirmError.value = 'Please select your blood type.'
+    return
+  }
   const reqId = guestConfirmRequestId.value
   try {
     await confirmGuestAvailability(reqId, {
       guestSessionId: getGuestSession().guestId,
       guestName: guestConfirmName.value.trim(),
-      guestPhone: guestConfirmPhone.value.trim() || 'N/A'
+      guestPhone: guestConfirmPhone.value.trim() || 'N/A',
+      bloodType: guestConfirmBloodType.value
     })
+    updateGuestSession({ preferredBloodType: guestConfirmBloodType.value })
     emit('confirmed', reqId)
     showGuestConfirmModal.value = false
     openMapsForRequest(reqId)
     showToast('Availability confirmed successfully.', 'success')
   } catch (err) {
     console.error('Failed to commit guest confirmation:', err)
-    guestConfirmError.value = 'Could not confirm. Please check your network and try again.'
+    guestConfirmError.value = err.message || 'Could not confirm. Please check your network and try again.'
   }
 }
 
@@ -387,6 +409,7 @@ function handleConfirm(requestId) {
     guestConfirmCity.value = req.city || ''
     guestConfirmName.value = ''
     guestConfirmPhone.value = ''
+    guestConfirmBloodType.value = getGuestSession().preferredBloodType || ''
     guestConfirmError.value = ''
     showGuestConfirmModal.value = true
     return

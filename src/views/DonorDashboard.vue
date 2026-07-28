@@ -92,11 +92,11 @@
             </div>
           </div>
 
-          <!-- Registered Events -->
+          <!-- Interested Events -->
           <div class="col-md-6 col-12">
             <div class="ll-card h-100">
               <div class="ll-card__header d-flex justify-content-between align-items-center">
-                  <h5 class="fw-bold mb-0 text-wine"><i class="bi bi-calendar-check-fill me-2"></i>Registered Events</h5>
+                  <h5 class="fw-bold mb-0 text-wine"><i class="bi bi-calendar-check-fill me-2"></i>Interested Events</h5>
                   <span class="d-inline-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="background-color: var(--ll-wine-red); width: 24px; height: 24px; border-radius: 50%; font-size: 0.75rem;">{{ registeredEvents.length }}</span>
                 </div>
               <div class="ll-card__body">
@@ -104,12 +104,12 @@
                   <div class="spinner-border spinner-border-sm text-danger" role="status"></div>
                 </div>
                 <div v-else-if="registeredEvents.length === 0" class="text-center py-4 text-slate-500">
-                  <p class="mb-0">You haven't registered for any events yet.</p>
+                  <p class="mb-0">You haven't marked interest in any events yet.</p>
                   <RouterLink to="/events" class="btn btn-sm mt-2" style="color: var(--ll-wine-red); border: 1px solid var(--ll-wine-red);">Browse Events</RouterLink>
                 </div>
                 <div v-else class="list-group list-group-flush">
                   <div v-for="ev in registeredEvents" :key="ev.id" class="list-group-item px-0 py-3 border-bottom border-slate-100">
-                    <div class="d-flex justify-content-between align-items-start gap-2">
+                    <div class="d-flex justify-content-between align-items-center gap-3">
                       <div>
                         <h3 class="fw-bold mb-1 text-slate-900 fs-6">{{ ev.title }}</h3>
                         <p class="small text-slate-500 mb-0">
@@ -117,8 +117,8 @@
                         </p>
                         <p class="small text-slate-400 mb-0 mt-1">Date: {{ formatEventDate(ev.date) }}</p>
                       </div>
-                      <RouterLink to="/events" class="btn btn-sm btn-outline-primary flex-shrink-0">
-                        View
+                      <RouterLink to="/events" class="ll-dashboard-view-button flex-shrink-0">
+                        <i class="bi bi-eye-fill"></i> View
                       </RouterLink>
                     </div>
                   </div>
@@ -421,11 +421,11 @@
               </div>
             </div>
 
-            <!-- Registered Outreach Events List inside User History -->
+            <!-- Interested Outreach Events List inside User History -->
             <div>
-              <h6 class="fw-bold text-wine mb-3"><i class="bi bi-calendar-check-fill me-2"></i>Registered Outreach Events ({{ userHistoryEvents.length }})</h6>
+              <h6 class="fw-bold text-wine mb-3"><i class="bi bi-calendar-check-fill me-2"></i>Interested Outreach Events ({{ userHistoryEvents.length }})</h6>
               <div v-if="userHistoryEvents.length === 0" class="text-center py-3 bg-slate-50 text-slate-500 rounded small">
-                Not registered for any outreach campaign events.
+                No interested outreach campaign events.
               </div>
               <div v-else class="table-responsive">
                 <table class="table table-sm align-middle mb-0 small">
@@ -525,7 +525,7 @@
     <ConfirmModal
       :show="showEventDeleteModal"
       title="Delete Donation Event"
-      message="Are you sure you want to permanently delete this event? This will also remove registrations."
+      message="Are you sure you want to permanently delete this event? This will also remove saved interests."
       confirm-label="Delete Event"
       @confirm="confirmDeleteEvent"
       @cancel="showEventDeleteModal = false"
@@ -560,9 +560,9 @@
 
     <ConfirmModal
       :show="showRemoveEventParticipantModal"
-      title="Remove Event Registration"
-      :message="`Are you sure you want to remove ${pendingRemoveEventParticipant?.userName || 'this attendee'} from this event?`"
-      confirm-label="Remove Registration"
+      title="Remove Event Interest"
+      :message="`Are you sure you want to remove ${pendingRemoveEventParticipant?.userName || 'this donor'} from this event?`"
+      confirm-label="Remove Interest"
       @confirm="confirmRemoveUserFromEvent"
       @cancel="cancelRemoveUserFromEvent"
     />
@@ -598,9 +598,14 @@ import ConfirmModal from '@/components/ConfirmModal.vue'
 import EventForm from '@/components/EventForm.vue'
 import RequestForm from '@/components/RequestForm.vue'
 import { useConfirmDonation } from '@/composables/useConfirmDonation.js'
+import { isGuestInterestId, getGuestDisplayCode } from '@/composables/useDonationEvents.js'
 import { useToast } from '@/composables/useToast.js'
 import { useEligibility } from '@/composables/useEligibility.js'
 import mockDonors from '@/data/mockDonors.json'
+import {
+  normalizeEventRecord,
+  normalizeLocationRecord
+} from '@/data/vietnamLocations.js'
 
 const userSubTab = ref('registered')
 
@@ -755,7 +760,7 @@ function listenToDonorHistory() {
           console.error('Error backfilling request details:', err)
         }
       }
-      return conf
+      return normalizeLocationRecord(conf)
     }))
 
     if (listenToken !== donorHistoryListenToken) return
@@ -781,7 +786,7 @@ function listenToDonorHistory() {
 
   donorEventsUnsubscribe = onSnapshot(qEv, (snapEv) => {
     if (listenToken !== donorHistoryListenToken) return
-    const listEv = snapEv.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    const listEv = snapEv.docs.map(doc => normalizeEventRecord({ id: doc.id, ...doc.data() }))
     listEv.sort((a, b) => new Date(a.date) - new Date(b.date))
     registeredEvents.value = listEv
     eventsLoading.value = false
@@ -809,6 +814,7 @@ const adminEventsLoading = ref(false)
 const confirmationsLoadingState = ref(false)
 
 let requestsUnsubscribe = null
+let eventsUnsubscribe = null
 let confirmationsUnsubscribe = null
 let guestConfirmationsUnsubscribe = null
 
@@ -824,13 +830,13 @@ watch(userSearchQuery, () => {
 
 const allSystemUsers = computed(() => {
   const list = [
-    ...usersList.value.map(u => ({ ...u, isMock: false })),
+    ...usersList.value.map(u => ({ ...normalizeLocationRecord(u), isMock: false })),
     ...mockDonors.map(m => ({
       id: m.id,
       displayName: m.displayName,
       email: m.email,
       phoneNumber: m.phoneNumber,
-      city: m.city,
+      city: normalizeLocationRecord(m).city,
       bloodType: m.bloodType,
       canDonateNow: m.canDonateNow,
       role: 'donor',
@@ -855,7 +861,7 @@ async function fetchUsers(isSilent = false) {
   if (!isSilent) usersLoading.value = true
   try {
     const snap = await getDocs(collection(db, 'users'))
-    usersList.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    usersList.value = snap.docs.map(doc => normalizeLocationRecord({ id: doc.id, ...doc.data() }))
   } catch (err) {
     console.error('Error fetching users:', err)
     showToast('Failed to fetch system users.', 'danger')
@@ -866,16 +872,28 @@ async function fetchUsers(isSilent = false) {
 
 async function fetchEvents(isSilent = false) {
   if (!isSilent) adminEventsLoading.value = true
-  try {
-    const snap = await getDocs(collection(db, 'events'))
-    eventsList.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-    eventsList.value.sort((a, b) => new Date(a.date) - new Date(b.date))
-  } catch (err) {
-    console.error('Error fetching events:', err)
-    showToast('Failed to fetch events.', 'danger')
-  } finally {
-    if (!isSilent) adminEventsLoading.value = false
-  }
+  return new Promise((resolve, reject) => {
+    if (eventsUnsubscribe) {
+      if (!isSilent) adminEventsLoading.value = false
+      resolve()
+      return
+    }
+
+    const q = query(collection(db, 'events'), orderBy('date', 'asc'))
+    eventsUnsubscribe = onSnapshot(q, (snap) => {
+      eventsList.value = snap.docs.map(docSnap =>
+        normalizeEventRecord({ id: docSnap.id, ...docSnap.data() })
+      )
+      updateAdminStatsFromLists()
+      if (!isSilent) adminEventsLoading.value = false
+      resolve()
+    }, (err) => {
+      console.error('Error fetching events:', err)
+      showToast('Failed to fetch events.', 'danger')
+      if (!isSilent) adminEventsLoading.value = false
+      reject(err)
+    })
+  })
 }
 
 async function fetchAllConfirmations(isSilent = false) {
@@ -905,7 +923,7 @@ async function fetchAllConfirmations(isSilent = false) {
 
     confirmationsUnsubscribe = onSnapshot(collection(db, 'confirmations'), (snap) => {
       donorReady = true
-      donorConfirmations = snap.docs.map(doc => ({
+      donorConfirmations = snap.docs.map(doc => normalizeLocationRecord({
         id: doc.id,
         participantType: 'donor',
         ...doc.data()
@@ -921,7 +939,7 @@ async function fetchAllConfirmations(isSilent = false) {
       guestReady = true
       guestConfirmations = snap.docs.map(doc => {
         const data = doc.data()
-        return {
+        return normalizeLocationRecord({
           id: doc.id,
           participantType: 'guest',
           donorName: data.guestName || 'Guest Donor',
@@ -929,7 +947,7 @@ async function fetchAllConfirmations(isSilent = false) {
           donorId: data.guestSessionId,
           bloodType: data.bloodType || 'Guest',
           ...data
-        }
+        })
       })
       syncAllConfirmations()
     }, (err) => {
@@ -1059,7 +1077,9 @@ async function fetchRequests(isSilent = false) {
     }
     const q = query(collection(db, 'emergencyRequests'), orderBy('createdAt', 'desc'))
     requestsUnsubscribe = onSnapshot(q, (snap) => {
-      requestList.value = snap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
+      requestList.value = snap.docs.map(docSnap =>
+        normalizeLocationRecord({ id: docSnap.id, ...docSnap.data() })
+      )
       updateAdminStatsFromLists()
       if (!isSilent) requestsLoadingState.value = false
       resolve()
@@ -1089,7 +1109,7 @@ function closeRequestForm() {
 
 async function handleRequestFormSubmit(formData) {
   try {
-    const dataToSave = { ...formData }
+    const dataToSave = normalizeLocationRecord({ ...formData })
     const customCreatedAt = dataToSave.createdAt
     delete dataToSave.createdAt
 
@@ -1316,14 +1336,15 @@ function closeEventForm() {
 
 async function handleEventFormSubmit(formData) {
   try {
+    const dataToSave = normalizeEventRecord(formData)
     if (editingEvent.value) {
       await updateDoc(doc(db, 'events', editingEvent.value.id), {
-        ...formData
+        ...dataToSave
       })
       showToast('Event updated successfully.', 'success')
     } else {
       await addDoc(collection(db, 'events'), {
-        ...formData,
+        ...dataToSave,
         interestedCount: 0,
         likedBy: [],
         createdAt: serverTimestamp()
@@ -1387,6 +1408,13 @@ function getConfirmationsForRequest(requestId) {
 function getParticipantsForEvent(likedByArray) {
   if (!likedByArray || likedByArray.length === 0) return []
   return likedByArray.map(uid => {
+    if (isGuestInterestId(uid)) {
+      return {
+        uid,
+        displayName: `Guest #${getGuestDisplayCode(uid)}`,
+        email: 'Guest Session'
+      }
+    }
     const u = usersList.value.find(userItem => userItem.uid === uid || userItem.id === uid)
     return {
       uid,
@@ -1410,8 +1438,7 @@ async function confirmRemoveUserFromEvent() {
       likedBy: arrayRemove(userId),
       interestedCount: increment(-1)
     })
-    showToast(`Removed registration for ${userName}.`, 'success')
-    await fetchEvents(true)
+    showToast(`Removed interest for ${userName}.`, 'success')
     await loadAdminStats(true)
   } catch (err) {
     console.error('Error removing user from event:', err)
@@ -1682,6 +1709,10 @@ watch(userProfile, async (newProfile) => {
       confirmationsUnsubscribe()
       confirmationsUnsubscribe = null
     }
+    if (eventsUnsubscribe) {
+      eventsUnsubscribe()
+      eventsUnsubscribe = null
+    }
     if (guestConfirmationsUnsubscribe) {
       guestConfirmationsUnsubscribe()
       guestConfirmationsUnsubscribe = null
@@ -1733,6 +1764,9 @@ onUnmounted(() => {
   }
   if (requestsUnsubscribe) {
     requestsUnsubscribe()
+  }
+  if (eventsUnsubscribe) {
+    eventsUnsubscribe()
   }
   if (confirmationsUnsubscribe) {
     confirmationsUnsubscribe()
@@ -1860,6 +1894,38 @@ onUnmounted(() => {
   height: 7px;
   background-color: var(--ll-slate-400);
   border-radius: 50%;
+}
+
+.ll-dashboard-view-button {
+  height: 34px;
+  min-height: 34px;
+  flex: 0 0 auto;
+  padding: 0 0.75rem;
+  border: 1px solid var(--ll-wine-red);
+  border-radius: var(--ll-radius-sm);
+  background: #ffffff;
+  color: var(--ll-wine-red);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    background-color var(--ll-transition-fast),
+    color var(--ll-transition-fast),
+    border-color var(--ll-transition-fast),
+    transform var(--ll-transition-fast);
+}
+
+.ll-dashboard-view-button:hover,
+.ll-dashboard-view-button:focus {
+  background: var(--ll-wine-red);
+  border-color: var(--ll-wine-red);
+  color: #ffffff;
+  transform: translateY(-1px);
 }
 
 /* Premium Admin Operations Banner */

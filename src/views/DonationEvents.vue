@@ -109,13 +109,13 @@
     <!-- Event Interest Double Confirmation Modal -->
     <ConfirmModal
       :show="showInterestModal"
-      :title="isRegisteringInterest ? 'Register for Event' : 'Cancel Registration'"
+      :title="isRegisteringInterest ? 'Mark Interested' : 'Remove Interest'"
       :message="
         isRegisteringInterest
-          ? `Are you sure you want to register your interest for '${pendingInterestEvent?.title}'?`
-          : `Are you sure you want to cancel your registration for '${pendingInterestEvent?.title}'?`
+          ? `Are you sure you want to mark interest for '${pendingInterestEvent?.title}'?`
+          : `Are you sure you want to remove your interest for '${pendingInterestEvent?.title}'?`
       "
-      :confirm-label="isRegisteringInterest ? 'Register' : 'Cancel Registration'"
+      :confirm-label="isRegisteringInterest ? 'Interested' : 'Remove Interest'"
       @confirm="commitToggleInterested"
       @cancel="showInterestModal = false"
     />
@@ -152,6 +152,7 @@ const {
   stopListening,
   fetchEvents,
   toggleInterested,
+  toggleGuestInterested,
   createEvent,
   updateEvent,
   deleteEvent
@@ -205,39 +206,24 @@ function isInterested(event) {
   if (user.value) {
     return event.likedBy?.includes(user.value.uid)
   }
-  return guestInterestedEvents.value.includes(event.id)
+  const session = getGuestSession()
+  const guestInterestId = `guest:${session.guestId}`
+  return event.likedBy?.includes(guestInterestId)
 }
 
 function handleToggleInterested(eventId) {
   const targetEvent = events.value.find((e) => e.id === eventId)
   if (!targetEvent) return
 
-  if (user.value) {
-    pendingInterestEvent.value = targetEvent
-    isRegisteringInterest.value = !targetEvent.likedBy?.includes(user.value.uid)
-    showInterestModal.value = true
-  } else {
-    // Guest toggle
-    const session = getGuestSession()
-    let list = [...(session.interestedEvents || [])]
-    const idx = list.indexOf(eventId)
-    const isReg = idx === -1
-    if (isReg) {
-      list.push(eventId)
-      targetEvent.interestedCount = (targetEvent.interestedCount || 0) + 1
-      showToast('Added to your temporary interested list! Log in to save permanently.', 'success')
-    } else {
-      list.splice(idx, 1)
-      targetEvent.interestedCount = Math.max(0, (targetEvent.interestedCount || 0) - 1)
-      showToast('Removed from your temporary list.', 'info')
-    }
-    guestInterestedEvents.value = list
-    updateGuestSession({ interestedEvents: list })
-  }
+  const session = getGuestSession()
+  const actorId = user.value?.uid || `guest:${session.guestId}`
+  pendingInterestEvent.value = targetEvent
+  isRegisteringInterest.value = !targetEvent.likedBy?.includes(actorId)
+  showInterestModal.value = true
 }
 
 async function commitToggleInterested() {
-  if (!pendingInterestEvent.value || !user.value) return
+  if (!pendingInterestEvent.value) return
   const targetEvent = pendingInterestEvent.value
   const eventId = targetEvent.id
   const isRegistering = isRegisteringInterest.value
@@ -246,17 +232,29 @@ async function commitToggleInterested() {
   pendingInterestEvent.value = null
 
   try {
-    await toggleInterested(eventId, user.value.uid)
+    if (user.value) {
+      await toggleInterested(eventId, user.value.uid)
+    } else {
+      const session = getGuestSession()
+      await toggleGuestInterested(eventId, session.guestId)
+      const nextList = isRegistering
+        ? [...new Set([...guestInterestedEvents.value, eventId])]
+        : guestInterestedEvents.value.filter((id) => String(id) !== String(eventId))
+      guestInterestedEvents.value = nextList
+      updateGuestSession({ interestedEvents: nextList })
+    }
     if (isRegistering) {
       showToast(
-        `Successfully registered for "${targetEvent.title}". You can track your events in your Dashboard.`,
+        user.value
+          ? `Marked interested in "${targetEvent.title}". You can track it in your Dashboard.`
+          : `Marked interested in "${targetEvent.title}".`,
         'success'
       )
     } else {
-      showToast(`Removed registration for "${targetEvent.title}".`, 'info')
+      showToast(`Removed interest for "${targetEvent.title}".`, 'info')
     }
   } catch (err) {
-    showToast('Failed to update registration status.', 'danger')
+    showToast('Failed to update event interest.', 'danger')
   }
 }
 
@@ -361,6 +359,21 @@ watch(
   { immediate: true }
 )
 
+watch(
+  [events, () => user.value],
+  ([newEvents, currentUser]) => {
+    if (currentUser) return
+    const session = getGuestSession()
+    const guestInterestId = `guest:${session.guestId}`
+    const syncedEventIds = newEvents
+      .filter((event) => event.likedBy?.includes(guestInterestId))
+      .map((event) => event.id)
+    guestInterestedEvents.value = syncedEventIds
+    updateGuestSession({ interestedEvents: syncedEventIds })
+  },
+  { deep: true, immediate: true }
+)
+
 onMounted(() => {
   reveal('.reveal-header', 60)
   startListening()
@@ -370,7 +383,7 @@ onMounted(() => {
       searchQuery.value = session.eventFilters.searchQuery || ''
       filterCategory.value = session.eventFilters.category || ''
     }
-    guestInterestedEvents.value = session.interestedEvents || []
+    guestInterestedEvents.value = []
   }
 })
 

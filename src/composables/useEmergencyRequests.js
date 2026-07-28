@@ -21,6 +21,7 @@ import {
 } from 'firebase/firestore'
 import { ref as dbRef, get as rtdbGet, update as rtdbUpdate } from 'firebase/database'
 import { db, rtdb } from '@/firebase.js'
+import { normalizeLocationRecord } from '@/data/vietnamLocations.js'
 
 const cachedRequests = ref([])
 
@@ -55,10 +56,10 @@ export function useEmergencyRequests() {
       (snapshot) => {
         const list = snapshot.docs.map((docSnap) => {
           const data = docSnap.data()
-          return {
+          return normalizeLocationRecord({
             id: docSnap.id,
             ...data
-          }
+          })
         })
         cachedRequests.value = list
         requests.value = list
@@ -93,7 +94,9 @@ export function useEmergencyRequests() {
     try {
       const q = query(collection(db, 'emergencyRequests'), orderBy('createdAt', 'desc'))
       const snap = await getDocs(q)
-      requests.value = snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
+      requests.value = snap.docs.map((docSnap) =>
+        normalizeLocationRecord({ id: docSnap.id, ...docSnap.data() })
+      )
     } catch (err) {
       error.value = 'Could not load requests for the admin panel.'
       console.error('[useEmergencyRequests] fetchAllRequests error:', err)
@@ -129,7 +132,7 @@ export function useEmergencyRequests() {
     loading.value = true
     error.value = null
     try {
-      const dataToSave = { ...data }
+      const dataToSave = normalizeLocationRecord({ ...data })
       const customCreatedAt = dataToSave.createdAt
       delete dataToSave.createdAt
 
@@ -161,7 +164,7 @@ export function useEmergencyRequests() {
     error.value = null
     try {
       await updateDoc(doc(db, 'emergencyRequests', requestId), {
-        ...updates,
+        ...normalizeLocationRecord(updates),
         updatedAt: serverTimestamp()
       })
     } catch (err) {

@@ -196,6 +196,7 @@ export function useConfirmDonation() {
           guestSessionId: guestData.guestSessionId,
           guestName: guestData.guestName,
           guestPhone: guestData.guestPhone || 'N/A',
+          bloodType: guestData.bloodType,
           hospitalName: requestData.hospitalName || 'Unknown Hospital',
           city: requestData.city || '',
           urgency: requestData.urgency || 'moderate',

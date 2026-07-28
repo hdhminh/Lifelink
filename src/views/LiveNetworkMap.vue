@@ -18,6 +18,19 @@
       :message="requestsError || eventsError"
     />
 
+    <ConfirmModal
+      :show="showEventInterestModal"
+      :title="isRemovingEventInterest ? 'Remove Event Interest' : 'Mark Interested'"
+      :message="
+        isRemovingEventInterest
+          ? `Are you sure you want to remove your interest for '${pendingInterestEvent?.title}'?`
+          : `Are you sure you want to mark interest for '${pendingInterestEvent?.title}'?`
+      "
+      :confirm-label="isRemovingEventInterest ? 'Remove Interest' : 'Interested'"
+      @confirm="commitEventInterestToggle"
+      @cancel="cancelEventInterestToggle"
+    />
+
     <!-- Confirmation Modals Component -->
     <ConfirmationModals
       ref="modalsRef"
@@ -57,9 +70,11 @@ import { useAuth } from '@/composables/useAuth.js'
 import { useGuestSession } from '@/composables/useGuestSession.js'
 import { useEmergencyRequests } from '@/composables/useEmergencyRequests.js'
 import { useDonationEvents } from '@/composables/useDonationEvents.js'
+import { useToast } from '@/composables/useToast.js'
 import EmergencyMap from '@/components/EmergencyMap.vue'
 import AlertMessage from '@/components/AlertMessage.vue'
 import ConfirmationModals from '@/components/ConfirmationModals.vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -69,6 +84,10 @@ const modalsRef = ref(null)
 const { user } = useAuth()
 const guestSession = useGuestSession()
 const guestId = ref(guestSession.getGuestSession().guestId)
+const { showToast } = useToast()
+const showEventInterestModal = ref(false)
+const pendingInterestEvent = ref(null)
+const isRemovingEventInterest = ref(false)
 
 const confirmedRequestIds = ref([])
 let unsubscribeConfirmations = null
@@ -125,7 +144,9 @@ const {
   events,
   error: eventsError,
   startListening: startEvents,
-  stopListening: stopEvents
+  stopListening: stopEvents,
+  toggleInterested,
+  toggleGuestInterested
 } = useDonationEvents()
 
 function handleRespond(requestId) {
@@ -145,6 +166,66 @@ function handleConfirmedRequest(requestId) {
   if (!confirmedRequestIds.value.includes(id)) {
     confirmedRequestIds.value = [...confirmedRequestIds.value, id]
   }
+}
+
+async function handleEventRegister(eventId) {
+  const targetEvent = events.value.find((event) => String(event.id) === String(eventId))
+  if (!targetEvent) return
+
+  const session = guestSession.getGuestSession()
+  const guestInterestId = `guest:${session.guestId}`
+  const guestInterested = targetEvent.likedBy?.includes(guestInterestId)
+  pendingInterestEvent.value = targetEvent
+  isRemovingEventInterest.value = user.value
+    ? targetEvent.likedBy?.includes(user.value.uid)
+    : guestInterested
+  showEventInterestModal.value = true
+}
+
+async function commitEventInterestToggle() {
+  const targetEvent = pendingInterestEvent.value
+  if (!targetEvent) return
+  const eventId = String(targetEvent.id)
+  const wasInterested = isRemovingEventInterest.value
+  showEventInterestModal.value = false
+  pendingInterestEvent.value = null
+
+  if (user.value) {
+    try {
+      await toggleInterested(eventId, user.value.uid)
+      showToast(
+        wasInterested
+          ? `Removed interest for "${targetEvent.title}".`
+          : `Marked interested in "${targetEvent.title}".`,
+        wasInterested ? 'info' : 'success'
+      )
+    } catch (err) {
+      showToast('Failed to update event interest.', 'danger')
+    }
+    return
+  }
+
+  const session = guestSession.getGuestSession()
+  try {
+    await toggleGuestInterested(eventId, session.guestId)
+    const currentList = [...(session.interestedEvents || [])]
+    const index = currentList.map(String).indexOf(eventId)
+    if (index === -1) {
+      currentList.push(eventId)
+      showToast(`Marked interested in "${targetEvent.title}".`, 'success')
+    } else {
+      currentList.splice(index, 1)
+      showToast(`Removed interest for "${targetEvent.title}".`, 'info')
+    }
+    guestSession.updateGuestSession({ interestedEvents: currentList })
+  } catch (err) {
+    showToast('Failed to update event interest.', 'danger')
+  }
+}
+
+function cancelEventInterestToggle() {
+  showEventInterestModal.value = false
+  pendingInterestEvent.value = null
 }
 
 watch([requests, events, () => route.query.request, () => route.query.event], () => {

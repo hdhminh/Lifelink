@@ -154,6 +154,8 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import 'maplibre-gl/dist/maplibre-gl.css'
+import '@maplibre/maplibre-gl-leaflet'
 import EmergencyMapToolbar from './EmergencyMapToolbar.vue'
 import EmergencyMapSidebar from './EmergencyMapSidebar.vue'
 import { useAuth } from '@/composables/useAuth.js'
@@ -225,8 +227,12 @@ const currentGuestId = computed(() => (!user.value ? getGuestSession().guestId :
 const viewerDonorId = computed(() => user.value?.uid || currentGuestId.value)
 
 let leafletMap = null
+let vectorBaseLayer = null
+let vietnamBoundaryGeojson = null
+let vietnamBoundaryGeojsonPromise = null
 let userLocationMarker = null
 let measurementPolyline = null
+let vietnamBoundaryLayer = null
 
 // Dictionaries to manage map instances
 const hospitalMarkers = new Map()
@@ -237,7 +243,97 @@ const donorPolylines = new Map()
 const donorRouteCache = new Map()
 const donorRouteRequestTokens = new Map()
 const radarMarkers = new Map()
-let currentZoom = 6
+let currentZoom = 5
+
+const VIETNAM_MAP_BOUNDS = [
+  [6.0, 101.0],
+  [24.5, 117.5]
+]
+const VIETNAM_DEFAULT_CENTER = [15.7, 109.4]
+const VIETNAM_DEFAULT_VIEW_BOUNDS = [
+  [7.6, 102.2],
+  [23.6, 116.5]
+]
+const VIETNAM_BOUNDARY_GEOJSON_URL = '/data/vietnam-boundary-islands.geojson'
+const CARTO_VOYAGER_VECTOR_STYLE_URL = 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'
+
+async function getVietnamBoundaryGeojson() {
+  if (vietnamBoundaryGeojson) return vietnamBoundaryGeojson
+  if (vietnamBoundaryGeojsonPromise) return vietnamBoundaryGeojsonPromise
+
+  vietnamBoundaryGeojsonPromise = fetch(VIETNAM_BOUNDARY_GEOJSON_URL)
+    .then((response) => {
+      if (!response.ok) throw new Error(`GeoJSON request failed: ${response.status}`)
+      return response.json()
+    })
+    .then((geojson) => {
+      vietnamBoundaryGeojson = geojson
+      return geojson
+    })
+    .catch((error) => {
+      vietnamBoundaryGeojsonPromise = null
+      throw error
+    })
+
+  return vietnamBoundaryGeojsonPromise
+}
+
+async function hideLegacyVietnamAdministrativeBorders(vectorMap) {
+  try {
+    const vietnamGeometry = await getVietnamBoundaryGeojson()
+    if (!vectorMap?.isStyleLoaded()) return
+
+    const outsideVietnam = ['!', ['within', vietnamGeometry]]
+    const stateFilter = [
+      'all',
+      ['==', ['get', 'admin_level'], 4],
+      ['==', ['get', 'maritime'], 0],
+      outsideVietnam
+    ]
+    const countyFilter = [
+      'all',
+      ['==', ['get', 'admin_level'], 6],
+      ['==', ['get', 'maritime'], 0],
+      outsideVietnam
+    ]
+
+    if (vectorMap.getLayer('boundary_state')) vectorMap.setFilter('boundary_state', stateFilter)
+    if (vectorMap.getLayer('boundary_county')) vectorMap.setFilter('boundary_county', countyFilter)
+  } catch (error) {
+    console.warn('[EmergencyMap] Vietnam boundary filtering unavailable:', error)
+  }
+}
+
+function createVectorBaseLayer() {
+  if (!leafletMap) return
+
+  if (vectorBaseLayer) {
+    leafletMap.removeLayer(vectorBaseLayer)
+    vectorBaseLayer = null
+  }
+
+  vectorBaseLayer = L.maplibreGL({
+    style: CARTO_VOYAGER_VECTOR_STYLE_URL,
+    interactive: false,
+    attributionControl: false,
+    updateInterval: 32,
+    padding: 0.1
+  }).addTo(leafletMap)
+
+  const vectorMap = vectorBaseLayer.getMaplibreMap()
+  vectorMap.on('style.load', () => {
+    if (vectorMap.getLayer('watername_sea')) {
+      vectorMap.setLayoutProperty('watername_sea', 'visibility', 'none')
+    }
+    hideLegacyVietnamAdministrativeBorders(vectorMap)
+  })
+}
+
+function isEventInterested(ev) {
+  if (!ev) return false
+  if (user.value) return ev.likedBy?.includes(user.value.uid)
+  return ev.likedBy?.includes(`guest:${getGuestSession().guestId}`)
+}
 
 function cleanEventTitle(title) {
   if (!title) return ''
@@ -326,17 +422,17 @@ function getTrafficDensityInfo() {
 
 /**
  * Intermediate coastal highway waypoints along Vietnam's S-shape National Highway 1A / North-South Expressway.
- * Used to force OSRM routing to stay 100% inside Vietnam territory when routing across regions (e.g. HCMC to Hanoi).
+ * Used to force OSRM routing to stay 100% inside Vietnam territory when routing across regions.
  */
 const VIETNAM_COASTAL_WAYPOINTS = [
-  { name: 'Phan Thiet', lat: 10.9333, lng: 108.1 },
-  { name: 'Nha Trang', lat: 12.2451, lng: 109.1943 },
-  { name: 'Quy Nhon', lat: 13.782, lng: 109.2194 },
+  { name: 'Lam Dong', lat: 10.9333, lng: 108.1 },
+  { name: 'Khanh Hoa', lat: 12.2451, lng: 109.1943 },
+  { name: 'Gia Lai', lat: 13.782, lng: 109.2194 },
   { name: 'Quang Ngai', lat: 15.1205, lng: 108.7924 },
   { name: 'Da Nang', lat: 16.0544, lng: 108.2022 },
   { name: 'Hue', lat: 16.4637, lng: 107.5909 },
-  { name: 'Dong Hoi', lat: 17.4764, lng: 106.602 },
-  { name: 'Vinh', lat: 18.6734, lng: 105.6813 },
+  { name: 'Quang Tri', lat: 17.4764, lng: 106.602 },
+  { name: 'Nghe An', lat: 18.6734, lng: 105.6813 },
   { name: 'Thanh Hoa', lat: 19.8067, lng: 105.7851 },
   { name: 'Ninh Binh', lat: 20.2539, lng: 105.975 }
 ]
@@ -688,6 +784,52 @@ function truncateText(text, maxLen = 20) {
   return text.substring(0, maxLen - 3) + '...'
 }
 
+async function loadVietnamBoundaryLayer() {
+  if (!leafletMap) return
+
+  try {
+    const geojson = await getVietnamBoundaryGeojson()
+    if (!leafletMap) return
+
+    if (vietnamBoundaryLayer) {
+      leafletMap.removeLayer(vietnamBoundaryLayer)
+      vietnamBoundaryLayer = null
+    }
+
+    vietnamBoundaryLayer = L.geoJSON(geojson, {
+      style(feature) {
+        const isArchipelago = feature?.properties?.LayerType === 'archipelago'
+
+        return {
+          color: isArchipelago ? '#9a7d65' : '#b07d76',
+          weight: isArchipelago ? 1.15 : 1,
+          opacity: isArchipelago ? 0.95 : 0.9,
+          fillColor: isArchipelago ? '#f8f4ec' : '#f6f0ea',
+          fillOpacity: isArchipelago ? 0.95 : 0,
+          dashArray: null,
+          interactive: true
+        }
+      },
+      onEachFeature(feature, layer) {
+        const note = feature?.properties?.Note
+
+        if (note) {
+          layer.bindPopup(`
+            <div class="map-style-42">
+              <strong class="map-style-43">${note}</strong><br>
+              <span class="text-slate-600">GeoJSON administrative boundary layer.</span>
+            </div>
+          `)
+        }
+      }
+    }).addTo(leafletMap)
+
+    vietnamBoundaryLayer.bringToFront()
+  } catch (err) {
+    console.warn('[EmergencyMap] Vietnam GeoJSON boundary unavailable:', err)
+  }
+}
+
 /**
  * Initializes Leaflet Map Engine without attribution bar (attributionControl: false).
  */
@@ -701,30 +843,25 @@ function initMapEngine() {
       // ignore
     }
     leafletMap = null
+    vectorBaseLayer = null
   }
-
   if (!mapElement.value) return
 
   mapElement.value.innerHTML = ''
 
   leafletMap = L.map(mapElement.value, {
-    center: [16.0, 107.5],
-    zoom: 6,
+    center: VIETNAM_DEFAULT_CENTER,
+    zoom: 5,
     minZoom: 5,
     zoomControl: true,
-    attributionControl: false
+    attributionControl: false,
+    maxBounds: VIETNAM_MAP_BOUNDS,
+    maxBoundsViscosity: 1.0
   })
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19,
-    minZoom: 5,
-    subdomains: 'abcd'
-  }).addTo(leafletMap)
-
-  leafletMap.setMaxBounds([
-    [4.0, 96.0],
-    [26.0, 116.0]
-  ])
+  leafletMap.setMaxBounds(VIETNAM_MAP_BOUNDS)
+  leafletMap.fitBounds(VIETNAM_DEFAULT_VIEW_BOUNDS, { padding: [18, 18] })
+  createVectorBaseLayer()
 
   if (typeof window !== 'undefined') {
     window.handleHospitalPopupRespond = (reqId) => {
@@ -753,13 +890,16 @@ function initMapEngine() {
 
   mapLoading.value = false
   logActivity('Live Network Map active.')
+  loadVietnamBoundaryLayer()
   renderUserLocationMarker()
   renderHospitalMarkers()
   renderEventMarkers()
   renderDonorMarkers()
 
   nextTick(() => {
-    if (leafletMap) leafletMap.invalidateSize(true)
+    if (leafletMap) {
+      leafletMap.invalidateSize(true)
+    }
   })
   setTimeout(() => {
     if (leafletMap) leafletMap.invalidateSize(true)
@@ -888,9 +1028,7 @@ function renderHospitalMarkers() {
     hospitalCircles.set(String(req.id), [innerCircle, outerCircle])
   })
 
-  if (count > 0 && !selectedRequestId.value) {
-    leafletMap.fitBounds(bounds, { padding: [30, 30] })
-  } else if (selectedRequestId.value && !selectedRequestId.value.startsWith('ev_')) {
+  if (selectedRequestId.value && !selectedRequestId.value.startsWith('ev_')) {
     setTimeout(() => centerMapOnSelected(), 50)
   }
 }
@@ -941,8 +1079,8 @@ function renderEventMarkers() {
           Hotline: <a href="tel:${escapeHtml(phoneNum)}" class="fw-bold text-decoration-none map-style-63">${escapeHtml(phoneNum)}</a>
         </div>
         ${getDistanceBadgeHtml(coords.lat, coords.lng, '#0D6EFD')}
-        <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1 map-style-64" onclick="window.handleEventPopupRegister('${escapeHtml(String(ev.id))}')">
-          <i class="bi bi-heart-fill me-1"></i> Register Interest
+        <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1 ${isEventInterested(ev) ? 'map-style-64-active' : 'map-style-64'}" onclick="window.handleEventPopupRegister('${escapeHtml(String(ev.id))}')">
+          <i class="bi ${isEventInterested(ev) ? 'bi-check-circle-fill' : 'bi-heart-fill'} me-1"></i> Interested
         </button>
       </div>
     `)
@@ -1287,6 +1425,7 @@ onUnmounted(() => {
     }
     leafletMap = null
   }
+  vectorBaseLayer = null
 })
 
 defineExpose({
@@ -1605,8 +1744,43 @@ defineExpose({
 }
 .map-style-64 {
   background-color: #0d6efd;
+  border-color: #0d6efd;
   font-size: 0.72rem;
   border-radius: 6px;
+  min-height: 36px;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.map-style-64:hover,
+.map-style-64:focus {
+  background-color: #0b5ed7 !important;
+  border-color: #0b5ed7 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(13, 110, 253, 0.18);
+}
+.map-style-64-active {
+  background-color: #198754;
+  border-color: #198754;
+  font-size: 0.72rem;
+  border-radius: 6px;
+  min-height: 36px;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.map-style-64-active:hover,
+.map-style-64-active:focus {
+  background-color: #157347 !important;
+  border-color: #157347 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(25, 135, 84, 0.18);
 }
 .map-style-65 {
   position: relative;
@@ -1766,4 +1940,5 @@ defineExpose({
 .leaflet-marker-pane svg {
   max-width: none !important;
 }
+
 </style>

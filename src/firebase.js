@@ -10,6 +10,7 @@ import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore'
 import { getDatabase } from 'firebase/database'
+import { getMessaging, isSupported } from 'firebase/messaging'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -24,11 +25,22 @@ const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
 export const db = getFirestore(app)
 export let rtdb = null
+export let messaging = null
 
 try {
   rtdb = getDatabase(app, import.meta.env.VITE_FIREBASE_DATABASE_URL)
 } catch (e) {
   rtdb = {}
+}
+
+if (typeof window !== 'undefined') {
+  isSupported().then((supported) => {
+    if (supported) {
+      messaging = getMessaging(app)
+    }
+  }).catch((err) => {
+    console.warn('FCM Messaging is not supported in this browser:', err)
+  })
 }
 
 export const initFirebase = async () => {
@@ -43,5 +55,5 @@ export const initFirebase = async () => {
       console.error('Firestore persistence error:', err)
     }
   }
-  return { auth, db, rtdb }
+  return { auth, db, rtdb, messaging }
 }

@@ -150,6 +150,11 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    match /guestTokens/{guestId} {
+      allow read, create, update: if isGuestThreadId(guestId);
+      allow read, delete: if isAdmin();
+    }
+
     match /events/{eventId} {
       allow read: if true;
       allow create, delete: if isAdmin();

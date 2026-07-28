@@ -16,15 +16,30 @@ export default defineConfig({
           if (
             id.includes('node_modules/vue') ||
             id.includes('node_modules/@vue') ||
-            id.includes('vue-router')
+            id.includes('node_modules/vue-router')
           ) {
-            return 'vue'
+            return 'vue-vendor'
+          }
+          if (id.includes('node_modules/firebase/auth')) {
+            return 'firebase-auth'
+          }
+          if (id.includes('node_modules/firebase/firestore')) {
+            return 'firebase-firestore'
+          }
+          if (id.includes('node_modules/firebase/database')) {
+            return 'firebase-rtdb'
+          }
+          if (id.includes('node_modules/firebase/messaging')) {
+            return 'firebase-messaging'
           }
           if (id.includes('node_modules/firebase')) {
-            return 'firebase'
+            return 'firebase-core'
           }
-          if (id.includes('bootstrap')) {
-            return 'bootstrap'
+          if (id.includes('node_modules/leaflet')) {
+            return 'leaflet-vendor'
+          }
+          if (id.includes('node_modules/bootstrap')) {
+            return 'bootstrap-vendor'
           }
           return undefined
         }

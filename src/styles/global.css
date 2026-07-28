@@ -1171,3 +1171,13 @@ textarea {
     scroll-behavior: auto !important;
   }
 }
+
+/* Mobile Touch Target & Responsiveness (Phase 7 Audit) */
+@media (max-width: 768px) {
+  button:not(.cookie-close-btn):not(.btn-close-custom),
+  .btn,
+  [role="button"] {
+    min-height: 44px;
+  }
+}
+

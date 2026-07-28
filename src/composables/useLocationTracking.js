@@ -3,11 +3,14 @@
  *
  * Donor-side live location tracking engine.
  * Uses browser `navigator.geolocation.watchPosition()` to stream coordinates.
- * Writes to Firebase Realtime Database at `liveTracking/{donorId}_{requestId}`
+ * Writes to Firebase Realtime Database at `liveTracking/{requestId}_{donorId}_{connectionId}`
  * with `onDisconnect().remove()` for guaranteed server-side cleanup when client disconnects.
  *
  * Features:
- * - Throttling: Minimum 5s interval OR 30m distance change before RTDB write.
+ * - Connection Isolation: `${requestId}_${donorId}_${connectionId}` to prevent multi-tab conflicts.
+ * - Throttling: Minimum 5s interval OR 15-30m distance change before RTDB write.
+ * - Heartbeat: Periodic 30s write of `lastSeenAt` even when position is static to prevent ghost filter timeout.
+ * - Signal Quality: Evaluates GPS accuracy ('good' <50m, 'weak' 50-150m, 'lost' >150m).
  * - Privacy protection: Explicit consent trigger, auto-stop on arrive/cancel/unmount/beforeunload.
  * - Proximity detection: Auto-flags 'approaching' when donor is within 500m of target hospital.
  */
@@ -15,11 +18,18 @@
 import { ref as vueRef } from 'vue'
 import { ref as dbRef, update, remove, onDisconnect, serverTimestamp } from 'firebase/database'
 import { rtdb } from '@/firebase.js'
+import { useGdprConsent } from '@/composables/useGdprConsent.js'
 import {
   calculateHaversineDistance,
   formatDistance,
   calculateEtaMinutes
 } from '@/utils/haversine.js'
+
+// Tab-unique session identifier
+const connectionId =
+  typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : Math.random().toString(36).substring(2, 11)
 
 const isTracking = vueRef(false)
 const currentPosition = vueRef(null) // { lat, lng, accuracy, speed }
@@ -28,16 +38,20 @@ const formattedDistance = vueRef('')
 const estimatedEtaMins = vueRef(null) // minutes
 const trackingStatus = vueRef('idle') // 'idle' | 'en_route' | 'approaching' | 'arrived' | 'error'
 const trackingError = vueRef(null)
+const signalQuality = vueRef('good') // 'good' | 'weak' | 'lost'
 
 let watchId = null
 let activeTrackingKey = null
 let lastRecordedPos = null
 let lastWriteTimestamp = 0
+let heartbeatTimer = null
 
 const MIN_WRITE_INTERVAL_MS = 5000 // 5 seconds
+const HEARTBEAT_INTERVAL_MS = 30000 // 30 seconds
 const HIGH_ACCURACY_MIN_WRITE_DISTANCE_METERS = 15
 const LOW_ACCURACY_MIN_WRITE_DISTANCE_METERS = 30
 const TRACKING_SESSION_STORAGE_KEY = 'lifelink.activeTrackingSession'
+
 const HIGH_ACCURACY_OPTIONS = {
   enableHighAccuracy: true,
   timeout: 20000,
@@ -75,6 +89,7 @@ function saveTrackingSession(session) {
       TRACKING_SESSION_STORAGE_KEY,
       JSON.stringify({
         ...session,
+        connectionId,
         savedAt: Date.now()
       })
     )
@@ -93,21 +108,34 @@ function clearTrackingSession() {
   }
 }
 
+function computeSignalQuality(accuracy) {
+  if (!accuracy || accuracy > 150) return 'lost'
+  if (accuracy > 50) return 'weak'
+  return 'good'
+}
+
 export function useLocationTracking() {
+  const { gpsStatus } = useGdprConsent()
 
   /**
-   * Helper to format tracking key.
+   * Helper to format unique multi-tab tracking key.
    */
   function getTrackingKey(requestId, donorId) {
-    return `${requestId}_${donorId}`
+    return `${requestId}_${donorId}_${connectionId}`
   }
 
   /**
-   * Starts tracking donor's live location and updating Firestore liveTracking collection.
+   * Starts tracking donor's live location and updating RTDB liveTracking collection.
    */
   function startTracking({ requestId, donorId, donorName, bloodType, hospitalLocation }) {
     if (typeof window === 'undefined' || !navigator.geolocation) {
       trackingError.value = 'Geolocation is not supported by your browser.'
+      trackingStatus.value = 'error'
+      return
+    }
+
+    if (gpsStatus.value === 'denied') {
+      trackingError.value = 'Location permission was denied. Please enable it in browser settings.'
       trackingStatus.value = 'error'
       return
     }
@@ -117,7 +145,9 @@ export function useLocationTracking() {
     trackingError.value = null
     isTracking.value = true
     trackingStatus.value = 'en_route'
+    signalQuality.value = 'good'
     activeTrackingKey = getTrackingKey(requestId, donorId)
+
     saveTrackingSession({
       requestId,
       donorId,
@@ -128,7 +158,7 @@ export function useLocationTracking() {
 
     const trackingDocRef = dbRef(rtdb, `liveTracking/${activeTrackingKey}`)
 
-    // Set up onDisconnect to remove the node when the client disconnects
+    // Set up onDisconnect to remove node when client disconnects
     onDisconnect(trackingDocRef)
       .remove()
       .catch((err) => {
@@ -137,9 +167,40 @@ export function useLocationTracking() {
 
     let usingHighAccuracy = true
 
+    const writePayloadToRTDB = (latitude, longitude, accuracy, speed, mode) => {
+      const dataPayload = {
+        donorId,
+        donorName: donorName || 'Donor',
+        bloodType: bloodType || 'O+',
+        requestId,
+        hospitalName: hospitalLocation?.hospitalName || 'Hospital',
+        city: hospitalLocation?.city || '',
+        hospitalLat: hospitalLocation?.lat || null,
+        hospitalLng: hospitalLocation?.lng || null,
+        latitude,
+        longitude,
+        accuracy: accuracy || 0,
+        accuracyMode: mode,
+        speed: speed || null,
+        status: trackingStatus.value,
+        signalQuality: signalQuality.value,
+        distanceMeters: distanceToHospital.value || 0,
+        etaMins: estimatedEtaMins.value || 0,
+        connectionId,
+        lastSeenAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }
+
+      update(trackingDocRef, dataPayload).catch((err) => {
+        console.error('[useLocationTracking] RTDB write error:', err)
+      })
+    }
+
     const handlePositionUpdate = (position) => {
       const { latitude, longitude, accuracy, speed } = position.coords
       const now = Date.now()
+
+      signalQuality.value = computeSignalQuality(accuracy)
 
       currentPosition.value = {
         lat: latitude,
@@ -189,29 +250,13 @@ export function useLocationTracking() {
         lastWriteTimestamp = now
         lastRecordedPos = { lat: latitude, lng: longitude }
 
-        const dataPayload = {
-          donorId,
-          donorName: donorName || 'Donor',
-          bloodType: bloodType || 'O+',
-          requestId,
-          hospitalName: hospitalLocation?.hospitalName || 'Hospital',
-          city: hospitalLocation?.city || '',
-          hospitalLat: hospitalLocation?.lat || null,
-          hospitalLng: hospitalLocation?.lng || null,
+        writePayloadToRTDB(
           latitude,
           longitude,
-          accuracy: accuracy || 0,
-          accuracyMode: usingHighAccuracy ? 'high' : 'approximate',
-          speed: speed || null,
-          status: trackingStatus.value,
-          distanceMeters: distanceToHospital.value || 0,
-          etaMins: estimatedEtaMins.value || 0,
-          updatedAt: serverTimestamp()
-        }
-
-        update(trackingDocRef, dataPayload).catch((err) => {
-          console.error('[useLocationTracking] RTDB write error:', err)
-        })
+          accuracy,
+          speed,
+          usingHighAccuracy ? 'high' : 'approximate'
+        )
 
         saveTrackingSession({
           requestId,
@@ -233,6 +278,7 @@ export function useLocationTracking() {
       let msg = 'Could not retrieve your live location.'
       if (err.code === err.PERMISSION_DENIED) {
         msg = 'Location permission was revoked.'
+        signalQuality.value = 'lost'
         stopTracking()
       } else if (usingHighAccuracy) {
         usingHighAccuracy = false
@@ -246,6 +292,8 @@ export function useLocationTracking() {
           handlePositionError,
           LOW_ACCURACY_OPTIONS
         )
+      } else {
+        signalQuality.value = 'lost'
       }
       trackingError.value = msg
     }
@@ -256,8 +304,19 @@ export function useLocationTracking() {
       HIGH_ACCURACY_OPTIONS
     )
 
-    // Do not stop tracking on page reload. The browser may disconnect the RTDB socket,
-    // but the saved session lets the donor page resume live tracking after refresh.
+    // Setup 30s heartbeat timer to update lastSeenAt even when donor is stationary
+    if (heartbeatTimer) clearInterval(heartbeatTimer)
+    heartbeatTimer = setInterval(() => {
+      if (isTracking.value && currentPosition.value && activeTrackingKey) {
+        writePayloadToRTDB(
+          currentPosition.value.lat,
+          currentPosition.value.lng,
+          currentPosition.value.accuracy,
+          currentPosition.value.speed,
+          usingHighAccuracy ? 'high' : 'approximate'
+        )
+      }
+    }, HEARTBEAT_INTERVAL_MS)
   }
 
   /**
@@ -271,6 +330,11 @@ export function useLocationTracking() {
       (storedSession?.requestId && storedSession?.donorId
         ? getTrackingKey(storedSession.requestId, storedSession.donorId)
         : null)
+
+    if (heartbeatTimer) {
+      clearInterval(heartbeatTimer)
+      heartbeatTimer = null
+    }
 
     if (watchId !== null && typeof navigator !== 'undefined') {
       navigator.geolocation.clearWatch(watchId)
@@ -303,6 +367,7 @@ export function useLocationTracking() {
     formattedDistance.value = ''
     estimatedEtaMins.value = null
     trackingStatus.value = 'idle'
+    signalQuality.value = 'good'
     trackingError.value = null
     lastRecordedPos = null
     lastWriteTimestamp = 0
@@ -324,6 +389,8 @@ export function useLocationTracking() {
     estimatedEtaMins,
     trackingStatus,
     trackingError,
+    signalQuality,
+    connectionId,
     startTracking,
     stopTracking,
     markArrived,

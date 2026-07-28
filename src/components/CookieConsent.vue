@@ -1,47 +1,118 @@
 <script setup>
+import { ref } from 'vue'
 import { useGdprConsent } from '../composables/useGdprConsent.js'
 
-const { consentState, showBanner, grantConsent, revokeConsent } = useGdprConsent()
+const {
+  showBanner,
+  gpsStatus,
+  notifStatus,
+  grantConsent,
+  revokeConsent
+} = useGdprConsent()
 
-function acceptAll() {
-  grantConsent()
-}
+const locationSelected = ref(true)
+const notifSelected = ref(true)
 
-function rejectAll() {
-  revokeConsent()
-}
-
-function savePreferences() {
+function acceptSelected() {
   grantConsent({
-    location: consentState.value.location,
-    analytics: consentState.value.analytics,
-    marketing: consentState.value.marketing
+    location: gpsStatus.value === 'granted' ? true : (gpsStatus.value === 'denied' ? false : locationSelected.value),
+    notifications: notifStatus.value === 'granted' ? true : (notifStatus.value === 'denied' ? false : notifSelected.value)
   })
+}
+
+function declineAll() {
+  revokeConsent()
 }
 </script>
 
 <template>
-  <div v-if="showBanner" class="cookie-consent-toast">
+  <div v-if="showBanner" class="cookie-consent-toast" role="dialog" aria-label="Cookie & Quyền ứng dụng">
     <div class="cookie-toast-header">
       <div class="d-flex align-items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/>
-          <path d="M8.5 8.5v.01"/>
-          <path d="M16 12.5v.01"/>
-          <path d="M12 16v.01"/>
-          <path d="M11 12.5v.01"/>
-        </svg>
-        <strong>Cookie Preferences</strong>
+        <i class="bi bi-shield-check fs-5 text-wine"></i>
+        <strong class="text-wine fs-6">LifeLink & Quyền riêng tư</strong>
       </div>
-      <button class="cookie-close-btn" @click="rejectAll" aria-label="Close">&times;</button>
+      <button class="cookie-close-btn" @click="declineAll" aria-label="Close">&times;</button>
     </div>
+
     <p class="cookie-toast-text">
-      We use cookies to improve your experience and analyze site traffic.
+      Chúng tôi dùng Cookie và xin phép quyền thiết bị để điều phối hiến máu khẩn cấp nhanh nhất:
     </p>
 
+    <div class="cookie-options">
+      <!-- Essential Cookies -->
+      <div class="cookie-opt-item">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-check-circle-fill text-wine"></i>
+          <span class="fw-semibold">Cookie hệ thống</span>
+        </div>
+        <span class="badge bg-light text-dark border">Bắt buộc</span>
+      </div>
+
+      <!-- GPS Location -->
+      <div class="cookie-opt-item">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-geo-alt-fill text-wine"></i>
+          <div>
+            <div class="fw-semibold">Vị trí GPS</div>
+            <div class="small text-muted">Tính khoảng cách tới bệnh viện</div>
+          </div>
+        </div>
+        <div>
+          <span v-if="gpsStatus === 'granted'" class="badge bg-success-subtle text-success border border-success-subtle">
+            <i class="bi bi-check me-1"></i>Đã cấp
+          </span>
+          <span v-else-if="gpsStatus === 'denied'" class="badge bg-secondary-subtle text-secondary border">
+            Bị chặn (mở Cài đặt)
+          </span>
+          <div v-else class="form-check form-switch m-0">
+            <input
+              id="gps-consent-switch"
+              v-model="locationSelected"
+              class="form-check-input switch-wine"
+              type="checkbox"
+              role="switch"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Notification -->
+      <div class="cookie-opt-item">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-bell-fill text-wine"></i>
+          <div>
+            <div class="fw-semibold">Thông báo Push</div>
+            <div class="small text-muted">Nhận cảnh báo máu khẩn khi đóng app</div>
+          </div>
+        </div>
+        <div>
+          <span v-if="notifStatus === 'granted'" class="badge bg-success-subtle text-success border border-success-subtle">
+            <i class="bi bi-check me-1"></i>Đã cấp
+          </span>
+          <span v-else-if="notifStatus === 'denied'" class="badge bg-secondary-subtle text-secondary border">
+            Bị chặn (mở Cài đặt)
+          </span>
+          <div v-else class="form-check form-switch m-0">
+            <input
+              id="notif-consent-switch"
+              v-model="notifSelected"
+              class="form-check-input switch-wine"
+              type="checkbox"
+              role="switch"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="cookie-actions">
-      <button class="btn-decline" @click="rejectAll">Decline</button>
-      <button class="btn-accept" @click="acceptAll">Accept All</button>
+      <button class="btn btn-sm btn-outline-wine text-nowrap" @click="declineAll">
+        Từ chối tất cả
+      </button>
+      <button class="btn btn-sm btn-wine text-nowrap" @click="acceptSelected">
+        <i class="bi bi-check-lg me-1"></i>Chấp nhận & Tiếp tục
+      </button>
     </div>
   </div>
 </template>
@@ -51,75 +122,106 @@ function savePreferences() {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 360px;
-  max-width: calc(100vw - 40px);
-  background-color: #FAF5EF;
-  border-radius: 8px;
-  border: 1px solid #722F37;
-  padding: 1rem;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(142, 36, 53, 0.2);
+  padding: 1.1rem;
   z-index: 9999;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 30px rgba(142, 36, 53, 0.15);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.85rem;
+  font-family: inherit;
 }
 
 .cookie-toast-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #722F37;
-  font-size: 1rem;
+}
+
+.text-wine {
+  color: #8E2435 !important;
 }
 
 .cookie-close-btn {
   background: none;
   border: none;
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   line-height: 1;
-  color: #722F37;
+  color: #8E2435;
   cursor: pointer;
   padding: 0;
 }
 
 .cookie-toast-text {
-  color: #555;
-  font-size: 0.85rem;
+  color: #4A5568;
+  font-size: 0.825rem;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.45;
+}
+
+.cookie-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background-color: #FAF5F6;
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid rgba(142, 36, 53, 0.08);
+}
+
+.cookie-opt-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.825rem;
+}
+
+.switch-wine:checked {
+  background-color: #8E2435;
+  border-color: #8E2435;
 }
 
 .cookie-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
 }
 
-.btn-accept,
-.btn-decline {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.85rem;
+.btn-wine {
+  background-color: #8E2435;
+  color: #ffffff;
+  border: 1px solid #8E2435;
   font-weight: 600;
-  transition: all 0.2s;
+  border-radius: 6px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.825rem;
+  transition: all 0.2s ease;
 }
 
-.btn-accept {
-  background-color: #722F37;
-  color: #FAF5EF;
+.btn-wine:hover {
+  background-color: #721C29;
+  border-color: #721C29;
+  color: #ffffff;
 }
 
-.btn-decline {
+.btn-outline-wine {
   background-color: transparent;
-  color: #722F37;
-  border: 1px solid #722F37;
+  color: #8E2435;
+  border: 1px solid #8E2435;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.825rem;
+  transition: all 0.2s ease;
 }
 
-.btn-accept:hover,
-.btn-decline:hover {
-  opacity: 0.85;
+.btn-outline-wine:hover {
+  background-color: #FAF5F6;
+  color: #721C29;
 }
 </style>

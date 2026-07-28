@@ -1,11 +1,12 @@
 {
   "rules": {
     "liveTracking": {
-      ".read": true,
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
       ".write": false,
       "$trackingId": {
-        ".write": "(!newData.exists() && (auth != null || data.child('donorId').val().beginsWith('guest_'))) || (newData.exists() && newData.child('donorId').isString() && ((auth != null && newData.child('donorId').val() === auth.uid) || newData.child('donorId').val().beginsWith('guest_')))",
-        ".validate": "!newData.exists() || newData.hasChildren(['donorId', 'requestId', 'status'])"
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || data.child('donorId').val() === auth.uid)",
+        ".write": "auth != null && (newData.child('donorId').val() === auth.uid || (!newData.exists() && data.child('donorId').val() === auth.uid) || newData.child('donorId').val().beginsWith('guest_'))",
+        ".validate": "!newData.exists() || (newData.hasChildren(['donorId', 'requestId', 'status']) && $trackingId.matches(/^[a-zA-Z0-9_-]{10,120}$/))"
       }
     }
   }

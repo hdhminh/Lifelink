@@ -9,19 +9,10 @@ import { ref, computed, onUnmounted } from 'vue'
 import { ref as rtdbRef, onValue } from 'firebase/database'
 import { rtdb } from '@/firebase.js'
 
-const LIVE_RESPONSE_TTL_MS = 2 * 60 * 1000
-
-function hasLiveCoordinates(response) {
-  if (response?.latitude == null || response?.longitude == null) return false
-  if (response.latitude === '' || response.longitude === '') return false
-
-  const latitude = Number(response?.latitude)
-  const longitude = Number(response?.longitude)
-  return Number.isFinite(latitude) && Number.isFinite(longitude)
-}
+const LIVE_RESPONSE_TTL_MS = 2 * 60 * 1000 // 2 minutes ghost filter
 
 function getUpdatedAtMs(response) {
-  const value = response?.updatedAt
+  const value = response?.lastSeenAt || response?.updatedAt
   if (typeof value === 'number') return value
   if (value instanceof Date) return value.getTime()
   if (typeof value === 'string') {
@@ -33,24 +24,62 @@ function getUpdatedAtMs(response) {
 
 function isFreshResponder(response) {
   const updatedAtMs = getUpdatedAtMs(response)
-  if (!updatedAtMs) return true
+  if (!updatedAtMs) return true // If timestamp not set yet, keep fresh
   return Date.now() - updatedAtMs <= LIVE_RESPONSE_TTL_MS
 }
 
 function isLiveResponder(response) {
   return (
-    hasLiveCoordinates(response) &&
     isFreshResponder(response) &&
     (response.status === 'en_route' || response.status === 'approaching')
   )
 }
 
+function computeLastSeenAgo(response) {
+  const updatedAtMs = getUpdatedAtMs(response)
+  if (!updatedAtMs) return 0
+  return Math.max(0, Math.floor((Date.now() - updatedAtMs) / 1000))
+}
+
+function computeSignalQuality(response) {
+  if (response?.signalQuality) return response.signalQuality
+  const accuracy = response?.accuracy || 0
+  if (!response?.latitude || accuracy > 150) return 'lost'
+  if (accuracy > 50) return 'weak'
+  return 'good'
+}
+
 export function useActiveResponses() {
+  const rawResponses = ref({})
   const responses = ref([])
   const loading = ref(true)
   const error = ref(null)
 
   let listenerUnsubscribe = null
+  let ghostFilterTimer = null
+
+  function processResponses() {
+    if (!rawResponses.value) {
+      responses.value = []
+      return
+    }
+
+    const list = Object.keys(rawResponses.value)
+      .map((key) => {
+        const item = rawResponses.value[key]
+        const lastSeenAgo = computeLastSeenAgo(item)
+        const signalQuality = computeSignalQuality(item)
+        return {
+          trackingKey: key,
+          ...item,
+          lastSeenAgo,
+          signalQuality
+        }
+      })
+      .filter(isLiveResponder)
+
+    responses.value = list
+  }
 
   /**
    * Starts listening to live donor tracking records in RTDB.
@@ -67,28 +96,23 @@ export function useActiveResponses() {
         trackingRootRef,
         (snapshot) => {
           const val = snapshot ? snapshot.val() : null
-          if (!val) {
-            responses.value = []
-            loading.value = false
-            return
-          }
-
-          const list = Object.keys(val)
-            .map((key) => ({
-              trackingKey: key,
-              ...val[key]
-            }))
-            .filter(isLiveResponder)
-
-          responses.value = list
+          rawResponses.value = val || {}
+          processResponses()
           loading.value = false
         },
         (err) => {
           // Silent fallback if RTDB is unavailable
+          rawResponses.value = {}
           responses.value = []
           loading.value = false
         }
       )
+
+      // Periodically re-filter every 30s to prune ghost records even when RTDB is idle
+      if (ghostFilterTimer) clearInterval(ghostFilterTimer)
+      ghostFilterTimer = setInterval(() => {
+        processResponses()
+      }, 30000)
     } catch (e) {
       responses.value = []
       loading.value = false
@@ -102,6 +126,10 @@ export function useActiveResponses() {
     if (listenerUnsubscribe) {
       listenerUnsubscribe()
       listenerUnsubscribe = null
+    }
+    if (ghostFilterTimer) {
+      clearInterval(ghostFilterTimer)
+      ghostFilterTimer = null
     }
   }
 

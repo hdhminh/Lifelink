@@ -1,47 +1,45 @@
 <template>
   <nav class="navbar navbar-dark navbar-expand-lg ll-navbar sticky-top">
-    <div class="container-fluid px-4 px-lg-5" style="max-width: 1440px; margin: 0 auto">
-      <RouterLink to="/" class="navbar-brand ll-navbar-brand" aria-label="LifeLink Homepage">
+    <div class="container-fluid px-3 px-lg-5" style="max-width: 1440px; margin: 0 auto">
+      <RouterLink to="/" class="navbar-brand ll-navbar-brand" aria-label="LifeLink Homepage" @click="closeNav">
         <i class="bi bi-droplet-fill text-danger me-1"></i> LifeLink
       </RouterLink>
 
       <button
         class="navbar-toggler"
         type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarMain"
-        aria-controls="navbarMain"
-        aria-expanded="false"
+        :aria-expanded="isNavOpen"
         aria-label="Toggle navigation"
+        @click="toggleNav"
       >
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div id="navbarMain" class="collapse navbar-collapse">
+      <div id="navbarMain" :class="['collapse', 'navbar-collapse', { show: isNavOpen }]">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <RouterLink class="nav-link" to="/emergency-board"
+            <RouterLink class="nav-link" to="/emergency-board" @click="closeNav"
               ><i class="bi bi-hospital me-1"></i> Emergency</RouterLink
             >
           </li>
           <li class="nav-item">
-            <RouterLink class="nav-link" to="/events"
+            <RouterLink class="nav-link" to="/events" @click="closeNav"
               ><i class="bi bi-calendar-event me-1"></i> Events</RouterLink
             >
           </li>
           <li class="nav-item">
-            <RouterLink class="nav-link" to="/map"
+            <RouterLink class="nav-link" to="/map" @click="closeNav"
               ><i class="bi bi-geo-alt-fill me-1"></i> Map</RouterLink
             >
           </li>
 
           <li v-if="!user" class="nav-item">
-            <RouterLink class="nav-link" to="/news"
+            <RouterLink class="nav-link" to="/news" @click="closeNav"
               ><i class="bi bi-newspaper me-1"></i> News</RouterLink
             >
           </li>
           <li v-if="!user" class="nav-item">
-            <RouterLink class="nav-link" to="/about"
+            <RouterLink class="nav-link" to="/about" @click="closeNav"
               ><i class="bi bi-info-circle me-1"></i> About</RouterLink
             >
           </li>
@@ -50,24 +48,24 @@
         <ul class="navbar-nav align-items-lg-center">
           <template v-if="!user">
             <li class="nav-item">
-              <RouterLink class="btn btn-nav-ghost btn-sm" to="/login"
+              <RouterLink class="btn btn-nav-ghost btn-sm" to="/login" @click="closeNav"
                 ><i class="bi bi-box-arrow-in-right me-1"></i> Login</RouterLink
               >
             </li>
             <li class="nav-item ms-lg-2">
-              <RouterLink class="btn btn-nav-primary btn-sm" to="/register"
+              <RouterLink class="btn btn-nav-primary btn-sm" to="/register" @click="closeNav"
                 ><i class="bi bi-person-plus me-1"></i> Register</RouterLink
               >
             </li>
           </template>
           <template v-else>
             <li class="nav-item">
-              <RouterLink class="nav-link" to="/dashboard"
+              <RouterLink class="nav-link" to="/dashboard" @click="closeNav"
                 ><i class="bi bi-speedometer2 me-1"></i> {{ userBadgeLabel }}</RouterLink
               >
             </li>
             <li class="nav-item">
-              <RouterLink class="nav-link" to="/profile"
+              <RouterLink class="nav-link" to="/profile" @click="closeNav"
                 ><i class="bi bi-person me-1"></i> Profile</RouterLink
               >
             </li>
@@ -88,16 +86,31 @@
  * AppNavbar.vue
  *
  * Top navigation bar supporting responsive mobile menu toggle,
- * theme toggle, emergency board shortcuts, and role-based user navigation.
+ * auto-close on page navigation, theme toggle, and role-based user navigation.
  */
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useAuth } from '@/composables/useAuth.js'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useToast } from '@/composables/useToast.js'
 
-const { user, userProfile, isAdmin, logout } = useAuth()
+const { user, userProfile, logout } = useAuth()
 const router = useRouter()
+const route = useRoute()
 const { showToast } = useToast()
+
+const isNavOpen = ref(false)
+
+function toggleNav() {
+  isNavOpen.value = !isNavOpen.value
+}
+
+function closeNav() {
+  isNavOpen.value = false
+}
+
+watch(route, () => {
+  closeNav()
+})
 
 const userBadgeLabel = computed(() => {
   if (!userProfile.value) return 'Dashboard'
@@ -106,6 +119,7 @@ const userBadgeLabel = computed(() => {
 })
 
 async function handleLogout() {
+  closeNav()
   await logout()
   showToast('Signed out successfully.', 'info')
   router.push({ name: 'Home' })

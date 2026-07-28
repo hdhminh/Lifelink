@@ -3,8 +3,11 @@
  * AppFooter.vue
  *
  * Global application footer component containing quick navigation links,
- * branding, copyright notice, and emergency network declaration.
+ * branding, copyright notice, privacy settings re-open, and emergency network declaration.
  */
+import { useGdprConsent } from '@/composables/useGdprConsent.js'
+
+const { showSettings } = useGdprConsent()
 </script>
 
 <template>
@@ -19,7 +22,7 @@
           </RouterLink>
           <div class="ll-footer__copy">Emergency donor coordination network</div>
         </div>
-        <div class="d-flex flex-wrap gap-4">
+        <div class="d-flex flex-wrap gap-3 gap-md-4">
           <RouterLink to="/emergency-board" class="text-decoration-none ll-footer-link"
             >Emergency</RouterLink
           >
@@ -27,6 +30,9 @@
           <RouterLink to="/map" class="text-decoration-none ll-footer-link">Map</RouterLink>
           <RouterLink to="/news" class="text-decoration-none ll-footer-link">News</RouterLink>
           <RouterLink to="/about" class="text-decoration-none ll-footer-link">About</RouterLink>
+          <button class="btn btn-link p-0 text-decoration-none ll-footer-link" @click="showSettings">
+            <i class="bi bi-shield-lock me-1"></i>Privacy & Permissions
+          </button>
         </div>
       </div>
       <div

@@ -1174,10 +1174,74 @@ textarea {
 
 /* Mobile Touch Target & Responsiveness (Phase 7 Audit) */
 @media (max-width: 768px) {
-  button:not(.cookie-close-btn):not(.btn-close-custom),
+  button:not(.cookie-close-btn):not(.btn-close-custom):not(.btn-close),
   .btn,
   [role="button"] {
     min-height: 44px;
   }
+
+  .ll-page-container {
+    padding: 1.25rem 0.85rem !important;
+  }
+  .ll-section-header {
+    margin-bottom: 1.25rem !important;
+    gap: 0.5rem !important;
+  }
+  .ll-section-title {
+    font-size: 1.35rem !important;
+  }
+  h1, .h1, .display-4, .display-5 {
+    font-size: 1.5rem !important;
+  }
+  h2, .h2 {
+    font-size: 1.25rem !important;
+  }
+  h3, .h3 {
+    font-size: 1.1rem !important;
+  }
+  .p-4 {
+    padding: 1rem !important;
+  }
+  .p-5 {
+    padding: 1.15rem !important;
+  }
+  .px-4 {
+    padding-left: 0.85rem !important;
+    padding-right: 0.85rem !important;
+  }
+  .px-5 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  .py-4 {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+  .py-5 {
+    padding-top: 1.25rem !important;
+    padding-bottom: 1.25rem !important;
+  }
+  .ll-card__body,
+  .ll-card__header,
+  .ll-card__footer {
+    padding: 1rem !important;
+  }
+  .ll-toolbar {
+    padding: 1rem !important;
+    margin-bottom: 1.25rem !important;
+  }
+  .ll-auth-page {
+    padding: 1.5rem 0.85rem !important;
+  }
+  .form-control,
+  .form-select {
+    font-size: 0.9rem !important;
+    height: 42px !important;
+  }
+  .ll-btn-lg {
+    padding: 0.6rem 1.25rem !important;
+    font-size: 0.95rem !important;
+  }
 }
+
 

@@ -7,17 +7,33 @@ const {
   gpsStatus,
   notifStatus,
   grantConsent,
-  revokeConsent
+  revokeConsent,
+  requestGPSPermission,
+  requestNotificationPermission
 } = useGdprConsent()
 
 const locationSelected = ref(true)
 const notifSelected = ref(true)
+const requesting = ref(false)
 
-function acceptSelected() {
-  grantConsent({
-    location: gpsStatus.value === 'granted' ? true : (gpsStatus.value === 'denied' ? false : locationSelected.value),
-    notifications: notifStatus.value === 'granted' ? true : (notifStatus.value === 'denied' ? false : notifSelected.value)
-  })
+async function acceptSelected() {
+  requesting.value = true
+  try {
+    if (locationSelected.value && gpsStatus.value !== 'granted' && gpsStatus.value !== 'denied') {
+      await requestGPSPermission()
+    }
+    if (notifSelected.value && notifStatus.value !== 'granted' && notifStatus.value !== 'denied') {
+      await requestNotificationPermission()
+    }
+  } catch (err) {
+    console.warn('[CookieConsent] Permission request error:', err)
+  } finally {
+    grantConsent({
+      location: locationSelected.value,
+      notifications: notifSelected.value
+    })
+    requesting.value = false
+  }
 }
 
 function declineAll() {
@@ -110,8 +126,8 @@ function declineAll() {
       <button class="btn btn-sm btn-outline-wine text-nowrap" @click="declineAll">
         Decline All
       </button>
-      <button class="btn btn-sm btn-wine text-nowrap" @click="acceptSelected">
-        <i class="bi bi-check-lg me-1"></i>Accept & Continue
+      <button class="btn btn-sm btn-wine text-nowrap" :disabled="requesting" @click="acceptSelected">
+        <i class="bi bi-check-lg me-1"></i>{{ requesting ? 'Requesting...' : 'Accept & Continue' }}
       </button>
     </div>
   </div>
@@ -129,11 +145,24 @@ function declineAll() {
   border: 1px solid rgba(142, 36, 53, 0.2);
   padding: 1.1rem;
   z-index: 9999;
-  box-shadow: 0 8px 30px rgba(142, 36, 53, 0.15);
+  box-shadow: 0 8px 30px rgba(142, 36, 53, 0.2);
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
   font-family: inherit;
+}
+
+@media (max-width: 576px) {
+  .cookie-consent-toast {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    max-width: 100vw;
+    border-radius: 16px 16px 0 0;
+    padding: 1rem 1.25rem 1.25rem 1.25rem;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
+  }
 }
 
 .cookie-toast-header {

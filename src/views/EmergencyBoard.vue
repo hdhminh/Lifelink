@@ -149,6 +149,7 @@
                 @delete="handleDelete(request.id)"
                 @status-change="handleStatusChange(request)"
                 @focus-map="handleFocusMap"
+                @view-donors="handleViewDonors(request)"
               />
             </div>
           </div>
@@ -247,6 +248,15 @@
       @confirmed="handleConfirmedRequest"
     />
 
+    <!-- Confirmed Donors List Modal (Admin) -->
+    <ConfirmedDonorsList
+      :show="showDonorsModal"
+      :request-id="donorsModalRequestId"
+      :hospital-name="donorsModalHospitalName"
+      @close="showDonorsModal = false"
+      @updated="startListening"
+    />
+
   </div>
 </template>
 
@@ -256,7 +266,7 @@
  * Stage 3 real-time emergency request board using Firestore onSnapshot.
  */
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import { collection, query, where, onSnapshot } from 'firebase/firestore'
+import { collection, query, where, onSnapshot, getDocs, writeBatch, serverTimestamp } from 'firebase/firestore'
 import { ref as dbRef, remove, get, query as dbQuery, orderByChild, equalTo } from 'firebase/database'
 import { db } from '@/firebase.js'
 import { rtdb } from '@/firebase.js'
@@ -273,6 +283,7 @@ import EmergencyMap from '@/components/EmergencyMap.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import AlertMessage from '@/components/AlertMessage.vue'
 import ConfirmationModals from '@/components/ConfirmationModals.vue'
+import ConfirmedDonorsList from '@/components/ConfirmedDonorsList.vue'
 import PaginationControls from '@/components/PaginationControls.vue'
 import { useToast } from '@/composables/useToast.js'
 import { canDonateTo } from '@/utils/bloodCompatibility.js'
@@ -559,6 +570,53 @@ function handleDelete(requestId) {
   showDeleteModal.value = true
 }
 
+const showDonorsModal = ref(false)
+const donorsModalRequestId = ref('')
+const donorsModalHospitalName = ref('')
+
+function handleViewDonors(request) {
+  donorsModalRequestId.value = request.id
+  donorsModalHospitalName.value = request.hospitalName
+  showDonorsModal.value = true
+}
+
+// Set all confirmations associated with a request to status: 'cancelled' in Firestore
+async function cancelAllConfirmationsForRequest(requestId) {
+  try {
+    const qUser = query(collection(db, 'confirmations'), where('requestId', '==', requestId))
+    const qGuest = query(collection(db, 'guestConfirmations'), where('requestId', '==', requestId))
+    const [userSnaps, guestSnaps] = await Promise.all([getDocs(qUser), getDocs(qGuest)])
+    const batch = writeBatch(db)
+    let count = 0
+
+    userSnaps.forEach((docSnap) => {
+      if (docSnap.data().status !== 'cancelled') {
+        batch.update(docSnap.ref, {
+          status: 'cancelled',
+          cancelledAt: serverTimestamp(),
+          cancelledBy: user.value?.uid || 'admin'
+        })
+        count++
+      }
+    })
+    guestSnaps.forEach((docSnap) => {
+      if (docSnap.data().status !== 'cancelled') {
+        batch.update(docSnap.ref, {
+          status: 'cancelled',
+          cancelledAt: serverTimestamp(),
+          cancelledBy: user.value?.uid || 'admin'
+        })
+        count++
+      }
+    })
+    if (count > 0) {
+      await batch.commit()
+    }
+  } catch (err) {
+    console.warn('[EmergencyBoard] Error cancelling request confirmations in Firestore:', err)
+  }
+}
+
 // Remove all RTDB liveTracking entries for a given requestId
 async function cleanTrackingForRequest(requestId) {
   try {
@@ -581,6 +639,7 @@ async function cleanTrackingForRequest(requestId) {
 async function confirmDelete() {
   if (!deletingRequestId.value) return
   try {
+    await cancelAllConfirmationsForRequest(deletingRequestId.value)
     await cleanTrackingForRequest(deletingRequestId.value)
     await deleteRequest(deletingRequestId.value)
     showToast('Request deleted successfully.', 'success')
@@ -596,8 +655,8 @@ async function handleStatusChange(request) {
   try {
     const nextStatus = request.status === 'active' ? 'fulfilled' : 'active'
     await updateRequest(request.id, { status: nextStatus })
-    // If fulfilling (cancelling), clean up RTDB tracking entries
     if (nextStatus === 'fulfilled') {
+      await cancelAllConfirmationsForRequest(request.id)
       await cleanTrackingForRequest(request.id)
     }
     showToast(`Request marked as ${nextStatus}.`, 'success')

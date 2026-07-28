@@ -130,6 +130,14 @@
 
     <footer class="ll-card__footer">
       <div v-if="isAdmin" class="d-flex flex-wrap gap-2">
+        <button
+          type="button"
+          class="ll-btn-secondary ll-btn-sm flex-fill text-nowrap"
+          title="Xem danh sách donors đã xác nhận"
+          @click="emit('view-donors')"
+        >
+          <i class="bi bi-people-fill me-1"></i> Donors ({{ request.confirmedCount || 0 }})
+        </button>
         <button type="button" class="ll-btn-secondary ll-btn-sm flex-fill" @click="emit('edit')">
           <i class="bi bi-pencil me-1"></i> Edit
         </button>
@@ -147,6 +155,7 @@
           <i class="bi bi-trash me-1"></i> Delete
         </button>
       </div>
+
         <!-- When confirmed: static non-clickable green badge -->
         <div
           v-if="!isAdmin && hasConfirmed"
@@ -236,7 +245,7 @@ const props = defineProps({
   hasConfirmed: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['confirm', 'edit', 'delete', 'status-change', 'focus-map', 'open-maps'])
+const emit = defineEmits(['confirm', 'edit', 'delete', 'status-change', 'focus-map', 'open-maps', 'view-donors'])
 
 const eligibility = computed(() => {
   if (!userProfile.value) return { eligible: true, daysLeft: 0, nextDateFormatted: '' }

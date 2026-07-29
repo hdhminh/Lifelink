@@ -59,7 +59,6 @@ export function useEmergencyNotifications() {
       const tokenOptions = {
         serviceWorkerRegistration: swReg || undefined
       }
-
       if (import.meta.env.VITE_FIREBASE_VAPID_KEY) {
         tokenOptions.vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY
       }

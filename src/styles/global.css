@@ -664,7 +664,6 @@ textarea {
   transition: all var(--ll-transition-fast) !important;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02) !important;
   box-sizing: border-box !important;
-  vertical-align: middle !important;
 }
 
 .form-control:focus,
@@ -980,8 +979,8 @@ textarea {
 .ll-chat-trigger {
   position: relative;
   z-index: 1061;
-  width: 56px;
-  height: 56px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background-color: var(--ll-wine-red);
   color: #ffffff;
@@ -990,7 +989,7 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   transition: all var(--ll-transition);
 }
 
@@ -1002,8 +1001,8 @@ textarea {
 .ll-chat-window {
   position: relative;
   z-index: 1060;
-  width: 380px;
-  height: 520px;
+  width: 320px;
+  height: 420px;
   background-color: var(--ll-surface);
   border: 1px solid var(--ll-slate-200);
   border-radius: 1.35rem;
@@ -1016,19 +1015,19 @@ textarea {
 .ll-chat-window-header {
   background-color: var(--ll-wine-red);
   color: #ffffff;
-  padding: 0.9rem 1.1rem;
+  padding: 0.7rem 0.85rem;
 }
 
 .ll-chat-window-footer {
-  padding: 0.85rem !important;
+  padding: 0.6rem !important;
   background-color: #ffffff;
 }
 
 .ll-chat-window-footer .form-control {
-  min-height: 50px;
-  border-radius: 1rem;
+  min-height: 40px;
+  border-radius: 0.7rem;
   border: 1px solid rgba(142, 36, 53, 0.28);
-  padding-inline: 1rem;
+  padding-inline: 0.75rem;
   box-shadow: none;
 }
 
@@ -1038,14 +1037,14 @@ textarea {
 }
 
 .ll-chat-window-footer .btn {
-  min-width: 54px;
-  border-radius: 0.7rem;
+  min-width: 44px;
+  border-radius: 0.6rem;
 }
 
 .ll-chat-window-body {
   flex-grow: 1;
   overflow: hidden;
-  padding: 1rem;
+  padding: 0.7rem;
   display: flex;
   flex-direction: column;
   background-color: var(--ll-slate-50);
@@ -1054,7 +1053,7 @@ textarea {
 .ll-chat-messages-container {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
   overflow-y: auto;
   flex-grow: 1;
   scroll-behavior: smooth;
@@ -1079,7 +1078,7 @@ textarea {
 .ll-chat-msg-bubble {
   padding: 0.5rem 0.8rem;
   border-radius: var(--ll-radius-sm);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   line-height: 1.4;
   word-break: break-word;
 }
@@ -1370,8 +1369,8 @@ textarea {
 
 @media (max-width: 576px) {
   .ll-support-chat-wrapper {
-    bottom: 12px !important;
-    right: 12px !important;
+    bottom: 10px !important;
+    right: 10px !important;
   }
   .ll-chat-trigger {
     width: 44px !important;
@@ -1379,8 +1378,8 @@ textarea {
     font-size: 1.15rem !important;
   }
   .ll-chat-window {
-    width: calc(100vw - 24px) !important;
-    height: calc(100vh - 100px) !important;
-    max-height: 480px !important;
+    width: min(320px, calc(100vw - 24px)) !important;
+    height: min(420px, calc(100dvh - 92px)) !important;
+    max-height: 420px !important;
   }
 }

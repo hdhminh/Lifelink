@@ -15,6 +15,18 @@
       </span>
     </div>
 
+    <button
+      v-if="showMobileResponseButton"
+      type="button"
+      class="ll-mobile-response-toolbar-btn d-md-none"
+      :aria-label="isMobileResponseOpen ? 'Close live response status' : 'Open live response status'"
+      @click="$emit('open-mobile-response')"
+    >
+      <i class="bi bi-people-fill"></i>
+      <span>{{ filteredRespondersLength }} En Route</span>
+      <i :class="isMobileResponseOpen ? 'bi bi-chevron-down' : 'bi bi-chevron-up'"></i>
+    </button>
+
     <div class="ll-map-toolbar-controls d-flex align-items-center gap-2 ms-auto">
       <!-- Custom Layer Filter Dropdown -->
       <div class="dropdown position-relative">
@@ -155,15 +167,6 @@
         </div>
       </div>
 
-      <button
-        type="button"
-        class="btn btn-sm d-inline-flex align-items-center justify-content-center gap-1 font-weight-600 shadow-xs map-style-18 ll-recenter-button"
-        title="Recenter map"
-        aria-label="Recenter map view"
-        @click="$emit('center-map-on-selected')"
-      >
-        <i class="bi bi-crosshair me-1"></i> <span class="ll-recenter-text">Recenter</span>
-      </button>
     </div>
   </div>
 </template>
@@ -178,10 +181,12 @@ const props = defineProps({
   activeRequests: { type: Array, default: () => [] },
   activeEvents: { type: Array, default: () => [] },
   selectedFocusType: { type: String, default: 'none' },
-  selectedFocusText: { type: String, default: 'Select Location Focus' }
+  selectedFocusText: { type: String, default: 'Select Location Focus' },
+  showMobileResponseButton: { type: Boolean, default: false },
+  isMobileResponseOpen: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['set-layer-filter', 'select-focus', 'center-map-on-selected'])
+const emit = defineEmits(['set-layer-filter', 'select-focus', 'open-mobile-response'])
 
 const showLayerDropdown = ref(false)
 const showFocusDropdown = ref(false)
@@ -242,12 +247,47 @@ onUnmounted(() => {
   .ll-map-toolbar > .d-flex:first-child {
     flex: 0 0 auto;
   }
+  .ll-mobile-response-toolbar-btn {
+    box-sizing: border-box !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    width: auto !important;
+    height: 23px !important;
+    min-height: 23px !important;
+    max-height: 23px !important;
+    padding: 0 0.55rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    background: #8E2435 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(142, 36, 53, 0.25) !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    letter-spacing: 0.03em !important;
+    white-space: nowrap !important;
+    vertical-align: middle !important;
+    outline: none !important;
+    flex: 0 0 auto !important;
+  }
+  .ll-mobile-response-toolbar-btn:focus,
+  .ll-mobile-response-toolbar-btn:focus-visible,
+  .ll-mobile-response-toolbar-btn:active {
+    outline: none !important;
+    box-shadow: 0 2px 8px rgba(142, 36, 53, 0.25) !important;
+  }
+  .ll-mobile-response-toolbar-btn i {
+    font-size: 0.68rem !important;
+    line-height: 1 !important;
+  }
   .ll-map-toolbar-controls {
-    flex: 1 1 220px;
+    flex: 1 1 100%;
     min-width: 0;
     margin-left: 0 !important;
     display: grid !important;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr) auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
     gap: 0.45rem !important;
     align-items: stretch !important;
   }
@@ -276,22 +316,11 @@ onUnmounted(() => {
     right: 0 !important;
     max-width: calc(100vw - 48px);
   }
-  .map-style-18 {
-    width: 38px !important;
-    height: 38px !important;
-    min-height: 38px !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-  }
-
-  .ll-recenter-button {
-    flex: 0 0 38px;
-  }
 }
 
 @media (max-width: 420px) {
   .ll-map-toolbar-controls {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) 38px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
     flex-basis: 100%;
   }
 }

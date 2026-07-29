@@ -4,21 +4,26 @@ import { useGdprConsent } from '../composables/useGdprConsent.js'
 
 const {
   showBanner,
+  consentState,
   gpsStatus,
   notifStatus,
   grantConsent,
-  revokeConsent,
+  declineAllConsent,
   requestGPSPermission,
   requestNotificationPermission
 } = useGdprConsent()
 
-const locationSelected = ref(true)
-const notifSelected = ref(true)
+const locationSelected = ref(consentState.value.location !== false)
+const notifSelected = ref(consentState.value.notifications !== false)
 const requesting = ref(false)
 
 async function acceptSelected() {
   requesting.value = true
   try {
+    // Accept & Continue enables the optional permissions again after a previous Decline All.
+    locationSelected.value = true
+    notifSelected.value = true
+
     // 1. Request Notification First (Strict user-gesture requirement)
     if (notifSelected.value && notifStatus.value !== 'granted' && notifStatus.value !== 'denied') {
       await requestNotificationPermission()
@@ -39,7 +44,7 @@ async function acceptSelected() {
 }
 
 function declineAll() {
-  revokeConsent()
+  declineAllConsent()
 }
 </script>
 
@@ -76,22 +81,15 @@ function declineAll() {
             <div class="small text-muted">Calculate distance to target hospital</div>
           </div>
         </div>
-        <div>
-          <span v-if="gpsStatus === 'granted'" class="badge bg-success-subtle text-success border border-success-subtle">
-            <i class="bi bi-check me-1"></i>Granted
-          </span>
-          <span v-else-if="gpsStatus === 'denied'" class="badge bg-secondary-subtle text-secondary border">
-            Blocked (Check Settings)
-          </span>
-          <div v-else class="form-check form-switch m-0">
-            <input
-              id="gps-consent-switch"
-              v-model="locationSelected"
-              class="form-check-input switch-wine"
-              type="checkbox"
-              role="switch"
-            />
-          </div>
+        <div class="form-check form-switch m-0">
+          <input
+            id="gps-consent-switch"
+            v-model="locationSelected"
+            class="form-check-input switch-wine"
+            type="checkbox"
+            role="switch"
+            aria-label="Enable GPS Location"
+          />
         </div>
       </div>
 
@@ -101,25 +99,18 @@ function declineAll() {
           <i class="bi bi-bell-fill text-wine"></i>
           <div>
             <div class="fw-semibold">Push Notifications</div>
-            <div class="small text-muted">Receive emergency blood alerts when app is closed</div>
+            <div class="small text-muted">Alerts when app is closed</div>
           </div>
         </div>
-        <div>
-          <span v-if="notifStatus === 'granted'" class="badge bg-success-subtle text-success border border-success-subtle">
-            <i class="bi bi-check me-1"></i>Granted
-          </span>
-          <span v-else-if="notifStatus === 'denied'" class="badge bg-secondary-subtle text-secondary border">
-            Blocked (Check Settings)
-          </span>
-          <div v-else class="form-check form-switch m-0">
-            <input
-              id="notif-consent-switch"
-              v-model="notifSelected"
-              class="form-check-input switch-wine"
-              type="checkbox"
-              role="switch"
-            />
-          </div>
+        <div class="form-check form-switch m-0">
+          <input
+            id="notif-consent-switch"
+            v-model="notifSelected"
+            class="form-check-input switch-wine"
+            type="checkbox"
+            role="switch"
+            aria-label="Enable Push Notifications"
+          />
         </div>
       </div>
     </div>

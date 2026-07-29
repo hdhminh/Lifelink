@@ -151,7 +151,7 @@
           ></i>
           {{ request.status === 'active' ? 'Fulfil' : 'Activate' }}
         </button>
-        <button type="button" class="ll-btn-danger ll-btn-sm flex-fill" @click="emit('delete')">
+        <button type="button" class="ll-btn-danger ll-btn-sm flex-fill" @click="emit('request-delete')">
           <i class="bi bi-trash me-1"></i> Delete
         </button>
       </div>
@@ -244,7 +244,15 @@ const props = defineProps({
   hasConfirmed: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['confirm', 'edit', 'delete', 'status-change', 'focus-map', 'open-maps', 'view-donors'])
+const emit = defineEmits([
+  'confirm',
+  'edit',
+  'request-delete',
+  'status-change',
+  'focus-map',
+  'open-maps',
+  'view-donors'
+])
 
 const eligibility = computed(() => {
   if (!userProfile.value) return { eligible: true, daysLeft: 0, nextDateFormatted: '' }

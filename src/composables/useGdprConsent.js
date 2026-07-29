@@ -159,6 +159,18 @@ export function revokeConsent() {
   showBanner.value = true
 }
 
+export function declineAllConsent() {
+  consentState.value = {
+    necessary: true,
+    location: false,
+    notifications: false,
+    analytics: false,
+    marketing: false
+  }
+  hasConsented.value = true
+  showBanner.value = false
+}
+
 export function hasConsent(type) {
   return consentState.value[type] || false
 }
@@ -179,8 +191,8 @@ export function useGdprConsent() {
     requestNotificationPermission,
     grantConsent,
     revokeConsent,
+    declineAllConsent,
     hasConsent,
     showSettings
   }
 }
-

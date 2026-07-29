@@ -34,8 +34,6 @@
  */
 import AppLoader from '@/components/AppLoader.vue'
 import { onMounted, onUnmounted } from 'vue'
-// Geolocation removed from App.vue mount
-import { useLiveSimulation } from '@/composables/useLiveSimulation.js'
 import { useSessionTimeout } from '@/composables/useSessionTimeout.js'
 import AppNavbar from '@/components/AppNavbar.vue'
 import AppFooter from '@/components/AppFooter.vue'
@@ -51,9 +49,11 @@ const { startSessionMonitor, stopSessionMonitor } = useSessionTimeout()
 
 onMounted(async () => {
   if (typeof window !== 'undefined') {
-    // Initialize simulation engine
-    const { initSimulation } = useLiveSimulation()
-    initSimulation()
+    if (import.meta.env.VITE_ENABLE_DEMO_SIMULATION === 'true') {
+      const { useLiveSimulation } = await import('@/composables/useLiveSimulation.js')
+      const { initSimulation } = useLiveSimulation()
+      initSimulation()
+    }
     startSessionMonitor()
   }
 })

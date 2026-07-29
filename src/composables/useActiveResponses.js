@@ -29,9 +29,19 @@ function isFreshResponder(response) {
 }
 
 function isLiveResponder(response) {
+  if (response?.latitude === null || response?.latitude === undefined || response?.latitude === '') {
+    return false
+  }
+  if (response?.longitude === null || response?.longitude === undefined || response?.longitude === '') {
+    return false
+  }
+  const latitude = Number(response?.latitude)
+  const longitude = Number(response?.longitude)
   return (
     isFreshResponder(response) &&
-    (response.status === 'en_route' || response.status === 'approaching')
+    (response.status === 'en_route' || response.status === 'approaching') &&
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude)
   )
 }
 

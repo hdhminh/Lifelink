@@ -26,6 +26,14 @@ import { normalizeEventRecord } from '@/data/vietnamLocations.js'
 
 const cachedEvents = ref([])
 
+function getTimeValue(value) {
+  if (!value) return 0
+  if (typeof value.toMillis === 'function') return value.toMillis()
+  if (typeof value.seconds === 'number') return value.seconds * 1000
+  const date = value instanceof Date ? value : new Date(value)
+  return Number.isNaN(date.getTime()) ? 0 : date.getTime()
+}
+
 export function getGuestInterestId(guestSessionId) {
   return guestSessionId ? `guest:${guestSessionId}` : ''
 }
@@ -46,7 +54,11 @@ export function useDonationEvents() {
   let unsubscribeFn = null
 
   function sortEvents(list) {
-    return [...list].sort((a, b) => new Date(a.date) - new Date(b.date))
+    return [...list].sort((a, b) => {
+      const dateDiff = new Date(a.date) - new Date(b.date)
+      if (dateDiff !== 0) return dateDiff
+      return getTimeValue(b.createdAt) - getTimeValue(a.createdAt)
+    })
   }
 
   function startListening() {

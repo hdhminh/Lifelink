@@ -123,7 +123,7 @@ describe('RequestCard.vue', () => {
       ...mountOptions,
       props: { request: sampleRequest, isLoggedIn: true, isConfirmed: false }
     })
-    const fulfillBtn = wrapper.find('.ll-btn-primary.ll-btn-block')
+    const fulfillBtn = wrapper.find('button.ll-btn-primary')
     expect(fulfillBtn.text()).toContain('Confirm Availability')
 
     await fulfillBtn.trigger('click')

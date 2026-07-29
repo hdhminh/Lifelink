@@ -46,10 +46,28 @@ export function useGeolocation() {
    */
   function requestLocation() {
     return new Promise((resolve, reject) => {
+      if (typeof window !== 'undefined' && !window.isSecureContext) {
+        locationError.value = 'Location requires a secure HTTPS connection.'
+        reject(new Error(locationError.value))
+        return
+      }
+
       if (!navigator.geolocation) {
         locationError.value = 'Geolocation is not supported by your browser.'
         reject(new Error(locationError.value))
         return
+      }
+
+      const handlePositionError = (err) => {
+        let msg = 'Could not retrieve your location.'
+        if (err.code === err.PERMISSION_DENIED) {
+          msg = 'Location is blocked for this site. Open the browser site settings and allow Location, then try again.'
+        } else if (err.code === err.TIMEOUT) {
+          msg = 'Location lookup timed out. Please try again or move to an area with a clearer GPS signal.'
+        }
+        locationError.value = msg
+        locationGranted.value = false
+        reject(new Error(msg))
       }
 
       navigator.geolocation.getCurrentPosition(
@@ -63,16 +81,7 @@ export function useGeolocation() {
           localStorage.setItem('ll_geo_granted', 'true')
           resolve(userLocation.value)
         },
-        (err) => {
-          let msg = 'Could not retrieve your location.'
-          if (err.code === err.PERMISSION_DENIED) {
-            msg = 'Location permission was denied.'
-          }
-          locationError.value = msg
-          locationGranted.value = false
-          localStorage.setItem('ll_geo_granted', 'false')
-          reject(err)
-        },
+        handlePositionError,
         { enableHighAccuracy: true, timeout: 20000, maximumAge: 10000 }
       )
     })

@@ -300,14 +300,14 @@
                 <RouterLink
                   v-if="user"
                   to="/emergency-board"
-                  class="ll-btn-primary text-decoration-none d-inline-block px-4 py-2"
+                  class="ll-btn-primary ll-cta-action-link text-decoration-none px-4 py-2"
                 >
                   Go to Emergency Board
                 </RouterLink>
                 <RouterLink
                   v-else
                   to="/register"
-                  class="ll-btn-primary text-decoration-none d-inline-block px-4 py-2"
+                  class="ll-btn-primary ll-cta-action-link text-decoration-none px-4 py-2"
                 >
                   Join LifeLink Today
                 </RouterLink>
@@ -776,6 +776,15 @@ onActivated(() => {
 .ll-cta-banner:hover {
   box-shadow: var(--ll-shadow-sm);
   transform: translateY(-2px);
+}
+
+.ll-cta-action-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  line-height: 1;
+  vertical-align: middle;
 }
 
 .max-w-800 {

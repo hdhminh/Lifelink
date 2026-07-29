@@ -92,7 +92,8 @@ describe('useEmergencyRequests.js (Expanded 28 Unit Tests)', () => {
       expect(requests.value[0]).toEqual({
         id: 'doc_100',
         hospitalName: 'Cho Ray',
-        bloodType: 'A+'
+        bloodType: 'A+',
+        city: ''
       })
     })
 

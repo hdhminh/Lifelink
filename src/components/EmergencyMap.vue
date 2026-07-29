@@ -12,22 +12,30 @@
     ]"
   >
     <EmergencyMapToolbar
-      :filtered-responders-length="filteredResponders.length"
+      :filtered-responders-length="mobileResponseCount"
       :active-layer-filter="activeLayerFilter"
       :active-layer-filter-label="activeLayerFilterLabel"
       :active-requests="activeRequests"
       :active-events="activeEvents"
       :selected-focus-type="selectedFocusType"
       :selected-focus-text="selectedFocusText"
+      :show-mobile-response-button="mobileResponseCount > 0"
+      :is-mobile-response-open="isSidebarMobileOpen"
       @set-layer-filter="setLayerFilter"
       @select-focus="selectFocus"
       @center-map-on-selected="centerMapOnSelected"
+      @open-mobile-response="openMobileResponseStatus"
     />
 
     <!-- Main Grid: Left Map Surface, Right Live Activity Panel (Tall 660px canvas, rounded bottom) -->
     <div class="row g-0 ll-map-body-grid overflow-hidden bg-white map-style-19">
       <!-- Map View Surface (Tall 660px) -->
-      <div class="col-lg-8 col-12 position-relative map-style-20">
+      <div
+        :class="[
+          'col-lg-8 col-12 position-relative map-style-20',
+          { 'll-map-pane--legend-open': showLegend }
+        ]"
+      >
         <button
           type="button"
           class="ll-map-fullscreen-toggle"
@@ -147,6 +155,7 @@
             </div>
           </div>
         </div>
+
       </div>
 
       <EmergencyMapSidebar
@@ -162,20 +171,6 @@
         @center-map-on-selected="centerMapOnSelected"
         @close-mobile="isSidebarMobileOpen = false"
       />
-    </div>
-
-    <!-- Floating Badge for Mobile Sidebar Trigger -->
-    <div
-      v-if="!isSidebarMobileOpen"
-      class="ll-mobile-sidebar-trigger d-lg-none position-absolute end-0 mb-4 me-3 map-style-22"
-      style="bottom: 0; z-index: 1040; cursor: pointer;"
-      @click="isSidebarMobileOpen = true"
-    >
-      <span class="badge rounded-pill bg-wine shadow-lg p-2 px-3 d-flex align-items-center gap-2" style="font-size: 0.9rem;">
-        <i class="bi bi-people-fill"></i>
-        <span>{{ filteredResponders.length }} En Route</span>
-        <i class="bi bi-chevron-up ms-1"></i>
-      </span>
     </div>
   </div>
 </template>
@@ -271,6 +266,14 @@ let vietnamBoundaryGeojsonPromise = null
 let userLocationMarker = null
 let measurementPolyline = null
 let vietnamBoundaryLayer = null
+let mapRenderFrame = null
+const pendingMapRender = {
+  hospitals: false,
+  events: false,
+  donors: false,
+  radar: false,
+  center: false
+}
 
 // Dictionaries to manage map instances
 const hospitalMarkers = new Map()
@@ -463,13 +466,19 @@ function getTrafficDensityInfo() {
  * Used to force OSRM routing to stay 100% inside Vietnam territory when routing across regions.
  */
 const VIETNAM_COASTAL_WAYPOINTS = [
+  { name: 'Ha Noi', lat: 21.0285, lng: 105.8542 },
   { name: 'Lam Dong', lat: 10.9333, lng: 108.1 },
+  { name: 'Dong Nai', lat: 10.9453, lng: 106.8247 },
+  { name: 'Ho Chi Minh City', lat: 10.7769, lng: 106.7009 },
   { name: 'Khanh Hoa', lat: 12.2451, lng: 109.1943 },
-  { name: 'Gia Lai', lat: 13.782, lng: 109.2194 },
+  { name: 'Binh Dinh', lat: 13.782, lng: 109.2194 },
   { name: 'Quang Ngai', lat: 15.1205, lng: 108.7924 },
+  { name: 'Quang Nam', lat: 15.8801, lng: 108.338 },
   { name: 'Da Nang', lat: 16.0544, lng: 108.2022 },
   { name: 'Hue', lat: 16.4637, lng: 107.5909 },
   { name: 'Quang Tri', lat: 17.4764, lng: 106.602 },
+  { name: 'Quang Binh', lat: 17.4689, lng: 106.6223 },
+  { name: 'Ha Tinh', lat: 18.3428, lng: 105.9057 },
   { name: 'Nghe An', lat: 18.6734, lng: 105.6813 },
   { name: 'Thanh Hoa', lat: 19.8067, lng: 105.7851 },
   { name: 'Ninh Binh', lat: 20.2539, lng: 105.975 }
@@ -494,12 +503,6 @@ function getVietnamDomesticWaypoints(startLat, startLng, targetLat, targetLng) {
     waypoints.sort((a, b) => b.lat - a.lat)
   }
 
-  // Cap to max 3 waypoints for clean OSRM request
-  if (waypoints.length > 3) {
-    const step = Math.floor(waypoints.length / 3)
-    waypoints = [waypoints[0], waypoints[step], waypoints[waypoints.length - 1]]
-  }
-
   return waypoints
 }
 
@@ -508,6 +511,42 @@ function getVietnamDomesticWaypoints(startLat, startLng, targetLat, targetLng) {
  */
 function sanitizeVietnamCoordinates(coords) {
   return coords
+}
+
+function hasSuspiciousRouteSegment(coords, maxSegmentMeters = 85000) {
+  if (!Array.isArray(coords) || coords.length < 2) return true
+  for (let i = 1; i < coords.length; i++) {
+    const [lat1, lng1] = coords[i - 1]
+    const [lat2, lng2] = coords[i]
+    if (
+      !Number.isFinite(Number(lat1)) ||
+      !Number.isFinite(Number(lng1)) ||
+      !Number.isFinite(Number(lat2)) ||
+      !Number.isFinite(Number(lng2))
+    ) {
+      return true
+    }
+    if (calculateHaversineDistance(lat1, lng1, lat2, lng2) > maxSegmentMeters) {
+      return true
+    }
+  }
+  return false
+}
+
+function buildDomesticFallbackRoute(startLat, startLng, endLat, endLng) {
+  const directMeters = calculateRoadDistance(startLat, startLng, endLat, endLng)
+  if (directMeters <= 45000) {
+    return sanitizeVietnamCoordinates([
+      [startLat, startLng],
+      [endLat, endLng]
+    ])
+  }
+
+  return sanitizeVietnamCoordinates([
+    [startLat, startLng],
+    ...getVietnamDomesticWaypoints(startLat, startLng, endLat, endLng).map((w) => [w.lat, w.lng]),
+    [endLat, endLng]
+  ])
 }
 
 function getDonorRouteCacheKey(resp) {
@@ -520,10 +559,12 @@ function getDonorRouteCacheKey(resp) {
 }
 
 function getFallbackDonorRoute(resp) {
-  return sanitizeVietnamCoordinates([
-    [Number(resp.latitude), Number(resp.longitude)],
-    [Number(resp.hospitalLat), Number(resp.hospitalLng)]
-  ])
+  return buildDomesticFallbackRoute(
+    Number(resp.latitude),
+    Number(resp.longitude),
+    Number(resp.hospitalLat),
+    Number(resp.hospitalLng)
+  )
 }
 
 function upsertDonorRoutePolyline(resp, coords) {
@@ -591,6 +632,8 @@ async function updateDonorRoutePolyline(resp) {
     const roadRoute = sanitizeVietnamCoordinates(
       route.geometry.coordinates.map((c) => [c[1], c[0]])
     )
+    if (hasSuspiciousRouteSegment(roadRoute, 50000)) return
+
     donorRouteCache.set(routeKey, roadRoute)
 
     if (donorRouteRequestTokens.get(resp.trackingKey) === requestToken) {
@@ -637,11 +680,7 @@ async function updateMeasurementPolyline(targetLat, targetLng, color = '#8E2435'
   osrmCoordString += `;${endLng},${endLat}`
 
   // Initial fallback line constrained to Vietnam territory
-  const fallbackPoints = [
-    [startLat, startLng],
-    ...domesticWaypoints.map((w) => [w.lat, w.lng]),
-    [endLat, endLng]
-  ]
+  const fallbackPoints = buildDomesticFallbackRoute(startLat, startLng, endLat, endLng)
 
   measurementPolyline = L.polyline(sanitizeVietnamCoordinates(fallbackPoints), {
     color,
@@ -668,6 +707,7 @@ async function updateMeasurementPolyline(targetLat, targetLng, color = '#8E2435'
         // Render driving route strictly constrained to domestic Vietnam territory
         const rawCoords = data.routes[0].geometry.coordinates.map((c) => [c[1], c[0]])
         const roadCoordinates = sanitizeVietnamCoordinates(rawCoords)
+        if (hasSuspiciousRouteSegment(roadCoordinates, 50000)) return
 
         measurementPolyline = L.polyline(roadCoordinates, {
           color,
@@ -681,6 +721,7 @@ async function updateMeasurementPolyline(targetLat, targetLng, color = '#8E2435'
         for (let i = 1; i < data.routes.length; i++) {
           const altRawCoords = data.routes[i].geometry.coordinates.map((c) => [c[1], c[0]])
           const altRoadCoordinates = sanitizeVietnamCoordinates(altRawCoords)
+          if (hasSuspiciousRouteSegment(altRoadCoordinates, 50000)) continue
           const altPolyline = L.polyline(altRoadCoordinates, {
             color: '#64748b',
             weight: 4,
@@ -751,13 +792,9 @@ const activeEvents = computed(() => {
   return props.events || []
 })
 
-const filteredResponders = computed(() => {
+const accessibleResponders = computed(() => {
   const confirmedIds = new Set(props.confirmedRequestIds.map(String))
-  const visibleResponses = activeResponses.value.filter((response) => {
-    if (selectedRequestId.value && String(response.requestId) !== String(selectedRequestId.value)) {
-      return false
-    }
-
+  return activeResponses.value.filter((response) => {
     if (isAdmin.value) return true
 
     const donorId = viewerDonorId.value
@@ -765,8 +802,20 @@ const filteredResponders = computed(() => {
 
     return confirmedIds.has(String(response.requestId))
   })
+})
 
-  return visibleResponses
+const filteredResponders = computed(() => {
+  return accessibleResponders.value.filter((response) => {
+    if (selectedRequestId.value && String(response.requestId) !== String(selectedRequestId.value)) {
+      return false
+    }
+
+    return true
+  })
+})
+
+const mobileResponseCount = computed(() => {
+  return filteredResponders.value.length || accessibleResponders.value.length
 })
 
 const activeLayerFilterLabel = computed(() => {
@@ -816,6 +865,55 @@ function logActivity(text) {
   if (activityLogs.value.length > 5) activityLogs.value.pop()
 }
 
+function openMobileResponseStatus() {
+  if (
+    !isSidebarMobileOpen.value &&
+    filteredResponders.value.length === 0 &&
+    accessibleResponders.value.length > 0
+  ) {
+    selectedRequestId.value = ''
+  }
+  isSidebarMobileOpen.value = !isSidebarMobileOpen.value
+}
+
+function scheduleMapRender({
+  hospitals = false,
+  events = false,
+  donors = false,
+  radar = false,
+  center = false
+} = {}) {
+  pendingMapRender.hospitals ||= hospitals
+  pendingMapRender.events ||= events
+  pendingMapRender.donors ||= donors
+  pendingMapRender.radar ||= radar
+  pendingMapRender.center ||= center
+
+  if (mapRenderFrame) return
+
+  const run = () => {
+    mapRenderFrame = null
+    if (!leafletMap) return
+    const task = { ...pendingMapRender }
+    pendingMapRender.hospitals = false
+    pendingMapRender.events = false
+    pendingMapRender.donors = false
+    pendingMapRender.radar = false
+    pendingMapRender.center = false
+    if (task.hospitals) renderHospitalMarkers()
+    if (task.events) renderEventMarkers()
+    if (task.donors) renderDonorMarkers()
+    if (task.radar) renderRadarDonors()
+    if (task.center) centerMapOnSelected()
+  }
+
+  if (typeof window !== 'undefined' && window.requestAnimationFrame) {
+    mapRenderFrame = window.requestAnimationFrame(run)
+  } else {
+    run()
+  }
+}
+
 function truncateText(text, maxLen = 20) {
   if (!text) return ''
   if (text.length <= maxLen) return text
@@ -840,12 +938,12 @@ async function loadVietnamBoundaryLayer() {
 
         return {
           color: isArchipelago ? '#9a7d65' : '#b07d76',
-          weight: isArchipelago ? 1.15 : 1,
-          opacity: isArchipelago ? 0.95 : 0.9,
+          weight: isArchipelago ? 1.15 : 0.55,
+          opacity: isArchipelago ? 0.95 : 0.38,
           fillColor: isArchipelago ? '#f8f4ec' : '#f6f0ea',
           fillOpacity: isArchipelago ? 0.95 : 0,
           dashArray: null,
-          interactive: true
+          interactive: isArchipelago
         }
       },
       onEachFeature(feature, layer) {
@@ -862,7 +960,7 @@ async function loadVietnamBoundaryLayer() {
       }
     }).addTo(leafletMap)
 
-    vietnamBoundaryLayer.bringToFront()
+    vietnamBoundaryLayer.bringToBack()
   } catch (err) {
     console.warn('[EmergencyMap] Vietnam GeoJSON boundary unavailable:', err)
   }
@@ -1071,9 +1169,6 @@ function renderHospitalMarkers() {
     hospitalCircles.set(String(req.id), [innerCircle, outerCircle])
   })
 
-  if (selectedRequestId.value && !selectedRequestId.value.startsWith('ev_')) {
-    setTimeout(() => centerMapOnSelected(), 50)
-  }
 }
 
 /**
@@ -1138,9 +1233,6 @@ function renderEventMarkers() {
     eventMarkers.set('ev_' + String(ev.id), marker)
   })
 
-  if (selectedRequestId.value && selectedRequestId.value.startsWith('ev_')) {
-    setTimeout(() => centerMapOnSelected(), 50)
-  }
 }
 
 /**
@@ -1409,9 +1501,7 @@ watch(
   userLocation,
   () => {
     renderUserLocationMarker()
-    renderHospitalMarkers()
-    renderEventMarkers()
-    centerMapOnSelected()
+    scheduleMapRender({ hospitals: true, events: true })
   },
   { deep: true }
 )
@@ -1419,7 +1509,7 @@ watch(
 watch(
   activeRequests,
   () => {
-    renderHospitalMarkers()
+    scheduleMapRender({ hospitals: true })
   },
   { deep: true }
 )
@@ -1427,7 +1517,7 @@ watch(
 watch(
   () => props.confirmedRequestIds,
   () => {
-    renderHospitalMarkers()
+    scheduleMapRender({ hospitals: true })
   },
   { deep: true }
 )
@@ -1435,7 +1525,7 @@ watch(
 watch(
   activeEvents,
   () => {
-    renderEventMarkers()
+    scheduleMapRender({ events: true })
   },
   { deep: true }
 )
@@ -1443,18 +1533,13 @@ watch(
 watch(
   filteredResponders,
   () => {
-    renderDonorMarkers()
+    scheduleMapRender({ donors: true })
   },
   { deep: true }
 )
 
-watch(selectedRequestId, () => {
-  centerMapOnSelected()
-})
-
 watch(activeLayerFilter, () => {
-  renderHospitalMarkers()
-  renderEventMarkers()
+  scheduleMapRender({ hospitals: true, events: true })
 })
 
 watch(
@@ -1478,6 +1563,10 @@ onMounted(() => {
 onUnmounted(() => {
   stopListening()
   cleanupMapGlobals()
+  if (mapRenderFrame && typeof window !== 'undefined') {
+    window.cancelAnimationFrame(mapRenderFrame)
+    mapRenderFrame = null
+  }
   if (typeof window !== 'undefined') {
     window.removeEventListener('keydown', handleFullscreenKeydown)
   }
@@ -1938,6 +2027,17 @@ defineExpose({
   min-height: 0 !important;
 }
 
+.ll-emergency-map-container--fullscreen .map-style-20 {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.ll-emergency-map-container--fullscreen .map-style-20 .map-style-21 {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+}
+
 .ll-map-fullscreen-toggle {
   position: absolute;
   top: 12px;
@@ -2007,14 +2107,6 @@ defineExpose({
   cursor: default;
   pointer-events: none;
   line-height: 1.2;
-}
-
-.ll-mobile-sidebar-trigger .badge {
-  background-color: #8e2435 !important;
-  color: #ffffff !important;
-  min-height: 36px;
-  display: inline-flex !important;
-  align-items: center;
 }
 
 .ll-white-dot-pulse {
@@ -2207,6 +2299,15 @@ defineExpose({
   .ll-emergency-map-container--fullscreen .map-style-21 {
     flex: 1 1 auto !important;
     width: 100% !important;
+  }
+
+  .ll-emergency-map-container--fullscreen .map-style-20 {
+    flex-basis: auto !important;
+    min-height: 0 !important;
+  }
+
+  .ll-emergency-map-container--fullscreen .map-style-27 {
+    flex-basis: auto !important;
   }
 
   .ll-map-fullscreen-toggle {

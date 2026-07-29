@@ -7,6 +7,9 @@ const mockGetDocs = vi.fn()
 const mockAddDoc = vi.fn()
 const mockUpdateDoc = vi.fn()
 const mockDeleteDoc = vi.fn()
+const mockRunTransaction = vi.fn()
+const mockTransactionGet = vi.fn()
+const mockTransactionUpdate = vi.fn()
 
 vi.mock('firebase/firestore', () => ({
   collection: vi.fn(),
@@ -22,13 +25,24 @@ vi.mock('firebase/firestore', () => ({
   getDocs: (...args) => mockGetDocs(...args),
   addDoc: (...args) => mockAddDoc(...args),
   updateDoc: (...args) => mockUpdateDoc(...args),
-  deleteDoc: (...args) => mockDeleteDoc(...args)
+  deleteDoc: (...args) => mockDeleteDoc(...args),
+  runTransaction: (...args) => mockRunTransaction(...args)
 }))
 
 describe('useDonationEvents.js Unit Tests (~25 tests)', () => {
   beforeEach(() => {
     vi.resetModules()
     vi.clearAllMocks()
+    mockTransactionGet.mockResolvedValue({
+      exists: () => true,
+      data: () => ({ likedBy: [], interestedCount: 0 })
+    })
+    mockRunTransaction.mockImplementation(async (db, callback) =>
+      callback({
+        get: mockTransactionGet,
+        update: mockTransactionUpdate
+      })
+    )
     mockOnSnapshot.mockImplementation((q, callback) => {
       callback({
         docs: [
@@ -77,8 +91,6 @@ describe('useDonationEvents.js Unit Tests (~25 tests)', () => {
   })
 
   it('optimistically adds user interest and calls arrayUnion + increment', async () => {
-    mockUpdateDoc.mockResolvedValueOnce()
-
     const { useDonationEvents } = await import('@/composables/useDonationEvents.js')
     const { startListening, toggleInterested, events } = useDonationEvents()
 
@@ -87,7 +99,7 @@ describe('useDonationEvents.js Unit Tests (~25 tests)', () => {
 
     expect(events.value[0].likedBy).toContain('user1')
     expect(events.value[0].interestedCount).toBe(1)
-    expect(mockUpdateDoc).toHaveBeenCalledWith(
+    expect(mockTransactionUpdate).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         likedBy: ['MOCK_ARRAY_UNION', 'user1'],
@@ -114,7 +126,10 @@ describe('useDonationEvents.js Unit Tests (~25 tests)', () => {
       })
       return vi.fn()
     })
-    mockUpdateDoc.mockResolvedValueOnce()
+    mockTransactionGet.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ likedBy: ['user1'], interestedCount: 1 })
+    })
 
     const { useDonationEvents } = await import('@/composables/useDonationEvents.js')
     const { startListening, toggleInterested, events } = useDonationEvents()
@@ -124,7 +139,7 @@ describe('useDonationEvents.js Unit Tests (~25 tests)', () => {
 
     expect(events.value[0].likedBy).not.toContain('user1')
     expect(events.value[0].interestedCount).toBe(0)
-    expect(mockUpdateDoc).toHaveBeenCalledWith(
+    expect(mockTransactionUpdate).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         likedBy: ['MOCK_ARRAY_REMOVE', 'user1'],
@@ -134,7 +149,7 @@ describe('useDonationEvents.js Unit Tests (~25 tests)', () => {
   })
 
   it('restores original event state when Firestore update fails', async () => {
-    mockUpdateDoc.mockRejectedValueOnce(new Error('Network failure'))
+    mockRunTransaction.mockRejectedValueOnce(new Error('Network failure'))
 
     const { useDonationEvents } = await import('@/composables/useDonationEvents.js')
     const { startListening, toggleInterested, events, error } = useDonationEvents()

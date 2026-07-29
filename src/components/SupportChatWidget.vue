@@ -531,16 +531,18 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 .chat-style-6 {
-  max-height: 82px;
+  max-height: 64px;
   scrollbar-width: thin;
 }
 .chat-style-7 {
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   border-radius: 8px;
   font-weight: 500;
+  padding-top: 0.35rem !important;
+  padding-bottom: 0.35rem !important;
 }
 .chat-style-8 {
-  height: 36px;
+  height: 34px;
 }
 .ll-chat-send-button {
   background: var(--ll-wine-red);

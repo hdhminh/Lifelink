@@ -5,7 +5,6 @@ const admin = require('firebase-admin')
 
 admin.initializeApp()
 
-// 1. Send Push Notification when a new Emergency Request is created
 exports.onEmergencyCreated = onDocumentCreated('emergencyRequests/{requestId}', async (event) => {
   const snap = event.data
   if (!snap) return
@@ -16,29 +15,30 @@ exports.onEmergencyCreated = onDocumentCreated('emergencyRequests/{requestId}', 
   if (!requestData || requestData.status !== 'active') return
 
   const bloodType = requestData.bloodType || 'Urgent'
-  const hospitalName = requestData.hospitalName || 'Bệnh viện'
+  const hospitalName = requestData.hospitalName || 'Hospital'
   const city = requestData.city || ''
 
   try {
     const db = admin.firestore()
+    const tokens = new Map()
 
-    // Query user FCM tokens
     const usersSnap = await db.collection('users').where('fcmToken', '!=', null).get()
-    const tokens = new Set()
-
     usersSnap.forEach((doc) => {
       const token = doc.data().fcmToken
-      if (token && typeof token === 'string') tokens.add(token)
+      if (token && typeof token === 'string') {
+        tokens.set(token, { ref: doc.ref, type: 'user' })
+      }
     })
 
-    // Query guest FCM tokens
     const guestsSnap = await db.collection('guestTokens').get()
     guestsSnap.forEach((doc) => {
       const token = doc.data().fcmToken
-      if (token && typeof token === 'string') tokens.add(token)
+      if (token && typeof token === 'string') {
+        tokens.set(token, { ref: doc.ref, type: 'guest' })
+      }
     })
 
-    const tokenList = Array.from(tokens)
+    const tokenList = Array.from(tokens.keys())
     if (tokenList.length === 0) {
       logger.info('No FCM tokens registered to notify.')
       return
@@ -46,17 +46,19 @@ exports.onEmergencyCreated = onDocumentCreated('emergencyRequests/{requestId}', 
 
     const payload = {
       notification: {
-        title: `🚨 Emergency Blood Need: Type ${bloodType}`,
-        body: `${hospitalName} ${city ? '(' + city + ')' : ''} urgently requires ${requestData.unitsNeeded || 1} unit(s) of blood!`
+        title: `Emergency Blood Need: Type ${bloodType}`,
+        body: `${hospitalName}${city ? ` (${city})` : ''} urgently requires ${requestData.unitsNeeded || 1} unit(s) of blood.`
       },
       data: {
         requestId,
-        url: `/emergency?request=${requestId}`
+        url: `/#/emergency-board?request=${requestId}`
       }
     }
 
-    // FCM multicast batching (max 500 per batch)
     const BATCH_SIZE = 500
+    let successCount = 0
+    let failureCount = 0
+
     for (let i = 0; i < tokenList.length; i += BATCH_SIZE) {
       const batchTokens = tokenList.slice(i, i + BATCH_SIZE)
       const response = await admin.messaging().sendEachForMulticast({
@@ -64,28 +66,46 @@ exports.onEmergencyCreated = onDocumentCreated('emergencyRequests/{requestId}', 
         ...payload
       })
 
-      // Clean up invalid tokens
+      successCount += response.successCount
+      failureCount += response.failureCount
+
+      const cleanupWrites = []
       response.responses.forEach((res, index) => {
-        if (!res.success) {
-          const errCode = res.error?.code
-          if (
-            errCode === 'messaging/invalid-registration-token' ||
-            errCode === 'messaging/registration-token-not-registered'
-          ) {
-            const badToken = batchTokens[index]
-            logger.warn(`Removing invalid token: ${badToken}`)
+        if (res.success) return
+
+        const errCode = res.error?.code
+        if (
+          errCode === 'messaging/invalid-registration-token' ||
+          errCode === 'messaging/registration-token-not-registered'
+        ) {
+          const badToken = batchTokens[index]
+          const tokenRecord = tokens.get(badToken)
+          if (!tokenRecord) return
+
+          if (tokenRecord.type === 'guest') {
+            cleanupWrites.push(tokenRecord.ref.delete())
+          } else {
+            cleanupWrites.push(
+              tokenRecord.ref.update({
+                fcmToken: admin.firestore.FieldValue.delete(),
+                fcmUpdatedAt: admin.firestore.FieldValue.serverTimestamp()
+              })
+            )
           }
         }
       })
+
+      await Promise.all(cleanupWrites)
     }
 
-    logger.info(`Successfully sent FCM notification to ${tokenList.length} devices for request ${requestId}`)
+    logger.info(
+      `FCM emergency notification completed for request ${requestId}: ${successCount} sent, ${failureCount} failed.`
+    )
   } catch (err) {
     logger.error('Error sending FCM notifications:', err)
   }
 })
 
-// 2. Scheduled Cron Job: Clean ghost responders from RTDB liveTracking (> 5 minutes inactive)
 exports.cleanGhostResponders = onSchedule('every 5 minutes', async () => {
   try {
     const rtdb = admin.database()
@@ -94,7 +114,7 @@ exports.cleanGhostResponders = onSchedule('every 5 minutes', async () => {
     if (!snap.exists()) return
 
     const now = Date.now()
-    const GHOST_TTL_MS = 5 * 60 * 1000 // 5 minutes
+    const ghostTtlMs = 5 * 60 * 1000
     const updates = {}
     let ghostCount = 0
 
@@ -102,7 +122,7 @@ exports.cleanGhostResponders = onSchedule('every 5 minutes', async () => {
       const val = child.val()
       const lastSeenMs = val?.lastSeenAt || val?.updatedAt || 0
 
-      if (lastSeenMs && now - lastSeenMs > GHOST_TTL_MS) {
+      if (lastSeenMs && now - lastSeenMs > ghostTtlMs) {
         updates[child.key] = null
         ghostCount++
       }

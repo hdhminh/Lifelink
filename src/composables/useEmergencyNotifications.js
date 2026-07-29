@@ -8,6 +8,7 @@ import { useAuth } from '@/composables/useAuth.js'
 import { useGuestSession } from '@/composables/useGuestSession.js'
 import { useGdprConsent } from '@/composables/useGdprConsent.js'
 import { useToast } from '@/composables/useToast.js'
+import { useNotificationCenter } from '@/composables/useNotificationCenter.js'
 
 export function useEmergencyNotifications() {
   const { user, userProfile, isAdmin } = useAuth()
@@ -15,43 +16,61 @@ export function useEmergencyNotifications() {
   const { notifStatus } = useGdprConsent()
   const { isEligible } = useEligibility()
   const { showToast } = useToast()
+  const { addNotification } = useNotificationCenter()
 
   let requestsUnsubscribe = null
   let messageUnsubscribe = null
+
+  async function waitForMessagingInstance(timeoutMs = 3000) {
+    const startedAt = Date.now()
+    while (!messaging && Date.now() - startedAt < timeoutMs) {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
+    return messaging
+  }
 
   async function registerFCMToken() {
     if (typeof window === 'undefined' || !('Notification' in window)) return
     if (Notification.permission !== 'granted') return
 
     try {
-      if (!messaging) return
+      const messagingInstance = await waitForMessagingInstance()
+      if (!messagingInstance) {
+        console.warn('[useEmergencyNotifications] Firebase Messaging is not ready.')
+        return
+      }
 
-      // Service Worker registration
       let swReg = null
       if ('serviceWorker' in navigator) {
         swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js')
+        await navigator.serviceWorker.ready
       }
 
-      const fcmToken = await getToken(messaging, {
+      const tokenOptions = {
         serviceWorkerRegistration: swReg || undefined
-      })
+      }
 
-      if (!fcmToken) return
+      if (import.meta.env.VITE_FIREBASE_VAPID_KEY) {
+        tokenOptions.vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY
+      }
+
+      const fcmToken = await getToken(messagingInstance, tokenOptions)
+
+      if (!fcmToken) {
+        console.warn('[useEmergencyNotifications] FCM returned an empty token.')
+        return
+      }
 
       if (user.value) {
-        // Save token to user profile document
-        const userRef = doc(db, 'users', user.value.uid)
-        await updateDoc(userRef, {
+        await updateDoc(doc(db, 'users', user.value.uid), {
           fcmToken,
           fcmUpdatedAt: serverTimestamp()
         })
       } else {
-        // Save token to guestTokens collection
         const guestId = getGuestSession().guestId
         if (guestId) {
-          const guestRef = doc(db, 'guestTokens', guestId)
           await setDoc(
-            guestRef,
+            doc(db, 'guestTokens', guestId),
             {
               guestSessionId: guestId,
               fcmToken,
@@ -66,13 +85,28 @@ export function useEmergencyNotifications() {
     }
   }
 
+  function maybeRegisterToken() {
+    if (typeof window === 'undefined' || !('Notification' in window)) return
+    if (notifStatus.value === 'granted' || Notification.permission === 'granted') {
+      registerFCMToken()
+    }
+  }
+
   function listenForegroundFCM() {
-    if (!messaging) return
     try {
-      messageUnsubscribe = onMessage(messaging, (payload) => {
-        const title = payload.notification?.title || '🚨 Máu khẩn cấp'
-        const body = payload.notification?.body || 'Có yêu cầu hiến máu khẩn cấp mới!'
-        showToast(`${title}: ${body}`, 'warning')
+      waitForMessagingInstance().then((messagingInstance) => {
+        if (!messagingInstance) return
+        messageUnsubscribe = onMessage(messagingInstance, (payload) => {
+          const title = payload.notification?.title || 'Emergency blood request'
+          const body = payload.notification?.body || 'A new emergency blood request is available.'
+          addNotification({
+            title,
+            body,
+            type: 'warning',
+            url: payload.data?.url || '/#/emergency-board'
+          })
+          showToast(`${title}: ${body}`, 'warning')
+        })
       })
     } catch (err) {
       console.warn('[useEmergencyNotifications] onMessage setup warning:', err)
@@ -86,7 +120,6 @@ export function useEmergencyNotifications() {
     }
 
     const q = query(collection(db, 'emergencyRequests'), where('status', '==', 'active'))
-
     let isInitialLoad = true
 
     requestsUnsubscribe = onSnapshot(
@@ -98,21 +131,37 @@ export function useEmergencyNotifications() {
         }
 
         snapshot.docChanges().forEach((change) => {
-          if (change.type === 'added') {
-            const newReq = { id: change.doc.id, ...change.doc.data() }
+          if (change.type !== 'added') return
 
-            // Match blood compatibility and eligibility
-            if (user.value && userProfile.value && !isAdmin.value) {
-              const eligible = isEligible(userProfile.value.lastDonationDate)
-              const compatible = canDonateTo(userProfile.value.bloodType, newReq.bloodType)
+          const newReq = { id: change.doc.id, ...change.doc.data() }
 
-              if (eligible && compatible) {
-                showToast(
-                  `🚨 Compatible emergency: ${newReq.bloodType} needed at ${newReq.hospitalName}!`,
-                  'warning'
-                )
-              }
+          if (user.value && userProfile.value && !isAdmin.value) {
+            const eligible = isEligible(userProfile.value.lastDonationDate)
+            const compatible = canDonateTo(userProfile.value.bloodType, newReq.bloodType)
+
+            if (eligible && compatible) {
+              addNotification({
+                title: 'Compatible emergency request',
+                body: `${newReq.bloodType} needed at ${newReq.hospitalName}.`,
+                type: 'warning',
+                url: `/#/emergency-board?request=${newReq.id}`
+              })
+              showToast(
+                `Compatible emergency: ${newReq.bloodType} needed at ${newReq.hospitalName}!`,
+                'warning'
+              )
             }
+          } else if (!user.value) {
+            addNotification({
+              title: 'Emergency blood request',
+              body: `${newReq.bloodType} needed at ${newReq.hospitalName}.`,
+              type: 'warning',
+              url: `/#/emergency-board?request=${newReq.id}`
+            })
+            showToast(
+              `Emergency blood request: ${newReq.bloodType} needed at ${newReq.hospitalName}!`,
+              'warning'
+            )
           }
         })
       },
@@ -125,9 +174,7 @@ export function useEmergencyNotifications() {
   watch(
     notifStatus,
     (status) => {
-      if (status === 'granted') {
-        registerFCMToken()
-      }
+      if (status === 'granted') registerFCMToken()
     },
     { immediate: true }
   )
@@ -135,14 +182,12 @@ export function useEmergencyNotifications() {
   watch(
     user,
     (newUser) => {
+      maybeRegisterToken()
+
       if (newUser) {
-        if (notifStatus.value === 'granted') registerFCMToken()
         if (userProfile.value && !isAdmin.value) listenToNewRequests()
       } else {
-        if (requestsUnsubscribe) {
-          requestsUnsubscribe()
-          requestsUnsubscribe = null
-        }
+        listenToNewRequests()
       }
     },
     { immediate: true }
@@ -150,9 +195,7 @@ export function useEmergencyNotifications() {
 
   onMounted(() => {
     listenForegroundFCM()
-    if (notifStatus.value === 'granted') {
-      registerFCMToken()
-    }
+    maybeRegisterToken()
   })
 
   onUnmounted(() => {

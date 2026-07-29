@@ -20,10 +20,31 @@ import {
   serverTimestamp
 } from 'firebase/firestore'
 import { ref as dbRef, get as rtdbGet, update as rtdbUpdate } from 'firebase/database'
-import { db, rtdb } from '@/firebase.js'
+import { db } from '@/firebase.js'
 import { normalizeLocationRecord } from '@/data/vietnamLocations.js'
 
 const cachedRequests = ref([])
+
+async function getRealtimeDatabaseInstance() {
+  try {
+    const firebaseModule = await import('@/firebase.js')
+    return firebaseModule.rtdb || null
+  } catch {
+    return null
+  }
+}
+
+function getTimeValue(value) {
+  if (!value) return 0
+  if (typeof value.toMillis === 'function') return value.toMillis()
+  if (typeof value.seconds === 'number') return value.seconds * 1000
+  const date = value instanceof Date ? value : new Date(value)
+  return Number.isNaN(date.getTime()) ? 0 : date.getTime()
+}
+
+function sortRequestsByNewest(list) {
+  return [...list].sort((a, b) => getTimeValue(b.createdAt) - getTimeValue(a.createdAt))
+}
 
 export function useEmergencyRequests() {
   const requests = ref(cachedRequests.value)
@@ -61,8 +82,9 @@ export function useEmergencyRequests() {
             ...data
           })
         })
-        cachedRequests.value = list
-        requests.value = list
+        const sorted = sortRequestsByNewest(list)
+        cachedRequests.value = sorted
+        requests.value = sorted
         loading.value = false
       },
       (err) => {
@@ -94,9 +116,9 @@ export function useEmergencyRequests() {
     try {
       const q = query(collection(db, 'emergencyRequests'), orderBy('createdAt', 'desc'))
       const snap = await getDocs(q)
-      requests.value = snap.docs.map((docSnap) =>
+      requests.value = sortRequestsByNewest(snap.docs.map((docSnap) =>
         normalizeLocationRecord({ id: docSnap.id, ...docSnap.data() })
-      )
+      ))
     } catch (err) {
       error.value = 'Could not load requests for the admin panel.'
       console.error('[useEmergencyRequests] fetchAllRequests error:', err)
@@ -189,7 +211,7 @@ export function useEmergencyRequests() {
       const confSnap = await getDocs(
         query(collection(db, 'confirmations'), where('requestId', '==', requestId))
       )
-      for (const confDoc of confSnap.docs) {
+      for (const confDoc of confSnap?.docs || []) {
         await deleteDoc(confDoc.ref)
       }
 
@@ -197,13 +219,14 @@ export function useEmergencyRequests() {
       const guestSnap = await getDocs(
         query(collection(db, 'guestConfirmations'), where('requestId', '==', requestId))
       )
-      for (const guestDoc of guestSnap.docs) {
+      for (const guestDoc of guestSnap?.docs || []) {
         await deleteDoc(guestDoc.ref)
       }
 
       // 3. Remove RTDB liveTracking nodes for this request
-      if (rtdb) {
-        const liveTrackingRef = dbRef(rtdb, 'liveTracking')
+      const rtdbInstance = await getRealtimeDatabaseInstance()
+      if (rtdbInstance) {
+        const liveTrackingRef = dbRef(rtdbInstance, 'liveTracking')
         const rtdbSnap = await rtdbGet(liveTrackingRef)
         if (rtdbSnap.exists()) {
           const updates = {}

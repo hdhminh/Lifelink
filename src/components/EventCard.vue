@@ -122,12 +122,16 @@ const formattedDate = computed(() => {
 
 .ll-event-interest-button {
   border: 1px solid transparent;
-  min-height: 44px;
+  min-height: 38px !important;
+  height: 38px !important;
+  padding: 0.45rem 0.75rem !important;
   border-radius: var(--ll-radius-sm);
   font-weight: 800;
+  font-size: 0.88rem !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  line-height: 1 !important;
   gap: 0.25rem;
   transition:
     background-color var(--ll-transition-fast),

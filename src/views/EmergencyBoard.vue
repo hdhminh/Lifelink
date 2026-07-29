@@ -146,7 +146,7 @@
                 @confirm="handleConfirm(request.id)"
                 @open-maps="handleOpenMaps(request.id)"
                 @edit="openEditForm(request)"
-                @delete="handleDelete(request.id)"
+                @request-delete="handleDelete(request.id)"
                 @status-change="handleStatusChange(request)"
                 @focus-map="handleFocusMap"
                 @view-donors="handleViewDonors(request)"
@@ -282,6 +282,7 @@ import RequestForm from '@/components/RequestForm.vue'
 import EmergencyMap from '@/components/EmergencyMap.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import AlertMessage from '@/components/AlertMessage.vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 import ConfirmationModals from '@/components/ConfirmationModals.vue'
 import ConfirmedDonorsList from '@/components/ConfirmedDonorsList.vue'
 import PaginationControls from '@/components/PaginationControls.vue'
@@ -478,7 +479,6 @@ watch([filterBloodType, filterCity, filterUrgency], () => {
 })
 
 const filteredRequests = computed(() => {
-  const urgencyOrder = { critical: 0, urgent: 1, moderate: 2 }
   let list = filterRequests(filterBloodType.value, filterCity.value, filterUrgency.value)
 
   // Apply compatible only filter if active
@@ -488,8 +488,7 @@ const filteredRequests = computed(() => {
 
   // Keep confirmed requests visible, they will be disabled via has-confirmed prop
   
-  return list.sort((a, b) => {
-    // 1. Sort compatible requests to top for logged-in donors
+  return [...list].sort((a, b) => {
     if (userProfile.value && !isAdmin.value) {
       const compatA = canDonateTo(userProfile.value.bloodType, a.bloodType)
       const compatB = canDonateTo(userProfile.value.bloodType, b.bloodType)
@@ -497,10 +496,17 @@ const filteredRequests = computed(() => {
         return compatA ? -1 : 1
       }
     }
-    // 2. Sort by urgency level
-    return urgencyOrder[a.urgency] - urgencyOrder[b.urgency]
+    return getTimeValue(b.createdAt) - getTimeValue(a.createdAt)
   })
 })
+
+function getTimeValue(value) {
+  if (!value) return 0
+  if (typeof value.toMillis === 'function') return value.toMillis()
+  if (typeof value.seconds === 'number') return value.seconds * 1000
+  const date = value instanceof Date ? value : new Date(value)
+  return Number.isNaN(date.getTime()) ? 0 : date.getTime()
+}
 
 const totalPages = computed(() =>
   Math.max(1, Math.ceil(filteredRequests.value.length / ITEMS_PER_PAGE))

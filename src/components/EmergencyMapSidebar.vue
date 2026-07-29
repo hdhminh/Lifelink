@@ -5,7 +5,7 @@
     :class="{ 'll-sidebar-mobile-open': isMobileOpen }"
   >
     <div class="ll-map-sidebar-header d-flex justify-content-between align-items-center gap-2 mb-3">
-      <h2 class="fw-bold m-0 d-flex align-items-center map-style-28">
+      <h2 class="ll-map-sidebar-title fw-bold m-0 d-flex align-items-center map-style-28">
         <i class="bi bi-radar me-1 text-wine"></i><span>RESPONSE STATUS</span>
       </h2>
       <div class="ll-map-sidebar-stats d-flex gap-1 align-items-center flex-shrink-0">
@@ -75,10 +75,10 @@
       <div
         v-for="resp in filteredResponders"
         :key="resp.trackingKey"
-        class="p-3 bg-white border border-slate-200 rounded shadow-xs position-relative hover-lift cursor-pointer"
+        class="ll-response-card p-2 bg-white border border-slate-200 rounded shadow-xs position-relative hover-lift cursor-pointer"
         @click="$emit('focus-responder', resp)"
       >
-        <div class="d-flex justify-content-between align-items-center mb-1">
+        <div class="d-flex justify-content-between align-items-center mb-1 gap-2">
           <div>
             <strong class="text-slate-900 font-weight-700 map-style-36">
               {{ resp.donorName }}
@@ -88,24 +88,10 @@
             </span>
           </div>
 
-          <div class="d-flex align-items-center gap-1">
-            <!-- Signal Quality / Live Status Badge -->
-            <span
-              v-if="resp.lastSeenAgo < 15 && resp.signalQuality === 'good'"
-              class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1"
-            >
-              <span class="pulse-dot"></span> LIVE
-            </span>
-            <span
-              v-else
-              class="badge bg-warning-subtle text-dark border border-warning-subtle d-inline-flex align-items-center gap-1"
-              :title="'Updated ' + (resp.lastSeenAgo || 0) + 's ago'"
-            >
-              <i class="bi bi-wifi-off"></i> WEAK GPS ({{ resp.lastSeenAgo || 0 }}s)
-            </span>
-
+          <div class="d-flex align-items-center gap-1 flex-shrink-0">
             <span
               :class="resp.status === 'approaching' ? 'badge bg-success' : 'badge bg-wine'"
+              :title="resp.lastSeenAgo != null ? 'GPS updated ' + resp.lastSeenAgo + 's ago' : 'Live response'"
             >
               {{ resp.status === 'approaching' ? 'Approaching' : 'En Route' }}
             </span>
@@ -194,6 +180,20 @@ function formatMeters(meters) {
   min-height: 28px;
 }
 
+.map-style-28 {
+  color: #8E2435;
+  font-size: 0.9rem;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+:global(.ll-map-sidebar-title) {
+  color: #8E2435 !important;
+  font-size: 0.9rem !important;
+  line-height: 1.15 !important;
+  white-space: nowrap !important;
+}
+
 .ll-confirmed-badge {
   background-color: #198754 !important;
   font-size: 0.68rem;
@@ -256,6 +256,14 @@ function formatMeters(meters) {
 
   .ll-map-sidebar-header {
     padding: 0.15rem 0.1rem 0.35rem;
+  }
+
+  .map-style-28 {
+    font-size: 0.8rem;
+  }
+
+  :global(.ll-map-sidebar-title) {
+    font-size: 0.8rem !important;
   }
 
   .ll-map-sidebar .p-3.bg-white {

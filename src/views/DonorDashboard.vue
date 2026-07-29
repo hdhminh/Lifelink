@@ -598,6 +598,7 @@ import ConfirmModal from '@/components/ConfirmModal.vue'
 import EventForm from '@/components/EventForm.vue'
 import RequestForm from '@/components/RequestForm.vue'
 import { useConfirmDonation } from '@/composables/useConfirmDonation.js'
+import { useEmergencyRequests } from '@/composables/useEmergencyRequests.js'
 import { isGuestInterestId, getGuestDisplayCode } from '@/composables/useDonationEvents.js'
 import { useToast } from '@/composables/useToast.js'
 import { useEligibility } from '@/composables/useEligibility.js'
@@ -645,6 +646,7 @@ const eligibleInfo = computed(() => {
   }
 })
 const { buildMapsUrl } = useGeolocation()
+const { deleteRequest: deleteEmergencyRequestCascade } = useEmergencyRequests()
 
 function formatEventTitle(title) {
   if (!title) return ''
@@ -1190,7 +1192,7 @@ function handleDeleteRequest(requestId) {
 async function confirmDeleteRequest() {
   if (!requestToDeleteId.value) return
   try {
-    await deleteDoc(doc(db, 'emergencyRequests', requestToDeleteId.value))
+    await deleteEmergencyRequestCascade(requestToDeleteId.value)
     showToast('Request deleted successfully.', 'success')
     await fetchRequests(true)
     await loadAdminStats(true)

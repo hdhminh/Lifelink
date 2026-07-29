@@ -19,11 +19,13 @@ const requesting = ref(false)
 async function acceptSelected() {
   requesting.value = true
   try {
-    if (locationSelected.value && gpsStatus.value !== 'granted' && gpsStatus.value !== 'denied') {
-      await requestGPSPermission()
-    }
+    // 1. Request Notification First (Strict user-gesture requirement)
     if (notifSelected.value && notifStatus.value !== 'granted' && notifStatus.value !== 'denied') {
       await requestNotificationPermission()
+    }
+    // 2. Request GPS Second (More lenient, can follow the notification gesture)
+    if (locationSelected.value && gpsStatus.value !== 'granted' && gpsStatus.value !== 'denied') {
+      await requestGPSPermission()
     }
   } catch (err) {
     console.warn('[CookieConsent] Permission request error:', err)

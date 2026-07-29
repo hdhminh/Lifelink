@@ -5,23 +5,24 @@
       <span class="ll-badge ll-badge-category">{{ event.category }}</span>
     </header>
     <div class="ll-card__body flex-grow-1">
-      <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+      <div class="ll-card-title-row mb-1">
         <h5 class="ll-event-title mb-0">{{ displayTitle }}</h5>
         <!-- Internal Live Map Link -->
         <RouterLink
           :to="{ path: '/map', query: { event: event.id } }"
-          class="ll-maps-link text-decoration-none small text-wine font-weight-700"
+          class="ll-inline-map-link"
           title="View event location on Live Map"
         >
-          <i class="bi bi-geo-alt-fill"></i> Map
+          <i class="bi bi-geo-alt-fill"></i>
+          <span>Map</span>
         </RouterLink>
       </div>
       <p class="ll-text-meta mb-1"><i class="bi bi-building me-1"></i> {{ event.city }}</p>
-      <p class="ll-text-meta mb-3">{{ event.location }}</p>
+      <p class="ll-text-meta mb-2">{{ event.location }}</p>
       <p class="ll-event-description">{{ event.description }}</p>
     </div>
     <footer class="ll-card__footer">
-      <p class="ll-text-meta mb-3">{{ event.interestedCount || 0 }} people interested</p>
+      <p class="ll-text-meta mb-2">{{ event.interestedCount || 0 }} people interested</p>
       <div v-if="isAdmin" class="d-flex gap-2">
         <button type="button" class="ll-btn-secondary ll-btn-sm flex-fill" @click="emit('edit')">
           <i class="bi bi-pencil me-1"></i> Edit
@@ -115,25 +116,6 @@ const formattedDate = computed(() => {
   color: var(--ll-wine-red);
 }
 
-.ll-maps-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  flex-shrink: 0;
-  transition: opacity var(--ll-transition-fast);
-  line-height: 1;
-}
-
-.ll-maps-link i {
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.95em;
-  transform: translateY(-0.5px);
-}
-
-.ll-maps-link:hover {
-  opacity: 0.75;
-}
 .font-weight-700 {
   font-weight: 700;
 }

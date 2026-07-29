@@ -103,6 +103,7 @@ function emitPage(page) {
   padding: 0.4rem 0.7rem;
   font-size: 0.875rem;
   font-weight: 500;
+  min-height: unset !important;
 }
 
 .ll-page-button:hover:not(:disabled),

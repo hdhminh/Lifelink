@@ -6,16 +6,16 @@
     <div class="d-flex align-items-center">
       <!-- Unified Sleek Wine-Red LIVE Pill Badge -->
       <span
-        class="badge rounded-pill d-inline-flex align-items-center gap-2 shadow-xs map-style-3"
+        class="badge rounded-pill d-inline-flex align-items-center gap-2 shadow-xs map-style-3 ll-live-badge"
       >
         <span class="ll-white-dot-pulse"></span>
         <span>LIVE</span>
-        <span class="map-style-4">|</span>
-        <span>{{ filteredRespondersLength }} ACTIVE RESPONDERS</span>
+        <span class="map-style-4 ll-live-divider">|</span>
+        <span class="ll-live-text">{{ filteredRespondersLength }} ACTIVE RESPONDERS</span>
       </span>
     </div>
 
-    <div class="d-flex align-items-center gap-2 ms-auto">
+    <div class="ll-map-toolbar-controls d-flex align-items-center gap-2 ms-auto">
       <!-- Custom Layer Filter Dropdown -->
       <div class="dropdown position-relative">
         <button
@@ -157,12 +157,12 @@
 
       <button
         type="button"
-        class="btn btn-sm d-inline-flex align-items-center gap-1 font-weight-600 shadow-xs map-style-18"
+        class="btn btn-sm d-inline-flex align-items-center justify-content-center gap-1 font-weight-600 shadow-xs map-style-18 ll-recenter-button"
         title="Recenter map"
         aria-label="Recenter map view"
         @click="$emit('center-map-on-selected')"
       >
-        <i class="bi bi-crosshair me-1"></i> Recenter
+        <i class="bi bi-crosshair me-1"></i> <span class="ll-recenter-text">Recenter</span>
       </button>
     </div>
   </div>
@@ -230,3 +230,69 @@ onUnmounted(() => {
   }
 })
 </script>
+
+<style scoped>
+@media (max-width: 767px) {
+  .ll-map-toolbar {
+    padding: 0.5rem 0.75rem !important;
+    gap: 0.5rem !important;
+    flex-wrap: wrap !important;
+    overflow: visible;
+  }
+  .ll-map-toolbar > .d-flex:first-child {
+    flex: 0 0 auto;
+  }
+  .ll-map-toolbar-controls {
+    flex: 1 1 220px;
+    min-width: 0;
+    margin-left: 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr) auto;
+    gap: 0.45rem !important;
+    align-items: stretch !important;
+  }
+  .ll-live-divider,
+  .ll-live-text,
+  .ll-recenter-text {
+    display: none !important;
+  }
+  .btn-sm {
+    width: 100%;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    min-height: 36px !important;
+    font-size: 0.75rem !important;
+    padding: 0.3rem 0.5rem !important;
+    white-space: nowrap;
+  }
+  .btn-sm .text-truncate {
+    max-width: 100%;
+  }
+  .dropdown {
+    min-width: 0;
+  }
+  .map-style-15 {
+    left: auto !important;
+    right: 0 !important;
+    max-width: calc(100vw - 48px);
+  }
+  .map-style-18 {
+    width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .ll-recenter-button {
+    flex: 0 0 38px;
+  }
+}
+
+@media (max-width: 420px) {
+  .ll-map-toolbar-controls {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) 38px;
+    flex-basis: 100%;
+  }
+}
+</style>

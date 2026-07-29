@@ -413,4 +413,10 @@ onUnmounted(() => {
 .ll-event-fade-in {
   animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+@media (max-width: 767px) {
+  .ll-toolbar {
+    padding: 0.75rem !important;
+  }
+}
 </style>

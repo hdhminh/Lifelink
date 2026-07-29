@@ -73,26 +73,26 @@
     </header>
 
     <div class="ll-card__body">
-      <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+      <div class="ll-card-title-row mb-1">
         <h5 class="ll-request-title mb-0">{{ request.hospitalName }}</h5>
         <!-- Focus on Internal Live Map -->
         <button
           type="button"
-          class="btn btn-link p-0 text-decoration-none small text-wine font-weight-700"
-          style="color: #8e2435; font-size: 0.8rem"
+          class="ll-inline-map-link"
           title="Focus hospital on Live Map"
           @click.prevent="$emit('focus-map', request.id)"
         >
-          <i class="bi bi-geo-alt-fill me-1"></i>Map
+          <i class="bi bi-geo-alt-fill"></i>
+          <span>Map</span>
         </button>
       </div>
-      <p class="ll-text-meta mb-3"><i class="bi bi-building me-1"></i> {{ request.city }}</p>
+      <p class="ll-text-meta mb-2"><i class="bi bi-building me-1"></i> {{ request.city }}</p>
 
-      <div class="ll-request-metrics mb-2">
+      <div class="ll-request-metrics mb-1">
         <span>Still needed:</span>
         <strong class="text-wine">{{ stillNeeded }} units</strong>
       </div>
-      <p class="ll-text-meta mb-2">
+      <p class="ll-text-meta mb-1">
         Confirmed: {{ request.confirmedCount || 0 }} / {{ request.unitsNeeded }}
         <span
           v-if="request.arrivedCount || request.donatedCount || request.completedCount"
@@ -103,7 +103,7 @@
           {{ request.completedCount || 0 }} completed)
         </span>
       </p>
-      <div class="ll-progress mb-3" aria-label="Donation confirmation progress">
+      <div class="ll-progress mb-2" aria-label="Donation confirmation progress">
         <div
           class="ll-progress-bar"
           :class="{ 'll-progress-bar--critical': request.urgency === 'critical' }"
@@ -111,7 +111,7 @@
         ></div>
       </div>
 
-      <p class="ll-request-description">{{ request.description }}</p>
+      <p class="ll-request-description mb-2">{{ request.description }}</p>
 
       <!-- Contact Info with quick call trigger -->
       <div class="d-flex justify-content-between align-items-center ll-card-contact-row">
@@ -159,8 +159,7 @@
         <!-- When confirmed: static non-clickable green badge -->
         <div
           v-if="!isAdmin && hasConfirmed"
-          class="btn w-100 fw-bold text-white"
-          style="background-color: #198754; border-color: #198754; cursor: default; pointer-events: none;"
+          class="btn w-100 fw-bold text-white d-inline-flex align-items-center justify-content-center gap-1 ll-confirmed-action"
         >
           <i class="bi bi-check-circle-fill me-1"></i> Confirmed
         </div>
@@ -384,6 +383,7 @@ function handleMouseLeave() {
 
 .ll-request-metrics {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   color: var(--ll-slate-700);
 }
@@ -402,26 +402,6 @@ function handleMouseLeave() {
   box-shadow: 0 2px 4px rgba(142, 36, 53, 0.15);
   display: inline-flex;
   align-items: center;
-}
-
-.ll-maps-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  flex-shrink: 0;
-  transition: opacity var(--ll-transition-fast);
-  line-height: 1;
-}
-
-.ll-maps-link i {
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.95em;
-  transform: translateY(-0.5px);
-}
-
-.ll-maps-link:hover {
-  opacity: 0.75;
 }
 
 .ll-request-description {

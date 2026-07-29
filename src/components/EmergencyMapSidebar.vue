@@ -1,15 +1,17 @@
 <template>
   <!-- Right Side Live Activity Stream Panel -->
   <div
-    class="col-lg-4 col-12 border-start border-slate-200 p-3 bg-slate-50 d-flex flex-column map-style-27"
+    class="col-lg-4 col-12 border-start border-slate-200 p-3 bg-slate-50 d-flex flex-column map-style-27 ll-map-sidebar"
+    :class="{ 'll-sidebar-mobile-open': isMobileOpen }"
   >
-    <h2 class="fw-bold mb-3 d-flex justify-content-between align-items-center map-style-28">
-      <span><i class="bi bi-radar me-1 text-wine"></i> RESPONSE STATUS</span>
-      <div class="d-flex gap-1 align-items-center">
+    <div class="ll-map-sidebar-header d-flex justify-content-between align-items-center gap-2 mb-3">
+      <h2 class="fw-bold m-0 d-flex align-items-center map-style-28">
+        <i class="bi bi-radar me-1 text-wine"></i><span>RESPONSE STATUS</span>
+      </h2>
+      <div class="ll-map-sidebar-stats d-flex gap-1 align-items-center flex-shrink-0">
         <span
           v-if="confirmedForSelectedRequest > 0"
-          class="badge text-white"
-          style="background-color: #198754; font-size: 0.72rem;"
+          class="badge text-white ll-confirmed-badge"
           title="Confirmed donors"
         >
           {{ confirmedForSelectedRequest }} Confirmed
@@ -18,7 +20,13 @@
           {{ filteredResponders.length }} En Route
         </span>
       </div>
-    </h2>
+      <button 
+        type="button" 
+        class="btn-close d-md-none ms-2" 
+        aria-label="Close" 
+        @click="$emit('close-mobile')"
+      ></button>
+    </div>
 
     <!-- Radar Scan Telemetry Card in Sidebar (Admin Only) -->
     <div
@@ -155,7 +163,8 @@ const props = defineProps({
   radarCounts: { type: Object, default: () => ({ inner: 0, outer: 0 }) },
   activityLogs: { type: Array, default: () => [] },
   confirmedRequestIds: { type: Array, default: () => [] },
-  selectedRequestId: { type: String, default: '' }
+  selectedRequestId: { type: String, default: '' },
+  isMobileOpen: { type: Boolean, default: false }
 })
 
 const confirmedForSelectedRequest = computed(() => {
@@ -181,6 +190,24 @@ function formatMeters(meters) {
   background-color: #8E2435 !important;
 }
 
+.ll-map-sidebar-header {
+  min-height: 28px;
+}
+
+.ll-confirmed-badge {
+  background-color: #198754 !important;
+  font-size: 0.68rem;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.ll-map-sidebar-stats .badge.bg-slate-200 {
+  background-color: #e9e1dd !important;
+  color: #5d4c51 !important;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
 .pulse-dot {
   display: inline-block;
   width: 6px;
@@ -200,6 +227,40 @@ function formatMeters(meters) {
   }
   100% {
     box-shadow: 0 0 0 0 rgba(25, 135, 84, 0);
+  }
+}
+
+@media (max-width: 767px) {
+  .ll-map-sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    height: 60vh;
+    border-radius: 16px 16px 0 0;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1), box-shadow 0.3s;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: none;
+    background: #f4eeea !important;
+    border: 1px solid #d9c8c3 !important;
+  }
+  .ll-map-sidebar.ll-sidebar-mobile-open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  .ll-map-sidebar-header {
+    padding: 0.15rem 0.1rem 0.35rem;
+  }
+
+  .ll-map-sidebar .p-3.bg-white {
+    background-color: #ffffff !important;
+    border-color: #d9c8c3 !important;
   }
 }
 </style>

@@ -14,15 +14,15 @@ const { showSettings } = useGdprConsent()
   <footer class="ll-footer mt-auto">
     <div class="container-fluid px-4 px-lg-5" style="max-width: 1440px; margin: 0 auto">
       <div
-        class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3"
+        class="d-flex flex-column flex-md-row justify-content-between align-items-center text-center text-md-start gap-4"
       >
-        <div>
+        <div class="mb-2 mb-md-0">
           <RouterLink to="/" class="ll-footer__brand text-decoration-none d-inline-block">
             <i class="bi bi-droplet-fill text-danger me-1"></i> LifeLink
           </RouterLink>
           <div class="ll-footer__copy">Emergency donor coordination network</div>
         </div>
-        <div class="d-flex flex-wrap gap-3 gap-md-4">
+        <div class="d-flex flex-wrap justify-content-center justify-content-md-end gap-3 gap-md-4">
           <RouterLink to="/emergency-board" class="text-decoration-none ll-footer-link"
             >Emergency</RouterLink
           >
@@ -30,16 +30,21 @@ const { showSettings } = useGdprConsent()
           <RouterLink to="/map" class="text-decoration-none ll-footer-link">Map</RouterLink>
           <RouterLink to="/news" class="text-decoration-none ll-footer-link">News</RouterLink>
           <RouterLink to="/about" class="text-decoration-none ll-footer-link">About</RouterLink>
-          <button class="btn btn-link p-0 text-decoration-none ll-footer-link" @click="showSettings">
-            <i class="bi bi-shield-lock me-1"></i>Privacy & Permissions
-          </button>
         </div>
       </div>
       <div
-        class="mt-4 pt-3 border-top ll-footer-meta d-flex justify-content-between flex-wrap gap-2"
+        class="mt-4 pt-3 border-top ll-footer-meta d-flex justify-content-center justify-content-md-between flex-column flex-md-row align-items-center gap-3 text-center text-md-start"
       >
-        <span>Emergency Blood Donor Network &copy; 2026.</span>
-        <span>LifeLink Vietnam • Saving Lives Together</span>
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+          <span>LifeLink Vietnam &copy; 2026.</span>
+        </div>
+        <button
+          class="btn btn-link p-0 text-decoration-none ll-footer-link"
+          style="color: inherit; font-size: inherit; font-weight: inherit;"
+          @click="showSettings"
+        >
+          Privacy & Permissions
+        </button>
       </div>
     </div>
   </footer>

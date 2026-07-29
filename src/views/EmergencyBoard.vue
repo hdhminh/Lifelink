@@ -35,7 +35,7 @@
         <i class="bi bi-funnel-fill text-wine me-2"></i>Filter Requests
       </h2>
 
-      <div class="row g-4">
+      <div class="row g-3">
         <!-- Blood Type Chips -->
         <div class="col-12">
           <label class="ll-text-label mb-2 d-block">Required Blood Type</label>
@@ -799,7 +799,7 @@ onUnmounted(() => {
 .ll-chip {
   background-color: var(--ll-surface);
   border: 1px solid var(--ll-slate-200);
-  border-radius: 99px;
+  border-radius: 6px;
   padding: 0.4rem 1rem;
   font-size: 0.85rem;
   font-weight: 600;
@@ -831,5 +831,21 @@ onUnmounted(() => {
 
 .emergency-grid-item {
   opacity: 1;
+}
+
+@media (max-width: 767px) {
+  .ll-toolbar {
+    padding: 0.75rem !important;
+  }
+  .ll-chip {
+    padding: 0.3rem 0.65rem;
+    font-size: 0.78rem;
+  }
+  .col-lg-4 aside.ll-card {
+    padding: 0.75rem !important;
+  }
+  .ll-section-header {
+    margin-bottom: 0.75rem;
+  }
 }
 </style>

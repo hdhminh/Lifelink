@@ -140,13 +140,8 @@ export function grantConsent(prefs = null) {
     }
   }
 
-  // Trigger browser native prompts if user agreed to request them
-  if (consentState.value.location && gpsStatus.value === 'prompt') {
-    requestGPSPermission()
-  }
-  if (consentState.value.notifications && notifStatus.value === 'default') {
-    requestNotificationPermission()
-  }
+  // State is now strictly saved to localStorage
+  // Native prompts are triggered directly from the UI to preserve gesture context
 
   hasConsented.value = true
   showBanner.value = false

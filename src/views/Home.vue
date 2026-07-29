@@ -496,6 +496,12 @@ onActivated(() => {
   border-bottom-right-radius: 50% 30px;
 }
 
+@media (max-width: 767px) {
+  .ll-hero-premium {
+    padding-bottom: 8.5rem; /* prevent stats overlap */
+  }
+}
+
 @supports (background-image: image-set(url('/images/hero-blood-donation.webp') 1x)) {
   .ll-hero-premium {
     background-image:

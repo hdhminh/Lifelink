@@ -349,8 +349,8 @@ onUnmounted(() => {
 }
 
 .ll-news-body h2 {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.1rem !important;
+  font-weight: 700;
   color: var(--ll-slate-900);
   margin-bottom: 0.5rem;
   line-height: 1.4;
@@ -412,6 +412,13 @@ onUnmounted(() => {
   .ll-news-meta {
     border-right: none;
     border-bottom: 1px solid var(--ll-slate-200);
+    padding: 0.75rem !important;
+  }
+  .ll-toolbar {
+    padding: 0.75rem !important;
+  }
+  .ll-news-body {
+    padding: 0.75rem !important;
   }
 }
 </style>

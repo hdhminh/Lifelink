@@ -73,6 +73,10 @@
   box-sizing: border-box;
 }
 
+.leaflet-popup-content * {
+  box-sizing: border-box !important;
+}
+
 button,
 [type='button'],
 [type='reset'],
@@ -241,6 +245,12 @@ textarea {
 }
 .text-slate-500 {
   color: var(--ll-slate-500) !important;
+}
+.bg-slate-50 {
+  background-color: var(--ll-slate-50) !important;
+}
+.bg-slate-100 {
+  background-color: var(--ll-slate-100) !important;
 }
 
 /* Sticky Navbar Glassmorphism */
@@ -449,6 +459,59 @@ textarea {
   width: 100%;
   text-align: center;
   display: flex;
+}
+
+.ll-inline-map-link {
+  min-width: 52px;
+  height: 30px;
+  padding: 0 0.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--ll-radius-sm);
+  background: transparent;
+  color: var(--ll-wine-red);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.28rem;
+  flex: 0 0 auto;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: middle;
+  transition:
+    background-color var(--ll-transition-fast),
+    border-color var(--ll-transition-fast),
+    color var(--ll-transition-fast);
+}
+
+.ll-card-title-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.ll-card-title-row .ll-inline-map-link {
+  justify-self: end;
+}
+
+.ll-inline-map-link i,
+.ll-inline-map-link span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.ll-inline-map-link:hover,
+.ll-inline-map-link:focus {
+  color: var(--ll-wine-dark);
+  background: var(--ll-wine-light);
+  border-color: rgba(142, 36, 53, 0.18);
+  text-decoration: none;
+  outline: none;
 }
 
 /* Minimalist Glass Card Overhaul */
@@ -855,11 +918,7 @@ textarea {
 }
 
 @media (max-width: 575.98px) {
-  .ll-btn-primary,
-  .ll-btn-secondary,
-  .ll-btn-danger {
-    width: 100%;
-  }
+
   .ll-auth-card {
     padding: 2rem 1.5rem;
   }
@@ -1178,9 +1237,9 @@ textarea {
     font-size: 13.5px !important;
   }
 
-  button:not(.cookie-close-btn):not(.btn-close-custom):not(.btn-close),
-  .btn,
-  [role="button"] {
+  button:not(.cookie-close-btn):not(.btn-close-custom):not(.btn-close):not(.btn-sm):not(.ll-btn-sm):not(.page-link),
+  .btn:not(.btn-sm):not(.ll-btn-sm):not(.page-link),
+  [role="button"]:not(.btn-sm):not(.ll-btn-sm):not(.page-link) {
     min-height: 44px;
   }
 
@@ -1194,14 +1253,41 @@ textarea {
   .ll-section-title {
     font-size: 1.3rem !important;
   }
-  h1, .h1, .display-4, .display-5 {
-    font-size: 1.45rem !important;
+  h1, .h1 {
+    font-size: 2rem !important;
   }
   h2, .h2 {
-    font-size: 1.2rem !important;
+    font-size: 1.5rem !important;
   }
   h3, .h3 {
-    font-size: 1.05rem !important;
+    font-size: 1.25rem !important;
+  }
+  .display-3 {
+    font-size: 2.5rem !important;
+  }
+  .display-4 {
+    font-size: 2rem !important;
+  }
+  .display-5 {
+    font-size: 1.75rem !important;
+  }
+  /* Fix overly large cards on mobile */
+  .p-3 {
+    padding: 0.75rem !important;
+  }
+  .p-4 {
+    padding: 0.85rem !important;
+  }
+  .p-5 {
+    padding: 1rem !important;
+  }
+  .ll-card {
+    border-radius: 8px !important;
+  }
+  .ll-card__body,
+  .ll-card__header,
+  .ll-card__footer {
+    padding: 0.75rem !important;
   }
   .p-4 {
     padding: 0.85rem !important;
@@ -1242,9 +1328,43 @@ textarea {
     font-size: 0.875rem !important;
     height: 40px !important;
   }
+  .ll-btn-primary,
+  .ll-btn-secondary,
+  .ll-btn-danger,
+  .btn {
+    padding: 0.45rem 1rem !important;
+    font-size: 0.85rem !important;
+  }
   .ll-btn-lg {
-    padding: 0.5rem 1.15rem !important;
-    font-size: 0.9rem !important;
+    padding: 0.55rem 1.2rem !important;
+    font-size: 0.95rem !important;
+  }
+  .ll-btn-sm {
+    padding: 0.35rem 0.8rem !important;
+    font-size: 0.78rem !important;
+  }
+  .ll-inline-map-link {
+    height: 34px;
+    min-height: 34px !important;
+    min-width: 58px;
+    padding: 0 0.55rem;
+    font-size: 0.86rem;
+  }
+  /* Fix oversized images */
+  .img-fluid,
+  .ll-about-image,
+  .ll-home-hero-image {
+    max-height: 250px !important;
+    object-fit: cover;
+  }
+  /* Fix oversized chooser cards in About / Home */
+  .ll-chooser-card {
+    padding: 0.85rem 0.5rem !important;
+  }
+  .ll-chooser-card__icon {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 1.15rem !important;
   }
 }
 
@@ -1264,6 +1384,3 @@ textarea {
     max-height: 480px !important;
   }
 }
-
-
-

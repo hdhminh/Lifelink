@@ -1,6 +1,16 @@
 <template>
   <!-- Outer Shell: Unified 16px Rounded Container with Brand Shadow -->
-  <div class="ll-emergency-map-container overflow-hidden rounded-16 border shadow-sm map-style-1">
+  <div
+    :class="[
+      'll-emergency-map-container',
+      'overflow-hidden',
+      'rounded-16',
+      'border',
+      'shadow-sm',
+      'map-style-1',
+      { 'll-emergency-map-container--fullscreen': isFullscreen }
+    ]"
+  >
     <EmergencyMapToolbar
       :filtered-responders-length="filteredResponders.length"
       :active-layer-filter="activeLayerFilter"
@@ -18,6 +28,16 @@
     <div class="row g-0 ll-map-body-grid overflow-hidden bg-white map-style-19">
       <!-- Map View Surface (Tall 660px) -->
       <div class="col-lg-8 col-12 position-relative map-style-20">
+        <button
+          type="button"
+          class="ll-map-fullscreen-toggle"
+          :title="isFullscreen ? 'Exit fullscreen map' : 'Open fullscreen map'"
+          :aria-label="isFullscreen ? 'Exit fullscreen map' : 'Open fullscreen map'"
+          @click.stop.prevent="toggleFullscreen"
+        >
+          <i :class="isFullscreen ? 'bi bi-fullscreen-exit' : 'bi bi-fullscreen'"></i>
+        </button>
+
         <!-- Loading overlay -->
         <div
           v-if="mapLoading"
@@ -137,9 +157,25 @@
         :activity-logs="activityLogs"
         :confirmed-request-ids="confirmedRequestIds"
         :selected-request-id="selectedRequestId"
+        :is-mobile-open="isSidebarMobileOpen"
         @focus-responder="focusResponder"
         @center-map-on-selected="centerMapOnSelected"
+        @close-mobile="isSidebarMobileOpen = false"
       />
+    </div>
+
+    <!-- Floating Badge for Mobile Sidebar Trigger -->
+    <div
+      v-if="!isSidebarMobileOpen"
+      class="ll-mobile-sidebar-trigger d-lg-none position-absolute end-0 mb-4 me-3 map-style-22"
+      style="bottom: 0; z-index: 1040; cursor: pointer;"
+      @click="isSidebarMobileOpen = true"
+    >
+      <span class="badge rounded-pill bg-wine shadow-lg p-2 px-3 d-flex align-items-center gap-2" style="font-size: 0.9rem;">
+        <i class="bi bi-people-fill"></i>
+        <span>{{ filteredResponders.length }} En Route</span>
+        <i class="bi bi-chevron-up ms-1"></i>
+      </span>
     </div>
   </div>
 </template>
@@ -215,6 +251,8 @@ const mapLoading = ref(true)
 const selectedRequestId = ref('')
 const activeLayerFilter = ref('all') // 'all' | 'hospitals' | 'events'
 const activityLogs = ref([])
+const isSidebarMobileOpen = ref(false)
+const isFullscreen = ref(false)
 
 const showLegend = ref(true)
 const showRadarOverlay = ref(false)
@@ -668,8 +706,8 @@ function getDistanceBadgeHtml(targetLat, targetLng, themeColor = '#8E2435') {
 
   if (!userLocation.value) {
     return `
-      <button type="button" class="btn btn-sm w-100 mt-2 d-inline-flex align-items-center justify-content-center gap-1 font-weight-700" style="font-size: 0.72rem; border-radius: 6px; border: 1px solid ${themeColor}; color: ${themeColor}; background-color: ${bgLight};" onclick="window.handleRequestUserLocation()">
-        <i class="bi bi-geo-alt-fill me-1" style="color: ${themeColor};"></i> Enable Location for Distance
+      <button type="button" class="btn btn-sm w-100 d-flex align-items-center justify-content-center gap-1 font-weight-700 ll-map-popup-button" style="font-size: 0.72rem; border-radius: 6px; border: 1px solid ${themeColor}; color: ${themeColor}; background-color: ${bgLight};" onclick="window.handleRequestUserLocation()">
+        <i class="bi bi-geo-alt-fill me-1" style="color: ${themeColor};"></i> Enable Location
       </button>
     `
   }
@@ -685,7 +723,7 @@ function getDistanceBadgeHtml(targetLat, targetLng, themeColor = '#8E2435') {
   const navUrl = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.value.lat},${userLocation.value.lng}&destination=${targetLat},${targetLng}`
 
   return `
-    <div class="mt-2 pt-1 border-top border-slate-200 text-slate-700" style="font-size: 0.75rem;">
+    <div class="text-slate-700" style="font-size: 0.75rem;">
       <div class="d-flex justify-content-between align-items-center mb-1">
         <span><i class="bi bi-compass me-1" style="color: ${themeColor};"></i> Est. Distance:</span>
         <strong style="color: ${themeColor};">${formatted}</strong>
@@ -698,7 +736,7 @@ function getDistanceBadgeHtml(targetLat, targetLng, themeColor = '#8E2435') {
         <span><i class="bi bi-clock-history me-1" style="color: ${themeColor};"></i> Est. Travel Time:</span>
         <strong style="color: ${themeColor};">~${estMins} mins</strong>
       </div>
-      <a href="${navUrl}" target="_blank" rel="noopener" class="btn btn-sm text-white mt-1 w-100 d-inline-flex align-items-center justify-content-center gap-1 font-weight-700" style="background-color: ${themeColor}; font-size: 0.70rem; border-radius: 6px;">
+      <a href="${navUrl}" target="_blank" rel="noopener" class="btn btn-sm text-white mt-1 w-100 d-flex align-items-center justify-content-center gap-1 font-weight-700 ll-map-popup-button" style="background-color: ${themeColor}; font-size: 0.70rem; border-radius: 6px;">
         <i class="bi bi-sign-turn-right-fill me-1"></i> Open Google Navigation
       </a>
     </div>
@@ -990,17 +1028,22 @@ function renderHospitalMarkers() {
         <div class="small text-slate-600 mt-1 mb-1 map-style-56">
           Hotline: <a href="tel:${escapeHtml(phoneNum)}" class="fw-bold text-decoration-none map-style-54">${escapeHtml(phoneNum)}</a>
         </div>
-        ${getDistanceBadgeHtml(coords.lat, coords.lng, '#8E2435')}
-
-        ${
-          props.confirmedRequestIds.includes(String(req.id))
-            ? `<div class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1" style="background-color: #198754; font-size: 0.72rem; border-radius: 6px; cursor: default; pointer-events: none;">
-               <i class="bi bi-check-circle-fill me-1"></i> Confirmed
-             </div>`
-            : `<button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1 map-style-57" onclick="window.handleHospitalPopupRespond('${escapeHtml(String(req.id))}')">
-               <i class="bi bi-droplet-fill me-1"></i> Confirm Availability
-             </button>`
-        }
+        <div class="ll-map-popup-actions d-flex flex-column gap-2 mt-2 pt-2 border-top border-slate-200">
+          ${getDistanceBadgeHtml(coords.lat, coords.lng, '#8E2435')}
+          ${
+            props.confirmedRequestIds.includes(String(req.id))
+              ? `<div class="btn btn-sm text-white fw-bold w-100 d-flex align-items-center justify-content-center gap-1 ll-map-popup-button" style="background-color: #198754; font-size: 0.72rem; border-radius: 6px; cursor: default; pointer-events: none;">
+                 <i class="bi bi-check-circle-fill me-1"></i> Confirmed
+               </div>`
+              : Number(req.confirmedCount || 0) >= Number(req.unitsNeeded || 0)
+              ? `<div class="btn btn-sm text-white fw-bold w-100 d-flex align-items-center justify-content-center gap-1 ll-map-popup-button ll-map-popup-button--goal" style="background-color: #6c757d; font-size: 0.72rem; border-radius: 6px; cursor: default; pointer-events: none;">
+                 <i class="bi bi-check-circle-fill me-1"></i> Goal Met
+               </div>`
+              : `<button type="button" class="btn btn-sm text-white fw-bold w-100 d-flex align-items-center justify-content-center gap-1 map-style-57 ll-map-popup-button" onclick="window.handleHospitalPopupRespond('${escapeHtml(String(req.id))}')">
+                 <i class="bi bi-droplet-fill me-1"></i> Confirm Availability
+               </button>`
+          }
+        </div>
       </div>
     `)
 
@@ -1078,10 +1121,12 @@ function renderEventMarkers() {
         <div class="small text-slate-600 mt-1 mb-1 map-style-56">
           Hotline: <a href="tel:${escapeHtml(phoneNum)}" class="fw-bold text-decoration-none map-style-63">${escapeHtml(phoneNum)}</a>
         </div>
-        ${getDistanceBadgeHtml(coords.lat, coords.lng, '#0D6EFD')}
-        <button type="button" class="btn btn-sm text-white fw-bold mt-2 w-100 d-inline-flex align-items-center justify-content-center gap-1 ${isEventInterested(ev) ? 'map-style-64-active' : 'map-style-64'}" onclick="window.handleEventPopupRegister('${escapeHtml(String(ev.id))}')">
-          <i class="bi ${isEventInterested(ev) ? 'bi-check-circle-fill' : 'bi-heart-fill'} me-1"></i> Interested
-        </button>
+        <div class="ll-map-popup-actions d-flex flex-column gap-2 mt-2 pt-2 border-top border-slate-200">
+          ${getDistanceBadgeHtml(coords.lat, coords.lng, '#0D6EFD')}
+          <button type="button" class="btn btn-sm text-white fw-bold w-100 d-flex align-items-center justify-content-center gap-1 ll-map-popup-button ${isEventInterested(ev) ? 'map-style-64-active' : 'map-style-64'}" onclick="window.handleEventPopupRegister('${escapeHtml(String(ev.id))}')">
+            <i class="bi ${isEventInterested(ev) ? 'bi-check-circle-fill' : 'bi-heart-fill'} me-1"></i> Interested
+          </button>
+        </div>
       </div>
     `)
 
@@ -1227,7 +1272,7 @@ function renderRadarDonors() {
             ).padStart(8, '0')
         const safePhone = escapeHtml(phone)
         const phoneBtn = donor.canDonateNow
-          ? `<div class="mt-2 pt-1 border-top"><a href="tel:${safePhone}" class="btn btn-sm text-white w-100 py-1 d-inline-flex align-items-center justify-content-center gap-1 font-weight-700 map-style-68"><i class="bi bi-telephone-fill me-1"></i> Call ${safePhone}</a></div>`
+          ? `<div class="mt-2 pt-1 border-top"><a href="tel:${safePhone}" class="btn btn-sm text-white w-100 py-1 d-flex align-items-center justify-content-center gap-1 font-weight-700 map-style-68 ll-map-popup-button"><i class="bi bi-telephone-fill me-1"></i> Call ${safePhone}</a></div>`
           : `<div class="mt-2 pt-1 border-top text-slate-500 map-style-69"><i class="bi bi-telephone me-1"></i> Phone: <strong>${safePhone}</strong></div>`
 
         marker.bindPopup(`
@@ -1347,6 +1392,19 @@ function refreshMapSize() {
   })
 }
 
+function toggleFullscreen() {
+  isFullscreen.value = !isFullscreen.value
+  isSidebarMobileOpen.value = false
+  refreshMapSize()
+}
+
+function handleFullscreenKeydown(event) {
+  if (event.key === 'Escape' && isFullscreen.value) {
+    isFullscreen.value = false
+    refreshMapSize()
+  }
+}
+
 watch(
   userLocation,
   () => {
@@ -1412,11 +1470,17 @@ watch(
 onMounted(() => {
   startListening()
   initMapEngine()
+  if (typeof window !== 'undefined') {
+    window.addEventListener('keydown', handleFullscreenKeydown)
+  }
 })
 
 onUnmounted(() => {
   stopListening()
   cleanupMapGlobals()
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('keydown', handleFullscreenKeydown)
+  }
   if (leafletMap) {
     try {
       leafletMap.remove()
@@ -1445,7 +1509,7 @@ defineExpose({
 .map-style-2 {
   border-color: #eae2df;
   position: relative;
-  z-index: 1050;
+  z-index: 2;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
 }
@@ -1674,8 +1738,8 @@ defineExpose({
 .map-style-51 {
   font-family: system-ui, sans-serif;
   padding: 2px;
-  width: 235px;
-  min-width: 235px;
+  width: 100%;
+  min-width: 0;
   box-sizing: border-box;
 }
 .map-style-52 {
@@ -1704,6 +1768,8 @@ defineExpose({
   font-size: 0.72rem;
   border-radius: 6px;
   color: white !important;
+  border-color: #8e2435;
+  min-height: 36px;
 }
 .map-style-57:hover {
   background-color: #6a1a27 !important;
@@ -1817,6 +1883,138 @@ defineExpose({
 <style>
 .ll-emergency-map-container {
   font-family: var(--ll-font-family, system-ui, sans-serif);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.ll-emergency-map-container--fullscreen {
+  position: fixed !important;
+  top: 64px !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: auto !important;
+  z-index: 1040 !important;
+  border-radius: 0 !important;
+  border: 0 !important;
+  background: #ffffff;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.ll-emergency-map-container--fullscreen .map-style-19 {
+  flex: 1 1 auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  border-radius: 0 !important;
+  display: flex !important;
+}
+
+.ll-emergency-map-container--fullscreen .map-style-20,
+.ll-emergency-map-container--fullscreen .map-style-21,
+.ll-emergency-map-container--fullscreen .map-style-27 {
+  height: auto !important;
+  min-height: 0 !important;
+  border-radius: 0 !important;
+}
+
+.ll-emergency-map-container--fullscreen .map-style-20,
+.ll-emergency-map-container--fullscreen .map-style-27 {
+  flex: 0 0 auto;
+}
+
+.ll-emergency-map-container--fullscreen .map-style-20 {
+  flex-basis: 66.666667%;
+}
+
+.ll-emergency-map-container--fullscreen .map-style-27 {
+  flex-basis: 33.333333%;
+}
+
+.ll-emergency-map-container--fullscreen .map-style-21 {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+.ll-map-fullscreen-toggle {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1200;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid #eae2df;
+  background: rgba(255, 255, 255, 0.96);
+  color: #8e2435;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(37, 30, 33, 0.12);
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.ll-map-fullscreen-toggle:hover,
+.ll-map-fullscreen-toggle:focus {
+  background: #8e2435;
+  color: #ffffff;
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.leaflet-popup-content,
+.leaflet-popup-content * {
+  box-sizing: border-box !important;
+}
+
+.leaflet-popup-content .ll-map-popup-actions {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.5rem !important;
+}
+
+.leaflet-popup-content .ll-map-popup-button {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 36px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.25rem !important;
+  line-height: 1.2 !important;
+  white-space: normal !important;
+  box-sizing: border-box !important;
+}
+
+.ll-map-body-grid {
+  width: 100%;
+  max-width: 100%;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.ll-confirmed-action {
+  min-height: 46px;
+  background-color: #198754 !important;
+  border-color: #198754 !important;
+  cursor: default;
+  pointer-events: none;
+  line-height: 1.2;
+}
+
+.ll-mobile-sidebar-trigger .badge {
+  background-color: #8e2435 !important;
+  color: #ffffff !important;
+  min-height: 36px;
+  display: inline-flex !important;
+  align-items: center;
 }
 
 .ll-white-dot-pulse {
@@ -1940,16 +2138,22 @@ defineExpose({
   }
   .leaflet-popup-content {
     margin: 8px 10px !important;
-    width: 210px !important;
-    min-width: 195px !important;
-    max-width: 220px !important;
+    width: min(220px, calc(100vw - 96px)) !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 96px) !important;
     font-size: 0.78rem !important;
   }
   .leaflet-popup-content button,
-  .leaflet-popup-content .btn {
+  .leaflet-popup-content .btn,
+  .leaflet-popup-content a.btn {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
     padding: 0.35rem 0.5rem !important;
     font-size: 0.78rem !important;
     min-height: 36px !important;
+    white-space: normal !important;
+    line-height: 1.2 !important;
   }
   .leaflet-control-zoom {
     margin-top: 8px !important;
@@ -1967,6 +2171,51 @@ defineExpose({
     width: 28px !important;
     height: 28px !important;
     font-size: 14px !important;
+  }
+  .map-style-20,
+  .map-style-21 {
+    height: 50vh !important;
+    min-height: 350px !important;
+  }
+
+  .ll-map-toolbar {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .ll-map-toolbar-controls {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .ll-emergency-map-container--fullscreen .map-style-19,
+  .ll-emergency-map-container--fullscreen .map-style-20,
+  .ll-emergency-map-container--fullscreen .map-style-21,
+  .ll-emergency-map-container--fullscreen .map-style-27 {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .ll-emergency-map-container--fullscreen {
+    top: 60px !important;
+    height: calc(100dvh - 60px) !important;
+  }
+
+  .ll-emergency-map-container--fullscreen .map-style-19,
+  .ll-emergency-map-container--fullscreen .map-style-20,
+  .ll-emergency-map-container--fullscreen .map-style-21 {
+    flex: 1 1 auto !important;
+    width: 100% !important;
+  }
+
+  .ll-map-fullscreen-toggle {
+    top: 10px;
+    right: 10px;
+    width: 34px;
+    height: 34px;
+    min-height: 34px !important;
+    padding: 0 !important;
   }
 }
 

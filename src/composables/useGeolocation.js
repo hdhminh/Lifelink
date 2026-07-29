@@ -73,7 +73,7 @@ export function useGeolocation() {
           localStorage.setItem('ll_geo_granted', 'false')
           reject(err)
         },
-        { enableHighAccuracy: false, timeout: 15000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 10000 }
       )
     })
   }

@@ -266,7 +266,7 @@
  * Stage 3 real-time emergency request board using Firestore onSnapshot.
  */
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import { collection, query, where, onSnapshot, getDocs, writeBatch, serverTimestamp } from 'firebase/firestore'
+import { collection, query, where, onSnapshot, serverTimestamp } from 'firebase/firestore'
 import { ref as dbRef, remove, get, query as dbQuery, orderByChild, equalTo } from 'firebase/database'
 import { db } from '@/firebase.js'
 import { rtdb } from '@/firebase.js'
@@ -323,7 +323,8 @@ const {
 const {
   loading: confirmLoading,
   confirmAvailability,
-  confirmGuestAvailability
+  confirmGuestAvailability,
+  cancelConfirmationsForRequest
 } = useConfirmDonation()
 const { buildMapsUrl } = useGeolocation()
 const { getGuestSession, updateGuestSession } = guestSession
@@ -587,37 +588,9 @@ function handleViewDonors(request) {
 }
 
 // Set all confirmations associated with a request to status: 'cancelled' in Firestore
-async function cancelAllConfirmationsForRequest(requestId) {
+async function cancelAllConfirmationsForRequest(requestId, reason = 'request_cancelled') {
   try {
-    const qUser = query(collection(db, 'confirmations'), where('requestId', '==', requestId))
-    const qGuest = query(collection(db, 'guestConfirmations'), where('requestId', '==', requestId))
-    const [userSnaps, guestSnaps] = await Promise.all([getDocs(qUser), getDocs(qGuest)])
-    const batch = writeBatch(db)
-    let count = 0
-
-    userSnaps.forEach((docSnap) => {
-      if (docSnap.data().status !== 'cancelled') {
-        batch.update(docSnap.ref, {
-          status: 'cancelled',
-          cancelledAt: serverTimestamp(),
-          cancelledBy: user.value?.uid || 'admin'
-        })
-        count++
-      }
-    })
-    guestSnaps.forEach((docSnap) => {
-      if (docSnap.data().status !== 'cancelled') {
-        batch.update(docSnap.ref, {
-          status: 'cancelled',
-          cancelledAt: serverTimestamp(),
-          cancelledBy: user.value?.uid || 'admin'
-        })
-        count++
-      }
-    })
-    if (count > 0) {
-      await batch.commit()
-    }
+    await cancelConfirmationsForRequest(requestId, user.value?.uid, reason)
   } catch (err) {
     console.warn('[EmergencyBoard] Error cancelling request confirmations in Firestore:', err)
   }
@@ -645,7 +618,7 @@ async function cleanTrackingForRequest(requestId) {
 async function confirmDelete() {
   if (!deletingRequestId.value) return
   try {
-    await cancelAllConfirmationsForRequest(deletingRequestId.value)
+    await cancelAllConfirmationsForRequest(deletingRequestId.value, 'request_deleted')
     await cleanTrackingForRequest(deletingRequestId.value)
     await deleteRequest(deletingRequestId.value)
     showToast('Request deleted successfully.', 'success')
@@ -662,7 +635,7 @@ async function handleStatusChange(request) {
     const nextStatus = request.status === 'active' ? 'fulfilled' : 'active'
     await updateRequest(request.id, { status: nextStatus })
     if (nextStatus === 'fulfilled') {
-      await cancelAllConfirmationsForRequest(request.id)
+      await cancelAllConfirmationsForRequest(request.id, 'request_fulfilled')
       await cleanTrackingForRequest(request.id)
     }
     showToast(`Request marked as ${nextStatus}.`, 'success')

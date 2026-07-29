@@ -15,6 +15,7 @@ import {
   getDocs,
   onSnapshot,
   runTransaction,
+  writeBatch,
   serverTimestamp
 } from 'firebase/firestore'
 import {
@@ -80,7 +81,8 @@ export function useConfirmDonation() {
   async function hasConfirmed(requestId, donorId) {
     const confirmationRef = doc(db, 'confirmations', getConfirmationId(requestId, donorId))
     const snap = await getDoc(confirmationRef)
-    return snap.exists() && snap.data()?.status !== 'cancelled'
+    const data = typeof snap.data === 'function' ? snap.data() : {}
+    return snap.exists() && data?.status !== 'cancelled'
   }
 
   async function confirmAvailability(requestId, donorData) {
@@ -104,7 +106,9 @@ export function useConfirmDonation() {
         if (!requestSnap.exists()) {
           throw new Error('This request no longer exists.')
         }
-        if (confirmationSnap.exists() && confirmationSnap.data()?.status !== 'cancelled') {
+        const existingConfirmationData =
+          typeof confirmationSnap.data === 'function' ? confirmationSnap.data() : {}
+        if (confirmationSnap.exists() && existingConfirmationData?.status !== 'cancelled') {
           throw new Error('You have already confirmed availability for this request.')
         }
         if (donorSnap.exists()) {
@@ -186,7 +190,9 @@ export function useConfirmDonation() {
         if (!requestSnap.exists()) {
           throw new Error('This request no longer exists.')
         }
-        if (guestConfirmationSnap.exists() && guestConfirmationSnap.data()?.status !== 'cancelled') {
+        const existingGuestConfirmationData =
+          typeof guestConfirmationSnap.data === 'function' ? guestConfirmationSnap.data() : {}
+        if (guestConfirmationSnap.exists() && existingGuestConfirmationData?.status !== 'cancelled') {
           throw new Error('This guest session has already confirmed this request.')
         }
 
@@ -294,7 +300,7 @@ export function useConfirmDonation() {
     }
   }
 
-  async function cancelConfirmationByAdmin(confirmationId, requestId, adminUid, isGuest = false) {
+  async function cancelConfirmationByAdmin(confirmationId, requestId, adminUid, isGuest = false, reason = 'admin_cancelled') {
     loading.value = true
     error.value = null
     success.value = false
@@ -330,6 +336,7 @@ export function useConfirmDonation() {
 
         transaction.update(confirmationRef, {
           status: 'cancelled',
+          cancellationReason: reason,
           cancelledAt: serverTimestamp(),
           cancelledBy: adminUid || 'admin',
           updatedAt: serverTimestamp()
@@ -343,6 +350,59 @@ export function useConfirmDonation() {
     } catch (err) {
       error.value = err.message
       console.error('[useConfirmDonation] cancelConfirmationByAdmin error:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function cancelConfirmationsForRequest(requestId, adminUid, reason = 'request_cancelled') {
+    if (!requestId) return 0
+    loading.value = true
+    error.value = null
+    success.value = false
+
+    try {
+      const qUser = query(collection(db, 'confirmations'), where('requestId', '==', requestId))
+      const qGuest = query(collection(db, 'guestConfirmations'), where('requestId', '==', requestId))
+      const [userSnaps, guestSnaps] = await Promise.all([getDocs(qUser), getDocs(qGuest)])
+      const batch = writeBatch(db)
+      const trackingTargets = []
+      let count = 0
+
+      const queueCancel = (docSnap, isGuest = false) => {
+        const data = docSnap.data()
+        if (data.status === 'cancelled') return
+
+        const donorKey = isGuest ? data.guestSessionId : data.donorId
+        if (donorKey) trackingTargets.push(donorKey)
+
+        batch.update(docSnap.ref, {
+          status: 'cancelled',
+          cancellationReason: reason,
+          cancelledAt: serverTimestamp(),
+          cancelledBy: adminUid || 'admin',
+          updatedAt: serverTimestamp()
+        })
+        count += 1
+      }
+
+      userSnaps.forEach((docSnap) => queueCancel(docSnap, false))
+      guestSnaps.forEach((docSnap) => queueCancel(docSnap, true))
+
+      if (count > 0) {
+        await batch.commit()
+      }
+
+      await Promise.all(
+        trackingTargets.map((donorId) => removeLiveTrackingForConfirmation(requestId, donorId))
+      )
+
+      success.value = true
+      return count
+    } catch (err) {
+      error.value = err.message
+      console.error('[useConfirmDonation] cancelConfirmationsForRequest error:', err)
       throw err
     } finally {
       loading.value = false
@@ -476,6 +536,7 @@ export function useConfirmDonation() {
     confirmGuestAvailability,
     cancelConfirmation,
     cancelConfirmationByAdmin,
+    cancelConfirmationsForRequest,
     getConfirmationsForRequest,
     watchMyConfirmation,
     updateConfirmationStatus

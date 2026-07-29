@@ -80,7 +80,12 @@
                         <p class="small text-slate-500 mb-0">
                           <i class="bi bi-geo-alt-fill text-wine me-1"></i>{{ conf.city }} | Blood: <strong>{{ conf.bloodType }}</strong>
                         </p>
-                        <p class="small text-slate-400 mb-0 mt-1">Confirmed on {{ formatDateTime(conf.createdAt) }}</p>
+                        <p class="small text-slate-400 mb-0 mt-1">
+                          {{ getConfirmationTimelineLabel(conf) }}
+                        </p>
+                        <p v-if="conf.status === 'cancelled'" class="small text-wine mb-0 mt-1">
+                          {{ getCancellationReasonLabel(conf.cancellationReason) || 'Cancelled by admin.' }}
+                        </p>
                       </div>
                       <RouterLink :to="{ path: '/map', query: { request: conf.requestId } }" class="btn btn-sm flex-shrink-0" style="color: var(--ll-wine-red); border: 1px solid var(--ll-wine-red);">
                         <i class="bi bi-geo-alt-fill"></i> Map
@@ -601,6 +606,7 @@ import { useConfirmDonation } from '@/composables/useConfirmDonation.js'
 import { useEmergencyRequests } from '@/composables/useEmergencyRequests.js'
 import { isGuestInterestId, getGuestDisplayCode } from '@/composables/useDonationEvents.js'
 import { useToast } from '@/composables/useToast.js'
+import { useNotificationCenter } from '@/composables/useNotificationCenter.js'
 import { useEligibility } from '@/composables/useEligibility.js'
 import mockDonors from '@/data/mockDonors.json'
 import {
@@ -616,6 +622,7 @@ const userSubTab = ref('registered')
 const { user, userProfile, isAdmin, authLoading } = useAuth()
 const { isEligible, nextEligibleDate, daysUntilEligible } = useEligibility()
 const { showToast } = useToast()
+const { addNotification } = useNotificationCenter()
 
 watch(isAdmin, (val) => {
   document.title = val ? 'LifeLink - Admin Dashboard' : 'LifeLink - Donor Dashboard'
@@ -719,6 +726,7 @@ const eventsLoading = ref(false)
 let donorConfirmationsUnsubscribe = null
 let donorEventsUnsubscribe = null
 let donorHistoryListenToken = 0
+const donorConfirmationStatusCache = new Map()
 
 function stopDonorHistoryListeners() {
   donorHistoryListenToken += 1
@@ -730,6 +738,7 @@ function stopDonorHistoryListeners() {
     donorEventsUnsubscribe()
     donorEventsUnsubscribe = null
   }
+  donorConfirmationStatusCache.clear()
 }
 
 function listenToDonorHistory() {
@@ -747,8 +756,26 @@ function listenToDonorHistory() {
   )
 
   donorConfirmationsUnsubscribe = onSnapshot(qConf, async (snapConf) => {
+    snapConf.docChanges().forEach((change) => {
+      if (change.type !== 'modified') return
+      const data = change.doc.data()
+      const previousStatus = donorConfirmationStatusCache.get(change.doc.id)
+      const nextStatus = data.status || 'confirmed'
+      if (previousStatus && previousStatus !== nextStatus && nextStatus === 'cancelled') {
+        const reason = getCancellationReasonLabel(data.cancellationReason)
+        addNotification({
+          title: 'Emergency confirmation updated',
+          body: `${data.hospitalName || 'Your emergency confirmation'} was cancelled${reason ? `: ${reason}` : ''}.`,
+          type: 'info',
+          url: '/#/dashboard'
+        })
+      }
+      donorConfirmationStatusCache.set(change.doc.id, nextStatus)
+    })
+
     const listConf = await Promise.all(snapConf.docs.map(async (docSnap) => {
       const conf = { id: docSnap.id, ...docSnap.data() }
+      donorConfirmationStatusCache.set(conf.id, conf.status || 'confirmed')
       if (!conf.hospitalName && conf.requestId) {
         try {
           const reqSnap = await getDoc(doc(db, 'emergencyRequests', conf.requestId))
@@ -1172,6 +1199,13 @@ async function confirmRequestStatusChange() {
       status,
       updatedAt: serverTimestamp()
     })
+    if (status === 'fulfilled' || status === 'cancelled') {
+      await cancelConfirmationsForRequest(
+        req.id,
+        user.value?.uid,
+        status === 'fulfilled' ? 'request_fulfilled' : 'request_cancelled'
+      )
+    }
     showToast(`Request marked as ${status}.`, 'success')
     await fetchRequests(true)
     await loadAdminStats(true)
@@ -1206,7 +1240,12 @@ async function confirmDeleteRequest() {
 }
 
 // Donor cancellation & status workflow logic
-const { cancelConfirmation, updateConfirmationStatus } = useConfirmDonation()
+const {
+  cancelConfirmation,
+  cancelConfirmationByAdmin,
+  cancelConfirmationsForRequest,
+  updateConfirmationStatus
+} = useConfirmDonation()
 
 function changeConfirmationStatus(conf, newStatus, event) {
   const currentStatus = conf.status || 'confirmed'
@@ -1261,8 +1300,31 @@ function getStatusBadgeClass(status) {
       case 'arrived': return 'bg-info text-white'
       case 'donated': return 'bg-warning text-dark'
       case 'completed': return 'bg-primary text-white'
+      case 'cancelled': return 'bg-secondary text-white'
       default: return 'bg-success text-white'
     }
+}
+
+function getCancellationReasonLabel(reason) {
+  switch (reason) {
+    case 'request_fulfilled':
+      return 'The emergency request was fulfilled.'
+    case 'request_cancelled':
+      return 'The emergency request was cancelled.'
+    case 'request_deleted':
+      return 'The emergency request was removed.'
+    case 'admin_cancelled':
+      return 'Your confirmation was cancelled by admin.'
+    default:
+      return ''
+  }
+}
+
+function getConfirmationTimelineLabel(conf) {
+  if (conf.status === 'cancelled') {
+    return `Cancelled on ${formatDateTime(conf.cancelledAt || conf.updatedAt || conf.createdAt)}`
+  }
+  return `Confirmed on ${formatDateTime(conf.createdAt)}`
 }
 
 function handleCancelConfirmation(confOrId, reqId, donorName) {
@@ -1284,11 +1346,7 @@ async function confirmCancelConfirmation() {
   const { confId, reqId, donorName, participantType } = pendingCancelConfirmation.value
   try {
     if (participantType === 'guest') {
-      await deleteDoc(doc(db, 'guestConfirmations', confId))
-      await updateDoc(doc(db, 'emergencyRequests', reqId), {
-        confirmedCount: increment(-1),
-        updatedAt: serverTimestamp()
-      })
+      await cancelConfirmationByAdmin(confId, reqId, user.value?.uid, true, 'admin_cancelled')
     } else {
       await cancelConfirmation(confId, reqId)
     }

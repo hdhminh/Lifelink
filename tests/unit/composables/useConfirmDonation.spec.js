@@ -762,7 +762,7 @@ describe('useConfirmDonation.js Full Suite (50 Tests)', () => {
       )
     })
 
-    it('deletes confirmation document even when request no longer exists', async () => {
+    it('marks confirmation cancelled even when request no longer exists', async () => {
       const mockTransaction = {
         get: vi.fn().mockImplementation((ref) => {
           if (ref.id === 'conf1')
@@ -778,7 +778,10 @@ describe('useConfirmDonation.js Full Suite (50 Tests)', () => {
       const { cancelConfirmation, success } = useConfirmDonation()
 
       await cancelConfirmation('conf1', 'req1')
-      expect(mockTransaction.delete).toHaveBeenCalled()
+      expect(mockTransaction.update).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'conf1' }),
+        expect.objectContaining({ status: 'cancelled' })
+      )
       expect(success.value).toBe(true)
     })
 

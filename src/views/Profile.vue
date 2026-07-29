@@ -39,6 +39,57 @@
           :eligibleInfo="eligibleInfo"
           :readableLastDonation="readableLastDonation"
         />
+
+        <form class="ll-password-panel mt-4" @submit.prevent="handlePasswordChange">
+          <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+            <div>
+              <h3 class="ll-password-title mb-1">
+                <i class="bi bi-shield-lock-fill text-wine me-2"></i> Change Password
+              </h3>
+              <p class="ll-text-meta mb-0">Use your current password before setting a new one.</p>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="current-password" class="form-label">Current Password</label>
+              <input
+                id="current-password"
+                v-model="passwordForm.currentPassword"
+                type="password"
+                class="form-control"
+                autocomplete="current-password"
+              />
+            </div>
+            <div class="col-md-4">
+              <label for="new-password" class="form-label">New Password</label>
+              <input
+                id="new-password"
+                v-model="passwordForm.newPassword"
+                type="password"
+                class="form-control"
+                autocomplete="new-password"
+              />
+            </div>
+            <div class="col-md-4">
+              <label for="confirm-new-password" class="form-label">Confirm New Password</label>
+              <input
+                id="confirm-new-password"
+                v-model="passwordForm.confirmPassword"
+                type="password"
+                class="form-control"
+                autocomplete="new-password"
+              />
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end mt-3">
+            <button class="ll-btn-primary" type="submit" :disabled="isChangingPassword">
+              <i class="bi bi-key-fill me-1"></i>
+              {{ isChangingPassword ? 'Updating...' : 'Update Password' }}
+            </button>
+          </div>
+        </form>
       </div>
     </section>
   </div>
@@ -49,7 +100,7 @@
  * Profile.vue
  * Donor profile display and edit form with validation and async state.
  */
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { Timestamp } from 'firebase/firestore'
 import { useAuth } from '@/composables/useAuth.js'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
@@ -58,11 +109,17 @@ import ProfileSummary from '@/components/profile/ProfileSummary.vue'
 import { useToast } from '@/composables/useToast.js'
 import { useEligibility } from '@/composables/useEligibility.js'
 
-const { user, userProfile, authLoading, updateProfile } = useAuth()
+const { user, userProfile, authLoading, updateProfile, changePassword } = useAuth()
 const { isEligible, nextEligibleDate, daysUntilEligible } = useEligibility()
 const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 const isEditing = ref(false)
 const isSaving = ref(false)
+const isChangingPassword = ref(false)
+const passwordForm = reactive({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+})
 
 const { showToast } = useToast()
 
@@ -133,6 +190,30 @@ async function handleSave(formData) {
   }
 }
 
+async function handlePasswordChange() {
+  if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+    showToast('New passwords do not match.', 'danger')
+    return
+  }
+
+  isChangingPassword.value = true
+  try {
+    await changePassword(passwordForm.currentPassword, passwordForm.newPassword)
+    passwordForm.currentPassword = ''
+    passwordForm.newPassword = ''
+    passwordForm.confirmPassword = ''
+    showToast('Password updated successfully.', 'success')
+  } catch (err) {
+    const friendlyMessage =
+      err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential'
+        ? 'Current password is incorrect.'
+        : err.message || 'Could not update password.'
+    showToast(friendlyMessage, 'danger')
+  } finally {
+    isChangingPassword.value = false
+  }
+}
+
 import { useScrollReveal } from '@/composables/useScrollReveal.js'
 
 const readableLastDonation = computed(() => {
@@ -174,6 +255,17 @@ watch(isEditing, async (newVal) => {
   background-color: #ffffff;
   border: 1px solid var(--ll-slate-200);
   box-shadow: var(--ll-shadow-sm);
+}
+
+.ll-password-panel {
+  border-top: 1px solid var(--ll-slate-100);
+  padding-top: 1.25rem;
+}
+
+.ll-password-title {
+  color: var(--ll-slate-900);
+  font-size: 1rem;
+  font-weight: 800;
 }
 
 /* Glowing Blood Drop circular badge */

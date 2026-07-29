@@ -10,7 +10,10 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword
 } from 'firebase/auth'
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from '@/firebase.js'
@@ -146,6 +149,18 @@ export function useAuth() {
     userProfile.value = await fetchUserProfile(user.value.uid)
   }
 
+  async function changePassword(currentPassword, newPassword) {
+    if (!user.value?.email) throw new Error('Not authenticated')
+    if (!currentPassword) throw new Error('Current password is required.')
+    if (!newPassword || newPassword.length < 6) {
+      throw new Error('New password must be at least 6 characters.')
+    }
+
+    const credential = EmailAuthProvider.credential(user.value.email, currentPassword)
+    await reauthenticateWithCredential(user.value, credential)
+    await updatePassword(user.value, newPassword)
+  }
+
   return {
     user,
     userProfile,
@@ -156,6 +171,7 @@ export function useAuth() {
     login,
     register,
     logout,
-    updateProfile
+    updateProfile,
+    changePassword
   }
 }

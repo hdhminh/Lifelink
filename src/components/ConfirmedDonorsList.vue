@@ -48,7 +48,13 @@ async function handleCancel(conf) {
   if (!confirm(`Are you sure you want to cancel confirmation for donor ${conf.donorName || conf.donorId}?`)) return
   cancellingId.value = conf.id
   try {
-    await cancelConfirmationByAdmin(conf)
+    await cancelConfirmationByAdmin(
+      conf.id,
+      conf.requestId || props.requestId,
+      undefined,
+      !!conf.isGuest,
+      'admin_cancelled'
+    )
     showToast(`Cancelled confirmation for ${conf.donorName || conf.donorId}.`, 'success')
     emit('updated')
     await fetchDonors()

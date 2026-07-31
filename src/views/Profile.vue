@@ -19,9 +19,19 @@
             Keep your donation details accurate for emergency matching.
           </p>
         </div>
-        <button v-if="!isEditing" class="ll-btn-secondary" type="button" @click="startEditing">
-          <i class="bi bi-pencil me-1"></i> Edit Profile
-        </button>
+        <div v-if="!isEditing" class="d-flex flex-wrap gap-2">
+          <button class="ll-btn-secondary" type="button" @click="startEditing">
+            <i class="bi bi-pencil me-1"></i> Edit Profile
+          </button>
+          <button
+            class="ll-btn-secondary"
+            type="button"
+            @click="togglePasswordPanel"
+          >
+            <i class="bi bi-shield-lock me-1"></i>
+            {{ showPasswordPanel ? 'Hide Password Form' : 'Change Password' }}
+          </button>
+        </div>
       </div>
 
       <div class="ll-card__body">
@@ -40,7 +50,11 @@
           :readableLastDonation="readableLastDonation"
         />
 
-        <form class="ll-password-panel mt-4" @submit.prevent="handlePasswordChange">
+        <form
+          v-if="showPasswordPanel && !isEditing"
+          class="ll-password-panel mt-4"
+          @submit.prevent="handlePasswordChange"
+        >
           <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
             <div>
               <h3 class="ll-password-title mb-1">
@@ -83,9 +97,12 @@
             </div>
           </div>
 
-          <div class="d-flex justify-content-end mt-3">
+          <div class="d-flex justify-content-end gap-2 mt-3">
+            <button class="ll-btn-secondary" type="button" @click="closePasswordPanel">
+              Cancel
+            </button>
             <button class="ll-btn-primary" type="submit" :disabled="isChangingPassword">
-              <i class="bi bi-key-fill me-1"></i>
+              <i class="bi bi-shield-lock-fill me-1"></i>
               {{ isChangingPassword ? 'Updating...' : 'Update Password' }}
             </button>
           </div>
@@ -115,6 +132,7 @@ const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 const isEditing = ref(false)
 const isSaving = ref(false)
 const isChangingPassword = ref(false)
+const showPasswordPanel = ref(false)
 const passwordForm = reactive({
   currentPassword: '',
   newPassword: '',
@@ -153,6 +171,7 @@ const eligibleInfo = computed(() => {
  * @returns {void}
  */
 function startEditing() {
+  closePasswordPanel()
   isEditing.value = true
 }
 
@@ -162,6 +181,24 @@ function startEditing() {
  */
 function cancelEditing() {
   isEditing.value = false
+}
+
+function resetPasswordForm() {
+  passwordForm.currentPassword = ''
+  passwordForm.newPassword = ''
+  passwordForm.confirmPassword = ''
+}
+
+function closePasswordPanel() {
+  showPasswordPanel.value = false
+  resetPasswordForm()
+}
+
+function togglePasswordPanel() {
+  showPasswordPanel.value = !showPasswordPanel.value
+  if (!showPasswordPanel.value) {
+    resetPasswordForm()
+  }
 }
 
 /**
@@ -199,9 +236,7 @@ async function handlePasswordChange() {
   isChangingPassword.value = true
   try {
     await changePassword(passwordForm.currentPassword, passwordForm.newPassword)
-    passwordForm.currentPassword = ''
-    passwordForm.newPassword = ''
-    passwordForm.confirmPassword = ''
+    closePasswordPanel()
     showToast('Password updated successfully.', 'success')
   } catch (err) {
     const friendlyMessage =

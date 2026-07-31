@@ -33,7 +33,7 @@
               <th class="dashboard-style-12" scope="col">Blood</th>
               <th class="dashboard-style-13" scope="col">Status</th>
               <th class="dashboard-style-14" scope="col">Role</th>
-              <th class="dashboard-style-15" scope="col">Actions</th>
+              <th class="dashboard-style-15 text-end pe-4" scope="col">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -87,7 +87,7 @@
                   <option value="admin">Admin</option>
                 </select>
               </td>
-              <td class="dashboard-style-25">
+              <td class="dashboard-style-25 pe-4">
                 <div class="d-flex justify-content-end align-items-center gap-2 dashboard-style-26">
                   <button
                     class="ll-btn-secondary btn-sm px-2 d-inline-flex align-items-center justify-content-center dashboard-style-27"
@@ -97,6 +97,16 @@
                     @click="$emit('view-user-history', u)"
                   >
                     <i class="bi bi-clock-history me-1"></i>History
+                  </button>
+                  <button
+                    v-if="u.canDonateNow === false || u.lastDonationDate"
+                    class="ll-btn-secondary btn-sm px-2 d-inline-flex align-items-center justify-content-center dashboard-style-27"
+                    style="height: 32px !important; padding-top: 0 !important; padding-bottom: 0 !important; border-radius: var(--ll-radius-sm) !important;"
+                    type="button"
+                    title="Reset donor cooldown"
+                    @click="$emit('prompt-reset-cooldown', u)"
+                  >
+                    <i class="bi bi-arrow-repeat me-1"></i>Reset Cooldown
                   </button>
                   <button
                     class="ll-icon-button ll-icon-button--danger d-inline-flex align-items-center justify-content-center dashboard-style-28"
@@ -153,6 +163,7 @@ defineProps({
 defineEmits([
   'update:searchQuery',
   'prompt-role-change',
+  'prompt-reset-cooldown',
   'view-user-history',
   'handle-delete-user',
   'load-more-users'

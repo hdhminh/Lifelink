@@ -195,6 +195,7 @@
             :userDisplayLimit="userDisplayLimit"
             :userProfile="userProfile"
             @prompt-role-change="promptRoleChange"
+            @prompt-reset-cooldown="promptResetCooldown"
             @view-user-history="viewUserHistory"
             @handle-delete-user="handleDeleteUser"
             @load-more-users="userDisplayLimit += 100"
@@ -514,6 +515,15 @@
       confirm-label="Change Role"
       @confirm="confirmRoleChange"
       @cancel="cancelRoleChange"
+    />
+
+    <ConfirmModal
+      :show="showCooldownResetModal"
+      title="Reset Donor Cooldown"
+      :message="`Are you sure you want to reset cooldown for '${pendingCooldownReset?.userName || 'this donor'}'? They will be eligible to donate immediately.`"
+      confirm-label="Reset Cooldown"
+      @confirm="confirmResetCooldown"
+      @cancel="cancelResetCooldown"
     />
 
     <!-- Confirm Modal for Deleting Request -->
@@ -989,6 +999,8 @@ async function fetchAllConfirmations(isSilent = false) {
 
 const showRoleConfirmModal = ref(false)
 const pendingRoleChange = ref(null)
+const showCooldownResetModal = ref(false)
+const pendingCooldownReset = ref(null)
 
 function promptRoleChange(u, newRole, event) {
   if (u.role === newRole) return
@@ -1033,6 +1045,49 @@ async function updateUserRole(userId, newRole) {
   } catch (err) {
     console.error('Error updating user role:', err)
     showToast(err.message || 'Failed to update user role.', 'danger')
+  }
+}
+
+function promptResetCooldown(user) {
+  pendingCooldownReset.value = {
+    userId: user.id,
+    userName: user.displayName,
+    isMockUser: String(user.id).startsWith('mock_')
+  }
+  showCooldownResetModal.value = true
+}
+
+function cancelResetCooldown() {
+  showCooldownResetModal.value = false
+  pendingCooldownReset.value = null
+}
+
+async function confirmResetCooldown() {
+  if (!pendingCooldownReset.value) return
+  const { userId, userName, isMockUser } = pendingCooldownReset.value
+
+  try {
+    if (isMockUser) {
+      const found = mockDonors.find((m) => m.id === userId)
+      if (found) {
+        found.canDonateNow = true
+        found.lastDonationDate = null
+      }
+    } else {
+      await updateDoc(doc(db, 'users', userId), {
+        canDonateNow: true,
+        lastDonationDate: null
+      })
+    }
+
+    showToast(`Cooldown reset for ${userName}.`, 'success')
+    await fetchUsers(true)
+    await loadAdminStats(true)
+  } catch (err) {
+    console.error('Error resetting cooldown:', err)
+    showToast(err.message || 'Failed to reset donor cooldown.', 'danger')
+  } finally {
+    cancelResetCooldown()
   }
 }
 

@@ -1,48 +1,85 @@
-# Contributing to LifeLink
+# Contributing to LifeLink 🤝
 
-Thank you for your interest in contributing to LifeLink! We welcome contributions to improve the coordination of emergency blood donations in Vietnam.
+Thank you for your interest in contributing to LifeLink! We welcome community contributions to help improve emergency blood donor coordination in Vietnam.
 
-## Code of Conduct
-We expect all contributors to adhere to standard respectful behavior when interacting in our repository.
+---
 
-## How to Contribute
+## 🛠️ Development Workflow
 
-1. **Fork the Repository** on GitHub.
-2. **Clone your Fork** locally:
-   ```bash
-   git clone https://github.com/your-username/LifeLink.git
-   cd LifeLink
-   ```
-3. **Configure Environment Variables**
-   Copy `.env.example` to `.env` and fill in your Firebase configuration parameters.
-4. **Install Dependencies**
-   ```bash
-   npm install
-   ```
-5. **Create a Feature Branch**
-   ```bash
-   git checkout -b feature/your-awesome-feature
-   ```
-6. **Implement Your Changes**
-   Ensure all changes are clean, formatted, and properly linted.
-7. **Write and Run Tests**
-   Before submitting, run the testing suites to ensure no regressions:
-   ```bash
-   npm run test:unit      # Run unit and integration tests (Vitest)
-   npm run test:rules     # Run database rules tests (Local Emulator)
-   npm run test:e2e       # Run browser End-to-End tests (Playwright)
-   ```
-8. **Commit and Push**
+To ensure a smooth collaboration process, please follow these steps:
+
+### 1. Fork and Clone
+Fork the repository on GitHub and clone your fork locally:
+```bash
+git clone https://github.com/your-username/Lifelink.git
+cd Lifelink
+```
+
+### 2. Environment Configuration
+Copy the environment variables template and configure your local settings:
+```bash
+cp .env.example .env
+```
+
+### 3. Install Dependencies
+```bash
+npm install
+```
+
+### 4. Create a Feature Branch
+```bash
+git checkout -b feature/your-awesome-feature
+```
+
+---
+
+## 🧪 Testing Guidelines
+
+Before committing or submitting a Pull Request, verify that all test suites pass without regressions:
+
+- **Unit & Integration Tests (Vitest)**:
+  ```bash
+  npm run test:unit
+  ```
+- **Firestore Security Rules Tests**:
+  ```bash
+  npm run test:rules
+  ```
+- **End-to-End Tests (Playwright)**:
+  ```bash
+  npm run test:e2e
+  ```
+- **Run All Tests**:
+  ```bash
+  npm run test:all
+  ```
+
+---
+
+## 📏 Coding Standards
+
+To maintain code quality and styling consistency, please ensure your changes adhere to these rules:
+
+- **Component Structure**: Use Vue 3 Composition API with `<script setup>` syntax for all new components.
+- **Styling**: Style elements using scoped CSS or standard Bootstrap 5 utility classes. Avoid inline styling.
+- **Theme Consistency**: Maintain the application's signature warm beige and deep crimson wine theme.
+- **Linting & Formatting**: Clean and format your code using the built-in tooling before pushing:
+  ```bash
+  npm run lint:fix
+  npm run format
+  ```
+
+---
+
+## 🚀 Submitting Your Changes
+
+1. **Commit your modifications** with a descriptive commit message:
    ```bash
    git add .
    git commit -m "feat: add awesome new feature"
+   ```
+2. **Push to your fork**:
+   ```bash
    git push origin feature/your-awesome-feature
    ```
-9. **Submit a Pull Request (PR)**
-   Ensure your description clearly details the motivation, implementation, and verification steps.
-
-## Coding Conventions
-- Use standard Vue 3 Composition API with `<script setup>`.
-- Style elements using custom CSS or Bootstrap 5 utilities.
-- Avoid inline styling where possible.
-- Adhere to the established beige and wine red theme for design consistency.
+3. **Submit a Pull Request (PR)**: Target the main repository's `main` branch. Provide a clear description detailing your modifications and verification steps.

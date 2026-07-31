@@ -1,4 +1,4 @@
-# LifeLink
+# LifeLink 🩸
 
 LifeLink is a real-time emergency blood donor coordination web platform tailored for Vietnam. It connects blood donors, volunteers, and hospitals to coordinate urgent transfusions and save lives.
 
@@ -12,20 +12,7 @@ LifeLink is a real-time emergency blood donor coordination web platform tailored
 
 ---
 
-## Tech Stack
-
-| Component | Technologies |
-|---|---|
-| **Frontend** | [![Vue 3](https://img.shields.io/badge/Vue_3-Composition_API-4FC08D?logo=vue.js&logoColor=white)](https://vuejs.org/) [![Router 4](https://img.shields.io/badge/Vue_Router-v4-4FC08D?logo=vue.js&logoColor=white)](https://router.vuejs.org/) |
-| **Styling** | [![Bootstrap 5](https://img.shields.io/badge/Bootstrap-5-7952B3?logo=bootstrap&logoColor=white)](https://getbootstrap.com/) [![CSS 3](https://img.shields.io/badge/CSS-Vanilla-1572B6?logo=css3&logoColor=white)](https://www.w3.org/Style/CSS/) |
-| **Backend & Database** | [![Cloud Firestore](https://img.shields.io/badge/Firestore-Database-FFCA28?logo=firebase&logoColor=white)](https://firebase.google.com/docs/firestore) [![Realtime DB](https://img.shields.io/badge/RTDB-High_Frequency_Sync-FFCA28?logo=firebase&logoColor=white)](https://firebase.google.com/docs/database) [![Cloud Functions](https://img.shields.io/badge/Cloud_Functions-v2-FFCA28?logo=firebase&logoColor=white)](https://firebase.google.com/docs/functions) |
-| **Push Notifications** | [![FCM](https://img.shields.io/badge/FCM-Web_Push_Alerts-FFCA28?logo=firebase&logoColor=white)](https://firebase.google.com/docs/cloud-messaging) [![Service Worker](https://img.shields.io/badge/Service_Worker-Background_Sync-009688?logo=pwa&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) |
-| **Map & Navigation** | [![Leaflet](https://img.shields.io/badge/Leaflet-Map_Engine-199900?logo=leaflet&logoColor=white)](https://leafletjs.com/) [![OSRM](https://img.shields.io/badge/OSRM-Routing_API-005A9C)](http://project-osrm.org/) |
-| **Testing & Quality** | [![Vitest](https://img.shields.io/badge/Vitest-Unit_&_Integration-FCC72C?logo=vitest&logoColor=white)](https://vitest.dev/) [![Playwright](https://img.shields.io/badge/Playwright-End_to_End-2E8555?logo=playwright&logoColor=white)](https://playwright.dev/) [![ESLint](https://img.shields.io/badge/ESLint-Linter-4B32C3?logo=eslint&logoColor=white)](https://eslint.org/) |
-
----
-
-## Core Features
+## 📦 Core Features
 
 - **Interactive Map & Priority Radar**: Renders a Leaflet map indicating emergency requests and outreach drives. Features a Haversine formula radar map with 3km and 10km radius zones.
 - **Live Location Tracking**: Tracks donor GPS coordinates via `navigator.geolocation`, streaming them to Firebase Realtime Database with connection-isolated session identifiers and server-side disconnect purges.
@@ -35,7 +22,7 @@ LifeLink is a real-time emergency blood donor coordination web platform tailored
 
 ---
 
-## Installation & Setup
+## 🛠️ Installation & Setup
 
 ### Prerequisites
 - Node.js (v18.0.0 or higher)
@@ -77,7 +64,7 @@ LifeLink is a real-time emergency blood donor coordination web platform tailored
 
 ---
 
-## Testing
+## 🧪 Testing
 
 Ensure all tests pass before making production builds or contributions:
 
@@ -103,5 +90,5 @@ Ensure all tests pass before making production builds or contributions:
 
 ---
 
-## License
+## 📄 License
 Distributed under the MIT License. See [LICENSE](LICENSE) for details.

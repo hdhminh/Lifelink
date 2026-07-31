@@ -2,12 +2,7 @@
 
 LifeLink is a real-time emergency blood donor coordination web platform tailored for Vietnam. It connects blood donors, volunteers, and hospitals to coordinate urgent transfusions and save lives.
 
----
-
-## 📺 Feature Showcase & Demo
-
-![LifeLink App Showcase](./docs/screenshots/homepage.png)
-*(To record a live session video, run the local dev server and record the Leaflet Map and live simulated responder movements, saving it as `docs/demo.mp4` or `docs/demo.gif` to embed here).*
+🔗 **Live Web App:** [https://lifelink-vn.web.app](https://lifelink-vn.web.app)
 
 ---
 

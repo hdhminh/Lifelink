@@ -24,6 +24,52 @@ import { db } from '@/firebase.js'
 import { normalizeLocationRecord } from '@/data/vietnamLocations.js'
 
 const cachedRequests = ref([])
+let isSyncingConfirmedCounts = false
+
+async function syncAllRequestConfirmedCounts() {
+  if (isSyncingConfirmedCounts) return
+  isSyncingConfirmedCounts = true
+  try {
+    const [snap1, snap2] = await Promise.all([
+      getDocs(collection(db, 'confirmations')),
+      getDocs(collection(db, 'guestConfirmations'))
+    ])
+    const countsMap = new Map()
+
+    snap1.docs.forEach(d => {
+      const data = d.data()
+      if (data.requestId && data.status !== 'cancelled') {
+        const reqId = String(data.requestId)
+        countsMap.set(reqId, (countsMap.get(reqId) || 0) + 1)
+      }
+    })
+
+    snap2.docs.forEach(d => {
+      const data = d.data()
+      if (data.requestId && data.status !== 'cancelled') {
+        const reqId = String(data.requestId)
+        countsMap.set(reqId, (countsMap.get(reqId) || 0) + 1)
+      }
+    })
+
+    const requestsSnap = await getDocs(collection(db, 'emergencyRequests'))
+    for (const reqDoc of requestsSnap.docs) {
+      const reqData = reqDoc.data()
+      const reqId = String(reqDoc.id)
+      const realActiveCount = countsMap.get(reqId) || 0
+      if (reqData.confirmedCount !== realActiveCount) {
+        await updateDoc(doc(db, 'emergencyRequests', reqDoc.id), {
+          confirmedCount: realActiveCount,
+          updatedAt: serverTimestamp()
+        })
+      }
+    }
+  } catch (err) {
+    console.warn('[useEmergencyRequests] syncAllRequestConfirmedCounts error:', err)
+  } finally {
+    isSyncingConfirmedCounts = false
+  }
+}
 
 async function getRealtimeDatabaseInstance() {
   try {
@@ -58,6 +104,7 @@ export function useEmergencyRequests() {
    */
   function startListening() {
     stopListening()
+    syncAllRequestConfirmedCounts()
     if (cachedRequests.value.length > 0) {
       requests.value = cachedRequests.value
       loading.value = false

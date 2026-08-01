@@ -1,5 +1,5 @@
 import { onMounted, onUnmounted, watch } from 'vue'
-import { collection, query, where, onSnapshot, doc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, query, where, orderBy, onSnapshot, doc, updateDoc, setDoc, limit, serverTimestamp } from 'firebase/firestore'
 import { getToken, onMessage } from 'firebase/messaging'
 import { db, messaging } from '@/firebase.js'
 import { canDonateTo } from '@/utils/bloodCompatibility.js'
@@ -180,6 +180,60 @@ export function useEmergencyNotifications() {
     )
   }
 
+  let notificationsUnsubscribe = null
+
+  function listenToNotificationsCollection() {
+    if (notificationsUnsubscribe) {
+      notificationsUnsubscribe()
+      notificationsUnsubscribe = null
+    }
+
+    const q = query(
+      collection(db, 'notifications'),
+      orderBy('createdAt', 'desc'),
+      limit(20)
+    )
+
+    let isInitialLoad = true
+
+    notificationsUnsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        if (isInitialLoad) {
+          isInitialLoad = false
+          return
+        }
+
+        snapshot.docChanges().forEach((change) => {
+          if (change.type !== 'added') return
+
+          const data = change.doc.data()
+          const isForAdmin = data.targetRole === 'admin' && isAdmin.value
+          const isForCurrentUser = user.value && data.userId === user.value.uid
+          const guestSession = getGuestSession()
+          const isForGuest = !user.value && guestSession && data.userId === guestSession.guestId
+
+          if (isForAdmin || isForCurrentUser || isForGuest) {
+            addNotification({
+              title: data.title || 'LifeLink Notification',
+              body: data.message || '',
+              type: data.type === 'cancellation' ? 'warning' : 'success'
+            })
+
+            showToast(
+              `${data.title}: ${data.message}`,
+              data.type === 'cancellation' ? 'warning' : 'success',
+              5000
+            )
+          }
+        })
+      },
+      (err) => {
+        console.warn('[EmergencyNotifications] Error listening to notifications collection:', err)
+      }
+    )
+  }
+
   watch(
     notifStatus,
     (status) => {
@@ -205,10 +259,12 @@ export function useEmergencyNotifications() {
   onMounted(() => {
     listenForegroundFCM()
     maybeRegisterToken()
+    listenToNotificationsCollection()
   })
 
   onUnmounted(() => {
     if (requestsUnsubscribe) requestsUnsubscribe()
     if (messageUnsubscribe) messageUnsubscribe()
+    if (notificationsUnsubscribe) notificationsUnsubscribe()
   })
 }

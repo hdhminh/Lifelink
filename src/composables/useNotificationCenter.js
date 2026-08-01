@@ -1,9 +1,11 @@
 import { computed, ref } from 'vue'
 
 const STORAGE_KEY = 'lifelink_notification_center'
+const CLEARED_NOTIFS_KEY = 'lifelink_cleared_notification_ids'
 const MAX_NOTIFICATIONS = 20
 
 const notifications = ref(loadNotifications())
+const clearedIds = ref(loadClearedIds())
 
 function loadNotifications() {
   if (typeof window === 'undefined') return []
@@ -15,9 +17,24 @@ function loadNotifications() {
   }
 }
 
+function loadClearedIds() {
+  if (typeof window === 'undefined') return new Set()
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(CLEARED_NOTIFS_KEY) || '[]')
+    return new Set(Array.isArray(parsed) ? parsed : [])
+  } catch {
+    return new Set()
+  }
+}
+
 function persistNotifications() {
   if (typeof window === 'undefined') return
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications.value))
+}
+
+function persistClearedIds() {
+  if (typeof window === 'undefined') return
+  window.localStorage.setItem(CLEARED_NOTIFS_KEY, JSON.stringify(Array.from(clearedIds.value)))
 }
 
 export function useNotificationCenter() {
@@ -26,7 +43,12 @@ export function useNotificationCenter() {
   function addNotification({ id, title, body, type = 'info', url = '' }) {
     const notifId = id || `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 
-    // Prevent duplicate entries by ID only
+    // Do not re-add if this notification ID was explicitly cleared by the user
+    if (clearedIds.value.has(notifId)) {
+      return
+    }
+
+    // Prevent duplicate entries by ID
     if (notifications.value.some((n) => n.id === notifId)) {
       return
     }
@@ -52,6 +74,11 @@ export function useNotificationCenter() {
   }
 
   function clearNotifications() {
+    notifications.value.forEach((n) => {
+      if (n.id) clearedIds.value.add(n.id)
+    })
+    persistClearedIds()
+
     notifications.value = []
     persistNotifications()
   }

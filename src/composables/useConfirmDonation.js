@@ -9,6 +9,7 @@ import { ref } from 'vue'
 import {
   doc,
   getDoc,
+  updateDoc,
   collection,
   query,
   where,
@@ -70,6 +71,26 @@ async function removeLiveTrackingForConfirmation(requestId, donorId) {
     }
   } catch (err) {
     console.warn('[useConfirmDonation] liveTracking scan cleanup warning:', err)
+  }
+}
+
+async function recalculateRequestConfirmedCount(requestId) {
+  if (!requestId) return
+  try {
+    const reqIdStr = String(requestId)
+    const q1 = query(collection(db, 'confirmations'), where('requestId', '==', reqIdStr))
+    const q2 = query(collection(db, 'guestConfirmations'), where('requestId', '==', reqIdStr))
+    const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)])
+    let activeCount = 0
+    snap1.docs.forEach(d => { if (d.data().status !== 'cancelled') activeCount++ })
+    snap2.docs.forEach(d => { if (d.data().status !== 'cancelled') activeCount++ })
+
+    await updateDoc(doc(db, 'emergencyRequests', reqIdStr), {
+      confirmedCount: activeCount,
+      updatedAt: serverTimestamp()
+    })
+  } catch (err) {
+    console.warn('[useConfirmDonation] recalculateRequestConfirmedCount error:', err)
   }
 }
 
@@ -405,6 +426,7 @@ export function useConfirmDonation() {
       if (targetDonorId) {
         await removeLiveTrackingForConfirmation(requestId, targetDonorId)
       }
+      await recalculateRequestConfirmedCount(requestId)
       success.value = true
     } catch (err) {
       error.value = err.message
@@ -591,6 +613,10 @@ export function useConfirmDonation() {
 
       if (newStatus === 'cancelled' && targetReqId && targetDonorId) {
         await removeLiveTrackingForConfirmation(targetReqId, targetDonorId)
+      }
+
+      if (targetReqId) {
+        await recalculateRequestConfirmedCount(targetReqId)
       }
 
       success.value = true

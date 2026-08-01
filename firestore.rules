@@ -189,5 +189,11 @@ service cloud.firestore {
         likeId == request.auth.uid + "_" + request.resource.data.newsId;
       allow delete: if signedIn() && resource.data.userId == request.auth.uid;
     }
+
+    match /notifications/{notifId} {
+      allow read, list: if true;
+      allow create: if true;
+      allow update, delete: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+    }
   }
 }

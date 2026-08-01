@@ -229,7 +229,7 @@
                     ></i>
                   </div>
                   <div>
-                    <h5 class="fw-bold mb-1" style="font-size: 1.05rem">Emergency Board</h5>
+                    <h3 class="fw-bold mb-1 h5" style="font-size: 1.05rem">Emergency Board</h3>
                     <p class="ll-text-meta mb-0 leading-relaxed" style="font-size: 0.85rem">
                       Urgent blood requests updated live as hospitals post them. Accessible to
                       everyone instantly.
@@ -249,7 +249,7 @@
                     ></i>
                   </div>
                   <div>
-                    <h5 class="fw-bold mb-1" style="font-size: 1.05rem">Donor Matching</h5>
+                    <h3 class="fw-bold mb-1 h5" style="font-size: 1.05rem">Donor Matching</h3>
                     <p class="ll-text-meta mb-0 leading-relaxed" style="font-size: 0.85rem">
                       Matches blood type and location metrics to instantly coordinate available
                       local volunteer donors.
@@ -269,7 +269,7 @@
                     ></i>
                   </div>
                   <div>
-                    <h5 class="fw-bold mb-1" style="font-size: 1.05rem">Real-Time Sync</h5>
+                    <h3 class="fw-bold mb-1 h5" style="font-size: 1.05rem">Real-Time Sync</h3>
                     <p class="ll-text-meta mb-0 leading-relaxed" style="font-size: 0.85rem">
                       Real-time sync of active requests and donor counts across all dashboards and
                       boards instantly.

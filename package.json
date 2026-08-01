@@ -43,6 +43,7 @@
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.61.1",
     "@vitejs/plugin-vue": "^6.0.7",
+    "@vitest/coverage-v8": "^4.1.10",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/test-utils": "^2.4.11",
     "bootstrap-icons": "^1.13.1",

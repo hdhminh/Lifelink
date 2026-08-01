@@ -74,7 +74,7 @@
 
     <div class="ll-card__body">
       <div class="ll-card-title-row mb-1">
-        <h5 class="ll-request-title mb-0">{{ request.hospitalName }}</h5>
+        <h3 class="ll-request-title h5 mb-0">{{ request.hospitalName }}</h3>
         <!-- Focus on Internal Live Map -->
         <button
           type="button"
@@ -103,7 +103,7 @@
           {{ request.completedCount || 0 }} completed)
         </span>
       </p>
-      <div class="ll-progress mb-2" aria-label="Donation confirmation progress">
+      <div class="ll-progress mb-2" role="progressbar" aria-label="Donation confirmation progress" :aria-valuenow="progressPercent" aria-valuemin="0" aria-valuemax="100">
         <div
           class="ll-progress-bar"
           :class="{ 'll-progress-bar--critical': request.urgency === 'critical' }"

@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <Transition name="loader-curtain">
-      <div v-if="isLoading" class="ll-global-loader-overlay">
+      <div v-if="isLoading" class="ll-global-loader-overlay" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="ll-loader-content">
           <!-- Animated SVG "Draw a Path" Heart & Pulse Emblem (220x220 Big & Crisp) -->
           <div class="ll-svg-draw-container mb-4">

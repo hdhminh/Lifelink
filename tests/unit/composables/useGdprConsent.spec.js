@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { nextTick } from 'vue'
 
 describe('useGdprConsent', () => {
   beforeEach(() => {
@@ -16,7 +17,8 @@ describe('useGdprConsent', () => {
     const { grantConsent, hasConsent } = useGdprConsent()
     grantConsent('location')
     expect(hasConsent('location')).toBe(true)
-    expect(localStorage.getItem('ll_gdpr_consent')).toBeTruthy()
+    await nextTick()
+    expect(localStorage.getItem('lifelink_gdpr_consent')).toBeTruthy()
   })
 
   it('revokes consent correctly', async () => {

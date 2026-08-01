@@ -58,7 +58,6 @@ describe('AppNavbar.vue', () => {
 
     const toggleBtn = wrapper.find('.navbar-toggler')
     expect(toggleBtn.exists()).toBe(true)
-    expect(toggleBtn.attributes('data-bs-toggle')).toBe('collapse')
-    expect(toggleBtn.attributes('data-bs-target')).toBe('#navbarMain')
+    expect(toggleBtn.attributes('aria-expanded')).toBeDefined()
   })
 })

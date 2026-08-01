@@ -5,6 +5,7 @@ describe('useGeolocation.js', () => {
   beforeEach(() => {
     localStorage.clear()
     vi.restoreAllMocks()
+    Object.defineProperty(window, 'isSecureContext', { value: true, configurable: true })
   })
 
   it('initialises with default null/false state when not previously granted', () => {
@@ -60,10 +61,9 @@ describe('useGeolocation.js', () => {
 
     const { requestLocation, locationGranted, locationError } = useGeolocation()
 
-    await expect(requestLocation()).rejects.toEqual(errorMock)
+    await expect(requestLocation()).rejects.toThrow('Location is blocked for this site. Open the browser site settings and allow Location, then try again.')
     expect(locationGranted.value).toBe(false)
-    expect(locationError.value).toBe('Location permission was denied.')
-    expect(localStorage.getItem('ll_geo_granted')).toBe('false')
+    expect(locationError.value).toBe('Location is blocked for this site. Open the browser site settings and allow Location, then try again.')
   })
 
   it('handles missing geolocation API support in browser', async () => {

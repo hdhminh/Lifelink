@@ -158,9 +158,9 @@
         <!-- Right Column: Hotline directory sidebar -->
         <div class="col-lg-4 col-12">
           <aside class="ll-card p-4 mb-4">
-            <h5 class="fw-bold mb-2 text-wine">
+            <h3 class="fw-bold mb-2 text-wine h5">
               <i class="bi bi-telephone-fill me-2"></i>Emergency Hotlines
-            </h5>
+            </h3>
             <p class="small text-slate-500 mb-4">
               Vietnam local emergency coordinators and medical rescue networks.
             </p>

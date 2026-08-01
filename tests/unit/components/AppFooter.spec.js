@@ -16,8 +16,7 @@ describe('AppFooter.vue', () => {
 
     expect(wrapper.text()).toContain('LifeLink')
     expect(wrapper.text()).toContain('Emergency donor coordination network')
-    expect(wrapper.text()).toContain('Emergency Blood Donor Network © 2026')
-    expect(wrapper.text()).toContain('LifeLink Vietnam')
+    expect(wrapper.text()).toContain('LifeLink Vietnam © 2026')
   })
 
   it('contains links to key navigation routes', () => {

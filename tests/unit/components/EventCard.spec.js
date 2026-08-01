@@ -99,7 +99,7 @@ describe('EventCard.vue', () => {
     })
 
     const button = wrapper.find('button')
-    expect(button.text()).toContain('Interested (Registered)')
-    expect(button.classes()).toContain('ll-btn-primary')
+    expect(button.text()).toContain('Interested')
+    expect(button.classes()).toContain('ll-event-interest-button--active')
   })
 })

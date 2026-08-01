@@ -1,8 +1,25 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeAll } from 'vitest'
 import { mount } from '@vue/test-utils'
 import EmergencyMap from '@/components/EmergencyMap.vue'
 
 describe('EmergencyMap.vue Complex Edge Cases Unit Tests', () => {
+  beforeAll(() => {
+    Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, value: 500 })
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 500 })
+    window.L = window.L || {}
+    const mockMaplibreMap = {
+      once: vi.fn(),
+      on: vi.fn(),
+      getLayer: vi.fn(),
+      setLayoutProperty: vi.fn()
+    }
+    const mockLayer = {
+      getMaplibreMap: vi.fn().mockReturnValue(mockMaplibreMap)
+    }
+    mockLayer.addTo = vi.fn().mockReturnValue(mockLayer)
+    window.L.maplibreGL = vi.fn().mockReturnValue(mockLayer)
+  })
+
   const mockRequests = [
     {
       id: 'req_101',

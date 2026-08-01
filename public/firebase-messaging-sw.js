@@ -22,9 +22,15 @@ const messaging = firebase.messaging()
 messaging.onBackgroundMessage((payload) => {
   console.log('[firebase-messaging-sw.js] Received background message:', payload)
 
-  const notificationTitle = payload.notification?.title || 'LifeLink Emergency Blood Alert'
+  // If payload already contains a 'notification' key, browser Web Push engine displays it automatically.
+  // Returning here prevents duplicate (double) notifications.
+  if (payload.notification) {
+    return
+  }
+
+  const notificationTitle = payload.data?.title || 'LifeLink Notification'
   const notificationOptions = {
-    body: payload.notification?.body || 'A matching emergency blood request is available.',
+    body: payload.data?.body || '',
     icon: '/favicon.ico',
     badge: '/favicon.ico',
     data: payload.data || {}

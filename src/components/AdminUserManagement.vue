@@ -64,14 +64,14 @@
               <td class="dashboard-style-22">
                 <span
                   :class="
-                    u.canDonateNow !== false
+                    (u.canDonateNow !== false && isEligible(u.lastDonationDate))
                       ? 'badge bg-success text-white'
                       : 'badge bg-secondary text-white'
                   "
                   class="dashboard-style-23 d-inline-flex align-items-center justify-content-center px-3"
                   style="height: 32px !important; font-size: 0.85rem; border-radius: var(--ll-radius-sm) !important;"
                 >
-                  {{ u.canDonateNow !== false ? 'Ready' : 'Cooldown' }}
+                  {{ (u.canDonateNow !== false && isEligible(u.lastDonationDate)) ? 'Ready' : 'Cooldown' }}
                 </span>
               </td>
               <td class="dashboard-style-22">
@@ -99,7 +99,7 @@
                     <i class="bi bi-clock-history me-1"></i>History
                   </button>
                   <button
-                    v-if="u.canDonateNow === false || u.lastDonationDate"
+                    v-if="(u.role || 'donor') === 'donor'"
                     class="ll-btn-secondary btn-sm px-2 d-inline-flex align-items-center justify-content-center dashboard-style-27"
                     style="height: 32px !important; padding-top: 0 !important; padding-bottom: 0 !important; border-radius: var(--ll-radius-sm) !important;"
                     type="button"
@@ -152,7 +152,11 @@
 </template>
 
 <script setup>
-defineProps({
+import { useEligibility } from '@/composables/useEligibility.js'
+
+const { isEligible } = useEligibility()
+
+const props = defineProps({
   searchQuery: { type: String, default: '' },
   usersLoading: { type: Boolean, default: false },
   allSystemUsers: { type: Array, default: () => [] },

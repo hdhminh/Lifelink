@@ -428,7 +428,12 @@ watch(
       const q = query(collection(db, 'confirmations'), where('donorId', '==', newUser.uid))
       userUnsub = onSnapshot(q, (snap) => {
         localUserIds.length = 0
-        snap.docs.forEach(d => localUserIds.push(String(d.data().requestId)))
+        snap.docs.forEach(d => {
+          const data = d.data()
+          if (data.status !== 'cancelled') {
+            localUserIds.push(String(data.requestId))
+          }
+        })
         syncIds()
       })
     }
@@ -437,7 +442,12 @@ watch(
       const q2 = query(collection(db, 'guestConfirmations'), where('guestSessionId', '==', newGuestId))
       guestUnsub = onSnapshot(q2, (snap) => {
         localGuestIds.length = 0
-        snap.docs.forEach(d => localGuestIds.push(String(d.data().requestId)))
+        snap.docs.forEach(d => {
+          const data = d.data()
+          if (data.status !== 'cancelled') {
+            localGuestIds.push(String(data.requestId))
+          }
+        })
         syncIds()
       })
     }

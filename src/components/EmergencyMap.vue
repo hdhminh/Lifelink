@@ -241,7 +241,7 @@ const emit = defineEmits(['respond', 'register-event', 'open-maps'])
 const { responses: activeResponses, startListening, stopListening } = useActiveResponses()
 const { userLocation, locationGranted, requestLocation } = useGeolocation()
 const { getGuestSession } = useGuestSession()
-const { startTracking, getStoredTrackingSession } = useLocationTracking()
+const { startTracking, stopTracking, getStoredTrackingSession } = useLocationTracking()
 
 const mapElement = ref(null)
 const mapLoading = ref(true)
@@ -263,12 +263,18 @@ const viewerDonorId = computed(() => user.value?.uid || currentGuestId.value)
 
 function autoStartDonorTrackingIfNeeded() {
   if (!viewerDonorId.value) return
+
+  if (!props.confirmedRequestIds || props.confirmedRequestIds.length === 0) {
+    stopTracking()
+    return
+  }
+
   if (!props.emergencyRequests || props.emergencyRequests.length === 0) return
 
   const storedSession = getStoredTrackingSession()
   let targetReq = null
 
-  if (storedSession && storedSession.requestId) {
+  if (storedSession && storedSession.requestId && props.confirmedRequestIds.includes(String(storedSession.requestId))) {
     targetReq = props.emergencyRequests.find(r => String(r.id) === String(storedSession.requestId))
   }
 
@@ -291,6 +297,8 @@ function autoStartDonorTrackingIfNeeded() {
         lng: hospitalCoords?.lng || targetReq.lng || null
       }
     })
+  } else {
+    stopTracking()
   }
 }
 

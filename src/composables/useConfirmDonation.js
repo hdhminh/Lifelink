@@ -356,6 +356,65 @@ export function useConfirmDonation() {
     }
   }
 
+  async function deleteConfirmationByAdmin(confirmationId, requestId, isGuest = false) {
+    loading.value = true
+    error.value = null
+    success.value = false
+    try {
+      const requestRef = doc(db, 'emergencyRequests', requestId)
+      const collectionName = isGuest ? 'guestConfirmations' : 'confirmations'
+      const confirmationRef = doc(db, collectionName, confirmationId)
+      let targetDonorId = null
+
+      await runTransaction(db, async (transaction) => {
+        const [requestSnap, confirmationSnap] = await Promise.all([
+          transaction.get(requestRef),
+          transaction.get(confirmationRef)
+        ])
+
+        if (!confirmationSnap.exists()) return
+
+        const confData = confirmationSnap.data()
+        const oldStatus = confData.status || 'confirmed'
+        targetDonorId = isGuest ? confData.guestSessionId : confData.donorId
+
+        if (requestSnap.exists()) {
+          const reqData = requestSnap.data()
+          const currentCount = reqData.confirmedCount || 0
+          const updates = {
+            updatedAt: serverTimestamp()
+          }
+          if (oldStatus !== 'cancelled') {
+            updates.confirmedCount = Math.max(0, currentCount - 1)
+          }
+
+          if (oldStatus === 'arrived') {
+            updates.arrivedCount = Math.max(0, (reqData.arrivedCount || 0) - 1)
+          } else if (oldStatus === 'donated') {
+            updates.donatedCount = Math.max(0, (reqData.donatedCount || 0) - 1)
+          } else if (oldStatus === 'completed') {
+            updates.completedCount = Math.max(0, (reqData.completedCount || 0) - 1)
+          }
+
+          transaction.update(requestRef, updates)
+        }
+
+        transaction.delete(confirmationRef)
+      })
+
+      if (targetDonorId) {
+        await removeLiveTrackingForConfirmation(requestId, targetDonorId)
+      }
+      success.value = true
+    } catch (err) {
+      error.value = err.message
+      console.error('[useConfirmDonation] deleteConfirmationByAdmin error:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   async function cancelConfirmationsForRequest(requestId, adminUid, reason = 'request_cancelled') {
     if (!requestId) return 0
     loading.value = true
@@ -536,6 +595,7 @@ export function useConfirmDonation() {
     confirmGuestAvailability,
     cancelConfirmation,
     cancelConfirmationByAdmin,
+    deleteConfirmationByAdmin,
     cancelConfirmationsForRequest,
     getConfirmationsForRequest,
     watchMyConfirmation,

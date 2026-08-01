@@ -121,7 +121,7 @@ export function useLocationTracking() {
    * Helper to format unique multi-tab tracking key.
    */
   function getTrackingKey(requestId, donorId) {
-    return `${requestId}_${donorId}_${connectionId}`
+    return `${requestId}_${donorId}`
   }
 
   /**

@@ -193,6 +193,7 @@ import { useAuth } from '@/composables/useAuth.js'
 import { useActiveResponses } from '@/composables/useActiveResponses.js'
 import { useGeolocation } from '@/composables/useGeolocation.js'
 import { useGuestSession } from '@/composables/useGuestSession.js'
+import { useLocationTracking } from '@/composables/useLocationTracking.js'
 import { getHospitalCoordinates } from '@/data/hospitalCoordinates.js'
 import {
   calculateHaversineDistance,
@@ -240,6 +241,7 @@ const emit = defineEmits(['respond', 'register-event', 'open-maps'])
 const { responses: activeResponses, startListening, stopListening } = useActiveResponses()
 const { userLocation, locationGranted, requestLocation } = useGeolocation()
 const { getGuestSession } = useGuestSession()
+const { startTracking, getStoredTrackingSession } = useLocationTracking()
 
 const mapElement = ref(null)
 const mapLoading = ref(true)
@@ -258,6 +260,39 @@ const { user, isGuest, isAdmin } = useAuth()
 
 const currentGuestId = computed(() => (!user.value ? getGuestSession().guestId : ''))
 const viewerDonorId = computed(() => user.value?.uid || currentGuestId.value)
+
+function autoStartDonorTrackingIfNeeded() {
+  if (!viewerDonorId.value) return
+  if (!props.emergencyRequests || props.emergencyRequests.length === 0) return
+
+  const storedSession = getStoredTrackingSession()
+  let targetReq = null
+
+  if (storedSession && storedSession.requestId) {
+    targetReq = props.emergencyRequests.find(r => String(r.id) === String(storedSession.requestId))
+  }
+
+  if (!targetReq && props.confirmedRequestIds && props.confirmedRequestIds.length > 0) {
+    const firstConfirmedId = String(props.confirmedRequestIds[0])
+    targetReq = props.emergencyRequests.find(r => String(r.id) === firstConfirmedId)
+  }
+
+  if (targetReq) {
+    const hospitalCoords = getHospitalCoordinates(targetReq.hospitalName, targetReq.city)
+    startTracking({
+      requestId: String(targetReq.id),
+      donorId: viewerDonorId.value,
+      donorName: user.value?.displayName || user.value?.email?.split('@')[0] || 'Donor',
+      bloodType: user.value?.bloodType || 'O+',
+      hospitalLocation: {
+        hospitalName: targetReq.hospitalName,
+        city: targetReq.city || '',
+        lat: hospitalCoords?.lat || targetReq.lat || null,
+        lng: hospitalCoords?.lng || targetReq.lng || null
+      }
+    })
+  }
+}
 
 let leafletMap = null
 let vectorBaseLayer = null
@@ -1552,9 +1587,18 @@ watch(
   { immediate: true }
 )
 
+watch(
+  () => props.confirmedRequestIds,
+  () => {
+    autoStartDonorTrackingIfNeeded()
+  },
+  { immediate: true, deep: true }
+)
+
 onMounted(() => {
   startListening()
   initMapEngine()
+  autoStartDonorTrackingIfNeeded()
   if (typeof window !== 'undefined') {
     window.addEventListener('keydown', handleFullscreenKeydown)
   }

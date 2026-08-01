@@ -39,7 +39,7 @@ function isLiveResponder(response) {
   const longitude = Number(response?.longitude)
   return (
     isFreshResponder(response) &&
-    (response.status === 'en_route' || response.status === 'approaching') &&
+    (response.status === 'en_route' || response.status === 'approaching' || response.status === 'confirmed' || response.status === 'active' || response.status === 'arrived') &&
     Number.isFinite(latitude) &&
     Number.isFinite(longitude)
   )
@@ -88,7 +88,19 @@ export function useActiveResponses() {
       })
       .filter(isLiveResponder)
 
-    responses.value = list
+    // Deduplicate by donorId & requestId to prevent multiple cards for the same donor
+    const latestByDonorMap = new Map()
+    for (const resp of list) {
+      const uniqueId = `${resp.requestId || 'req'}_${resp.donorId || resp.trackingKey}`
+      const existing = latestByDonorMap.get(uniqueId)
+      const respTime = getUpdatedAtMs(resp)
+      const existingTime = existing ? getUpdatedAtMs(existing) : 0
+      if (!existing || respTime >= existingTime) {
+        latestByDonorMap.set(uniqueId, resp)
+      }
+    }
+
+    responses.value = Array.from(latestByDonorMap.values())
   }
 
   /**

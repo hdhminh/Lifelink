@@ -72,7 +72,7 @@
                   </select>
                 </td>
                 <td>{{ req.unitsNeeded }}</td>
-                <td>{{ req.confirmedCount || 0 }}</td>
+                <td>{{ getActiveConfirmedCount(req) }}</td>
                 <td>
                   <div class="d-flex gap-2 align-items-center">
                     <button
@@ -88,7 +88,7 @@
                             : 'bi-people-fill'
                         "
                       ></i>
-                      Donors ({{ req.confirmedCount || 0 }})
+                      Donors ({{ getActiveConfirmedCount(req) }})
                     </button>
                     <button
                       class="ll-icon-button"
@@ -160,7 +160,7 @@
                             <td>
                               <select
                                 class="form-select form-select-sm ll-select-button dashboard-style-33"
-                                :value="c.status || 'confirmed'"
+                                :value="getValidConfirmationStatus(c.status)"
                                 @change="
                                   $emit('change-confirmation-status', c, $event.target.value, $event)
                                 "
@@ -169,15 +169,17 @@
                                 <option value="arrived">Arrived</option>
                                 <option value="donated">Donated</option>
                                 <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
                               </select>
                             </td>
                             <td class="text-end pe-3">
                               <button
-                                class="btn btn-sm btn-outline-danger py-0 px-2 dashboard-style-31"
+                                class="btn btn-sm btn-outline-danger py-1 px-2"
                                 type="button"
+                                title="Remove donor"
                                 @click="$emit('handle-cancel-confirmation', c)"
                               >
-                                <i class="bi bi-x-circle me-1"></i>Cancel Donation
+                                <i class="bi bi-trash-fill me-1"></i>Delete Donor
                               </button>
                             </td>
                           </tr>
@@ -201,7 +203,7 @@
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   requestStatusTabs: { type: Array, required: true },
   selectedRequestStatus: { type: String, required: true },
   requestsLoadingState: { type: Boolean, default: false },
@@ -234,6 +236,18 @@ defineEmits([
   'change-confirmation-status',
   'handle-cancel-confirmation'
 ])
+
+function getValidConfirmationStatus(status) {
+  const valid = ['confirmed', 'arrived', 'donated', 'completed', 'cancelled']
+  return valid.includes(status) ? status : 'confirmed'
+}
+
+function getActiveConfirmedCount(req) {
+  if (!req) return 0
+  const confs = props.getConfirmationsForRequest ? props.getConfirmationsForRequest(req.id) : []
+  const activeCount = confs.filter(c => c.status !== 'cancelled').length
+  return Math.max(req.confirmedCount || 0, activeCount)
+}
 </script>
 
 <style scoped>

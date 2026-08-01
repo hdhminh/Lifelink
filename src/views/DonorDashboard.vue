@@ -1298,6 +1298,7 @@ async function confirmDeleteRequest() {
 const {
   cancelConfirmation,
   cancelConfirmationByAdmin,
+  deleteConfirmationByAdmin,
   cancelConfirmationsForRequest,
   updateConfirmationStatus
 } = useConfirmDonation()
@@ -1400,18 +1401,14 @@ async function confirmCancelConfirmation() {
   if (!pendingCancelConfirmation.value) return
   const { confId, reqId, donorName, participantType } = pendingCancelConfirmation.value
   try {
-    if (participantType === 'guest') {
-      await cancelConfirmationByAdmin(confId, reqId, user.value?.uid, true, 'admin_cancelled')
-    } else {
-      await cancelConfirmation(confId, reqId)
-    }
-    showToast(`Cancelled blood donation confirmation for donor ${donorName}.`, 'success')
+    await deleteConfirmationByAdmin(confId, reqId, participantType === 'guest')
+    showToast(`Removed donor confirmation for ${donorName}.`, 'success')
     await fetchAllConfirmations(true)
     await fetchRequests(true)
     await loadAdminStats(true)
   } catch (err) {
-    console.error('Error cancelling confirmation:', err)
-    showToast(err.message || 'Failed to cancel confirmation.', 'danger')
+    console.error('Error removing confirmation:', err)
+    showToast(err.message || 'Failed to remove confirmation.', 'danger')
   } finally {
     showCancelConfirmationModal.value = false
     pendingCancelConfirmation.value = null

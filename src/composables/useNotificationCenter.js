@@ -23,9 +23,16 @@ function persistNotifications() {
 export function useNotificationCenter() {
   const unreadCount = computed(() => notifications.value.filter((item) => !item.read).length)
 
-  function addNotification({ title, body, type = 'info', url = '' }) {
+  function addNotification({ id, title, body, type = 'info', url = '' }) {
+    const notifId = id || `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+
+    // Prevent duplicate entries
+    if (notifications.value.some((n) => n.id === notifId || (n.title === title && n.body === body))) {
+      return
+    }
+
     const item = {
-      id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      id: notifId,
       title: title || 'LifeLink notification',
       body: body || '',
       type,

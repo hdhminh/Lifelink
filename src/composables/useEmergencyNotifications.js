@@ -188,22 +188,12 @@ export function useEmergencyNotifications() {
       notificationsUnsubscribe = null
     }
 
-    const q = query(
-      collection(db, 'notifications'),
-      orderBy('createdAt', 'desc'),
-      limit(20)
-    )
-
+    const q = collection(db, 'notifications')
     let isInitialLoad = true
 
     notificationsUnsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        if (isInitialLoad) {
-          isInitialLoad = false
-          return
-        }
-
         snapshot.docChanges().forEach((change) => {
           if (change.type !== 'added') return
 
@@ -215,18 +205,23 @@ export function useEmergencyNotifications() {
 
           if (isForAdmin || isForCurrentUser || isForGuest) {
             addNotification({
+              id: change.doc.id,
               title: data.title || 'LifeLink Notification',
               body: data.message || '',
               type: data.type === 'cancellation' ? 'warning' : 'success'
             })
 
-            showToast(
-              `${data.title}: ${data.message}`,
-              data.type === 'cancellation' ? 'warning' : 'success',
-              5000
-            )
+            if (!isInitialLoad) {
+              showToast(
+                `${data.title}: ${data.message}`,
+                data.type === 'cancellation' ? 'warning' : 'success',
+                5000
+              )
+            }
           }
         })
+
+        isInitialLoad = false
       },
       (err) => {
         console.warn('[EmergencyNotifications] Error listening to notifications collection:', err)

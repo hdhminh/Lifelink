@@ -107,24 +107,80 @@ exports.onEmergencyCreated = onDocumentCreated('emergencyRequests/{requestId}', 
 })
 
 // Cloud Function Trigger: When a registered donor confirms availability
+// Helper: Send FCM Push Notification to all Admins (for closed tabs)
+async function sendFcmToAdmins(title, body, url = '') {
+  try {
+    const db = admin.firestore()
+    const adminsSnap = await db.collection('users').where('role', '==', 'admin').where('fcmToken', '!=', null).get()
+    const tokens = []
+    adminsSnap.forEach((doc) => {
+      const token = doc.data().fcmToken
+      if (token && typeof token === 'string') tokens.push(token)
+    })
+    if (tokens.length > 0) {
+      await admin.messaging().sendEachForMulticast({
+        tokens,
+        notification: { title, body },
+        data: { url }
+      })
+      logger.info(`Sent FCM push notification to ${tokens.length} admin(s).`)
+    }
+  } catch (err) {
+    logger.error('Error sending FCM push to admins:', err)
+  }
+}
+
+// Helper: Send FCM Push Notification to a specific User or Guest (for closed tabs)
+async function sendFcmToUserOrGuest(targetId, title, body, url = '') {
+  try {
+    const db = admin.firestore()
+    let token = null
+
+    const userDoc = await db.collection('users').doc(targetId).get()
+    if (userDoc.exists && userDoc.data().fcmToken) {
+      token = userDoc.data().fcmToken
+    } else {
+      const guestDoc = await db.collection('guestTokens').doc(targetId).get()
+      if (guestDoc.exists && guestDoc.data().fcmToken) {
+        token = guestDoc.data().fcmToken
+      }
+    }
+
+    if (token) {
+      await admin.messaging().send({
+        token,
+        notification: { title, body },
+        data: { url }
+      })
+      logger.info(`Sent FCM push notification to target user/guest ${targetId}.`)
+    }
+  } catch (err) {
+    logger.error(`Error sending FCM push to user/guest ${targetId}:`, err)
+  }
+}
+
 exports.onConfirmationCreated = onDocumentCreated('confirmations/{confId}', async (event) => {
   const snap = event.data
   if (!snap) return
   const data = snap.data()
   if (!data) return
 
+  const title = 'New Emergency Donor Confirmation'
+  const message = `${data.donorName || 'A donor'} (${data.bloodType || ''}) confirmed for emergency request.`
+
   try {
     const db = admin.firestore()
     await db.collection('notifications').add({
       targetRole: 'admin',
-      title: 'New Emergency Donor Confirmation',
-      message: `${data.donorName || 'A donor'} (${data.bloodType || ''}) confirmed for emergency request.`,
+      title,
+      message,
       type: 'new_confirmation',
       requestId: data.requestId || '',
       read: false,
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     })
     logger.info(`Cloud Function onConfirmationCreated created admin notification for req ${data.requestId}`)
+    await sendFcmToAdmins(title, message, '/#/admin/request-management')
   } catch (err) {
     logger.error('Error in onConfirmationCreated Cloud Function:', err)
   }
@@ -137,18 +193,22 @@ exports.onGuestConfirmationCreated = onDocumentCreated('guestConfirmations/{conf
   const data = snap.data()
   if (!data) return
 
+  const title = 'New Emergency Guest Confirmation'
+  const message = `${data.donorName || 'A guest'} (${data.bloodType || ''}) confirmed for emergency request.`
+
   try {
     const db = admin.firestore()
     await db.collection('notifications').add({
       targetRole: 'admin',
-      title: 'New Emergency Guest Confirmation',
-      message: `${data.donorName || 'A guest'} (${data.bloodType || ''}) confirmed for emergency request.`,
+      title,
+      message,
       type: 'new_confirmation',
       requestId: data.requestId || '',
       read: false,
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     })
     logger.info(`Cloud Function onGuestConfirmationCreated created admin notification for req ${data.requestId}`)
+    await sendFcmToAdmins(title, message, '/#/admin/request-management')
   } catch (err) {
     logger.error('Error in onGuestConfirmationCreated Cloud Function:', err)
   }
@@ -166,17 +226,21 @@ exports.onConfirmationUpdated = onDocumentUpdated('confirmations/{confId}', asyn
     const targetUserId = afterData.donorId
     if (!targetUserId) return
 
+    const title = 'Registration Cancelled'
+    const message = 'Your donation confirmation has been cancelled by Admin.'
+
     try {
       const db = admin.firestore()
       await db.collection('notifications').add({
         userId: targetUserId,
-        title: 'Registration Cancelled',
-        message: 'Your donation confirmation has been cancelled by Admin.',
+        title,
+        message,
         type: 'cancellation',
         read: false,
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       })
       logger.info(`Cloud Function onConfirmationUpdated sent cancellation notification to user ${targetUserId}`)
+      await sendFcmToUserOrGuest(targetUserId, title, message, '/#/donor-dashboard')
     } catch (err) {
       logger.error('Error in onConfirmationUpdated Cloud Function:', err)
     }
@@ -193,17 +257,21 @@ exports.onGuestConfirmationUpdated = onDocumentUpdated('guestConfirmations/{conf
     const targetUserId = afterData.guestSessionId || afterData.donorId
     if (!targetUserId) return
 
+    const title = 'Registration Cancelled'
+    const message = 'Your donation confirmation has been cancelled by Admin.'
+
     try {
       const db = admin.firestore()
       await db.collection('notifications').add({
         userId: targetUserId,
-        title: 'Registration Cancelled',
-        message: 'Your donation confirmation has been cancelled by Admin.',
+        title,
+        message,
         type: 'cancellation',
         read: false,
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       })
       logger.info(`Cloud Function onGuestConfirmationUpdated sent cancellation notification to guest ${targetUserId}`)
+      await sendFcmToUserOrGuest(targetUserId, title, message, '/#/donor-dashboard')
     } catch (err) {
       logger.error('Error in onGuestConfirmationUpdated Cloud Function:', err)
     }

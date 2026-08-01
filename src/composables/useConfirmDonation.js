@@ -183,19 +183,7 @@ export function useConfirmDonation() {
         })
       })
 
-      try {
-        await addDoc(collection(db, 'notifications'), {
-          targetRole: 'admin',
-          title: 'New Emergency Donor Confirmation',
-          message: `${donorData.donorName} (${donorData.bloodType}) confirmed for emergency request`,
-          type: 'new_confirmation',
-          requestId: requestId,
-          read: false,
-          createdAt: serverTimestamp()
-        })
-      } catch (e) {
-        console.warn('[useConfirmDonation] Could not write admin notification:', e)
-      }
+      // Notification document is created automatically by Firebase Cloud Function (onConfirmationCreated)
 
       success.value = true
       return confirmationId
@@ -267,19 +255,7 @@ export function useConfirmDonation() {
         })
       })
 
-      try {
-        await addDoc(collection(db, 'notifications'), {
-          targetRole: 'admin',
-          title: 'New Emergency Guest Confirmation',
-          message: `${guestData.donorName || 'Guest'} (${guestData.bloodType}) confirmed for emergency request`,
-          type: 'new_confirmation',
-          requestId: requestId,
-          read: false,
-          createdAt: serverTimestamp()
-        })
-      } catch (e) {
-        console.warn('[useConfirmDonation] Could not write guest admin notification:', e)
-      }
+      // Notification document is created automatically by Firebase Cloud Function (onGuestConfirmationCreated)
 
       success.value = true
       return confirmationId
@@ -643,19 +619,7 @@ export function useConfirmDonation() {
 
       if (newStatus === 'cancelled' && targetReqId && targetDonorId) {
         await removeLiveTrackingForConfirmation(targetReqId, targetDonorId)
-
-        try {
-          await addDoc(collection(db, 'notifications'), {
-            userId: targetDonorId,
-            title: 'Registration Cancelled',
-            message: 'Your donation confirmation has been cancelled by Admin.',
-            type: 'cancellation',
-            read: false,
-            createdAt: serverTimestamp()
-          })
-        } catch (e) {
-          console.warn('[useConfirmDonation] Could not write cancellation notification:', e)
-        }
+        // Notification document is created automatically by Firebase Cloud Function (onConfirmationUpdated / onGuestConfirmationUpdated)
       }
 
       if (targetReqId) {

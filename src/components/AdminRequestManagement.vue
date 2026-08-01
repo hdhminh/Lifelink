@@ -245,8 +245,7 @@ function getValidConfirmationStatus(status) {
 function getActiveConfirmedCount(req) {
   if (!req) return 0
   const confs = props.getConfirmationsForRequest ? props.getConfirmationsForRequest(req.id) : []
-  const activeCount = confs.filter(c => c.status !== 'cancelled').length
-  return Math.max(req.confirmedCount || 0, activeCount)
+  return confs.filter(c => c.status !== 'cancelled').length
 }
 </script>
 

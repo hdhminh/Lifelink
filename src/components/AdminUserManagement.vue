@@ -99,7 +99,7 @@
                     <i class="bi bi-clock-history me-1"></i>History
                   </button>
                   <button
-                    v-if="(u.role || 'donor') === 'donor'"
+                    v-if="(u.role || 'donor') === 'donor' && (u.canDonateNow === false || !isEligible(u.lastDonationDate))"
                     class="ll-btn-secondary btn-sm px-2 d-inline-flex align-items-center justify-content-center dashboard-style-27"
                     style="height: 32px !important; padding-top: 0 !important; padding-bottom: 0 !important; border-radius: var(--ll-radius-sm) !important;"
                     type="button"

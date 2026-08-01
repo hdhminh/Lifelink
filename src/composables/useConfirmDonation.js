@@ -183,13 +183,6 @@ export function useConfirmDonation() {
         })
       })
 
-      const notifCenter = useNotificationCenter()
-      notifCenter.addNotification({
-        title: 'New Emergency Confirmation',
-        body: `${donorData.donorName} (${donorData.bloodType}) confirmed for emergency request`,
-        type: 'success'
-      })
-
       try {
         await addDoc(collection(db, 'notifications'), {
           targetRole: 'admin',
@@ -272,13 +265,6 @@ export function useConfirmDonation() {
           lastConfirmedBy: guestData.guestSessionId,
           updatedAt: serverTimestamp()
         })
-      })
-
-      const notifCenter = useNotificationCenter()
-      notifCenter.addNotification({
-        title: 'New Guest Confirmation',
-        body: `${guestData.donorName || 'Guest'} (${guestData.bloodType}) confirmed for emergency request`,
-        type: 'success'
       })
 
       try {
@@ -657,13 +643,6 @@ export function useConfirmDonation() {
 
       if (newStatus === 'cancelled' && targetReqId && targetDonorId) {
         await removeLiveTrackingForConfirmation(targetReqId, targetDonorId)
-
-        const notifCenter = useNotificationCenter()
-        notifCenter.addNotification({
-          title: 'Registration Cancelled',
-          body: 'Your donation confirmation has been cancelled by Admin.',
-          type: 'warning'
-        })
 
         try {
           await addDoc(collection(db, 'notifications'), {

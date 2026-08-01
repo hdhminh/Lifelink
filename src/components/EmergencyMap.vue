@@ -1178,7 +1178,7 @@ function renderHospitalMarkers() {
           ${
             (props.userConfirmationStatuses && props.userConfirmationStatuses[String(req.id)] === 'cancelled')
               ? `<div class="btn btn-sm text-white fw-bold w-100 d-flex align-items-center justify-content-center gap-1 ll-map-popup-button" style="background-color: #DC2626; font-size: 0.72rem; border-radius: 6px; cursor: default; pointer-events: none;">
-                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-x-circle-fill me-1" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/></svg> Cancelled
+                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 16 16" class="me-1 d-inline-block align-middle"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/></svg> Cancelled
                </div>`
               : (props.userConfirmationStatuses && props.userConfirmationStatuses[String(req.id)] === 'confirmed') || props.confirmedRequestIds.includes(String(req.id))
               ? `<div class="btn btn-sm text-white fw-bold w-100 d-flex align-items-center justify-content-center gap-1 ll-map-popup-button" style="background-color: #198754; font-size: 0.72rem; border-radius: 6px; cursor: default; pointer-events: none;">

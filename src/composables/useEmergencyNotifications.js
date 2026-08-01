@@ -238,15 +238,17 @@ export function useEmergencyNotifications() {
   )
 
   watch(
-    user,
-    (newUser) => {
+    [user, userProfile],
+    () => {
       maybeRegisterToken()
 
-      if (newUser) {
+      if (user.value) {
         if (userProfile.value && !isAdmin.value) listenToNewRequests()
       } else {
         listenToNewRequests()
       }
+
+      listenToNotificationsCollection()
     },
     { immediate: true }
   )

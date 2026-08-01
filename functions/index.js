@@ -106,6 +106,110 @@ exports.onEmergencyCreated = onDocumentCreated('emergencyRequests/{requestId}', 
   }
 })
 
+// Cloud Function Trigger: When a registered donor confirms availability
+exports.onConfirmationCreated = onDocumentCreated('confirmations/{confId}', async (event) => {
+  const snap = event.data
+  if (!snap) return
+  const data = snap.data()
+  if (!data) return
+
+  try {
+    const db = admin.firestore()
+    await db.collection('notifications').add({
+      targetRole: 'admin',
+      title: 'New Emergency Donor Confirmation',
+      message: `${data.donorName || 'A donor'} (${data.bloodType || ''}) confirmed for emergency request.`,
+      type: 'new_confirmation',
+      requestId: data.requestId || '',
+      read: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    })
+    logger.info(`Cloud Function onConfirmationCreated created admin notification for req ${data.requestId}`)
+  } catch (err) {
+    logger.error('Error in onConfirmationCreated Cloud Function:', err)
+  }
+})
+
+// Cloud Function Trigger: When a guest donor confirms availability
+exports.onGuestConfirmationCreated = onDocumentCreated('guestConfirmations/{confId}', async (event) => {
+  const snap = event.data
+  if (!snap) return
+  const data = snap.data()
+  if (!data) return
+
+  try {
+    const db = admin.firestore()
+    await db.collection('notifications').add({
+      targetRole: 'admin',
+      title: 'New Emergency Guest Confirmation',
+      message: `${data.donorName || 'A guest'} (${data.bloodType || ''}) confirmed for emergency request.`,
+      type: 'new_confirmation',
+      requestId: data.requestId || '',
+      read: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    })
+    logger.info(`Cloud Function onGuestConfirmationCreated created admin notification for req ${data.requestId}`)
+  } catch (err) {
+    logger.error('Error in onGuestConfirmationCreated Cloud Function:', err)
+  }
+})
+
+// Cloud Function Trigger: When admin changes donor confirmation status to cancelled
+const { onDocumentUpdated } = require('firebase-functions/v2/firestore')
+
+exports.onConfirmationUpdated = onDocumentUpdated('confirmations/{confId}', async (event) => {
+  const beforeData = event.data?.before?.data()
+  const afterData = event.data?.after?.data()
+  if (!afterData) return
+
+  if (beforeData?.status !== 'cancelled' && afterData.status === 'cancelled') {
+    const targetUserId = afterData.donorId
+    if (!targetUserId) return
+
+    try {
+      const db = admin.firestore()
+      await db.collection('notifications').add({
+        userId: targetUserId,
+        title: 'Registration Cancelled',
+        message: 'Your donation confirmation has been cancelled by Admin.',
+        type: 'cancellation',
+        read: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      })
+      logger.info(`Cloud Function onConfirmationUpdated sent cancellation notification to user ${targetUserId}`)
+    } catch (err) {
+      logger.error('Error in onConfirmationUpdated Cloud Function:', err)
+    }
+  }
+})
+
+// Cloud Function Trigger: When admin changes guest confirmation status to cancelled
+exports.onGuestConfirmationUpdated = onDocumentUpdated('guestConfirmations/{confId}', async (event) => {
+  const beforeData = event.data?.before?.data()
+  const afterData = event.data?.after?.data()
+  if (!afterData) return
+
+  if (beforeData?.status !== 'cancelled' && afterData.status === 'cancelled') {
+    const targetUserId = afterData.guestSessionId || afterData.donorId
+    if (!targetUserId) return
+
+    try {
+      const db = admin.firestore()
+      await db.collection('notifications').add({
+        userId: targetUserId,
+        title: 'Registration Cancelled',
+        message: 'Your donation confirmation has been cancelled by Admin.',
+        type: 'cancellation',
+        read: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      })
+      logger.info(`Cloud Function onGuestConfirmationUpdated sent cancellation notification to guest ${targetUserId}`)
+    } catch (err) {
+      logger.error('Error in onGuestConfirmationUpdated Cloud Function:', err)
+    }
+  }
+})
+
 exports.cleanGhostResponders = onSchedule('every 5 minutes', async () => {
   try {
     const rtdb = admin.database()

@@ -667,10 +667,32 @@ textarea {
 }
 
 .form-control:focus,
-.form-select:focus {
+.form-select:focus,
+.ll-select-button:focus {
   border-color: var(--ll-wine-red) !important;
-  box-shadow: 0 0 0 4px rgba(142, 36, 53, 0.08) !important;
+  box-shadow: 0 0 0 4px rgba(142, 36, 53, 0.15) !important;
   outline: none !important;
+}
+
+.form-select,
+.ll-select-button {
+  accent-color: var(--ll-wine-red) !important;
+}
+
+.form-select option,
+.ll-select-button option {
+  background-color: #ffffff;
+  color: var(--ll-slate-900);
+}
+
+.form-select option:checked,
+.form-select option:hover,
+.form-select option:focus,
+.ll-select-button option:checked,
+.ll-select-button option:hover,
+.ll-select-button option:focus {
+  background-color: var(--ll-wine-red) !important;
+  color: #ffffff !important;
 }
 
 .form-control::placeholder {

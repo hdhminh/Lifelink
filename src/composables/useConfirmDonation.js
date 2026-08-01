@@ -513,7 +513,7 @@ export function useConfirmDonation() {
     })
   }
 
-  async function updateConfirmationStatus(confirmationId, newStatus) {
+  async function updateConfirmationStatus(confirmationId, newStatus, isGuest = false) {
     loading.value = true
     error.value = null
     success.value = false
@@ -523,7 +523,10 @@ export function useConfirmDonation() {
         throw new Error('Invalid confirmation status.')
       }
 
-      const confirmationRef = doc(db, 'confirmations', confirmationId)
+      const collectionName = isGuest ? 'guestConfirmations' : 'confirmations'
+      const confirmationRef = doc(db, collectionName, confirmationId)
+      let targetDonorId = null
+      let targetReqId = null
 
       await runTransaction(db, async (transaction) => {
         const confSnap = await transaction.get(confirmationRef)
@@ -533,6 +536,8 @@ export function useConfirmDonation() {
 
         const confData = confSnap.data()
         const oldStatus = confData.status || 'confirmed'
+        targetReqId = confData.requestId
+        targetDonorId = isGuest ? confData.guestSessionId : confData.donorId
 
         if (oldStatus === newStatus) return
 
@@ -544,7 +549,7 @@ export function useConfirmDonation() {
           updatedAt: serverTimestamp()
         })
 
-        if (newStatus === 'completed' && confData.donorId) {
+        if (newStatus === 'completed' && confData.donorId && !isGuest) {
           const donorRef = doc(db, 'users', confData.donorId)
           transaction.update(donorRef, {
             lastDonationDate: serverTimestamp()
@@ -553,7 +558,14 @@ export function useConfirmDonation() {
 
         if (requestSnap.exists()) {
           const reqData = requestSnap.data()
-          const updates = {}
+          const updates = { updatedAt: serverTimestamp() }
+
+          const currentCount = reqData.confirmedCount || 0
+          if (oldStatus !== 'cancelled' && newStatus === 'cancelled') {
+            updates.confirmedCount = Math.max(0, currentCount - 1)
+          } else if (oldStatus === 'cancelled' && newStatus !== 'cancelled') {
+            updates.confirmedCount = currentCount + 1
+          }
 
           if (oldStatus === 'arrived') {
             updates.arrivedCount = Math.max(0, (reqData.arrivedCount || 0) - 1)
@@ -576,6 +588,11 @@ export function useConfirmDonation() {
           }
         }
       })
+
+      if (newStatus === 'cancelled' && targetReqId && targetDonorId) {
+        await removeLiveTrackingForConfirmation(targetReqId, targetDonorId)
+      }
+
       success.value = true
     } catch (err) {
       error.value = err.message

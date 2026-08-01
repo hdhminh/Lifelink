@@ -1331,17 +1331,12 @@ async function confirmConfirmationStatusChange() {
   const { confId, conf, status } = pendingConfirmationStatusChange.value
   showConfirmationStatusConfirmModal.value = false
   try {
-    if (conf?.participantType === 'guest') {
-      await updateDoc(doc(db, 'guestConfirmations', confId), {
-        status,
-        updatedAt: serverTimestamp()
-      })
-    } else {
-      await updateConfirmationStatus(confId, status)
-    }
+    const isGuest = conf?.participantType === 'guest' || Boolean(conf?.guestSessionId)
+    await updateConfirmationStatus(confId, status, isGuest)
     showToast(`Donation status updated to ${status}.`, 'success')
     await fetchAllConfirmations(true)
-    await loadHistory()
+    await fetchRequests(true)
+    await loadAdminStats(true)
   } catch (err) {
     console.error('Error updating status:', err)
     showToast(err.message || 'Failed to update status.', 'danger')
@@ -2206,21 +2201,6 @@ onUnmounted(() => {
 }
 
 .ll-admin-form-container, .ll-event-form-container {
-  max-width: 720px;
-  padding-top: 3rem;
-  padding-bottom: 3rem;
-}
-
-.ll-select-button:focus {
-  outline: none !important;
-  box-shadow: none !important;
-  border-color: #CBD5E1 !important;
-}
-
-/* Custom scrollbar for tables to look elegant and not touch borders */
-.ll-table-card .table-responsive {
-  overflow-y: auto;
-  background: linear-gradient(to bottom, #F8FAFC 0%, #F8FAFC 52px, #E2E8F0 52px, #E2E8F0 53px, transparent 53px, transparent 100%);
 }
 .ll-table-card .table-responsive::-webkit-scrollbar {
   width: 6px;

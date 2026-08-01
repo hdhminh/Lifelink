@@ -26,8 +26,8 @@ export function useNotificationCenter() {
   function addNotification({ id, title, body, type = 'info', url = '' }) {
     const notifId = id || `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 
-    // Prevent duplicate entries
-    if (notifications.value.some((n) => n.id === notifId || (n.title === title && n.body === body))) {
+    // Prevent duplicate entries by ID only
+    if (notifications.value.some((n) => n.id === notifId)) {
       return
     }
 

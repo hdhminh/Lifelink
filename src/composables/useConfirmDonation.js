@@ -10,6 +10,7 @@ import {
   doc,
   getDoc,
   updateDoc,
+  addDoc,
   collection,
   query,
   where,
@@ -28,6 +29,7 @@ import {
 import { db, rtdb } from '@/firebase.js'
 import { canDonateTo } from '@/utils/bloodCompatibility.js'
 import { COOLDOWN_MS } from '@/composables/useEligibility.js'
+import { useNotificationCenter } from '@/composables/useNotificationCenter.js'
 
 function getConfirmationId(requestId, donorId) {
   return `${requestId}_${donorId}`
@@ -181,6 +183,27 @@ export function useConfirmDonation() {
         })
       })
 
+      const notifCenter = useNotificationCenter()
+      notifCenter.addNotification({
+        title: 'New Emergency Confirmation',
+        body: `${donorData.donorName} (${donorData.bloodType}) confirmed for emergency request`,
+        type: 'success'
+      })
+
+      try {
+        await addDoc(collection(db, 'notifications'), {
+          targetRole: 'admin',
+          title: 'New Emergency Donor Confirmation',
+          message: `${donorData.donorName} (${donorData.bloodType}) confirmed for emergency request`,
+          type: 'new_confirmation',
+          requestId: requestId,
+          read: false,
+          createdAt: serverTimestamp()
+        })
+      } catch (e) {
+        console.warn('[useConfirmDonation] Could not write admin notification:', e)
+      }
+
       success.value = true
       return confirmationId
     } catch (err) {
@@ -250,6 +273,27 @@ export function useConfirmDonation() {
           updatedAt: serverTimestamp()
         })
       })
+
+      const notifCenter = useNotificationCenter()
+      notifCenter.addNotification({
+        title: 'New Guest Confirmation',
+        body: `${guestData.donorName || 'Guest'} (${guestData.bloodType}) confirmed for emergency request`,
+        type: 'success'
+      })
+
+      try {
+        await addDoc(collection(db, 'notifications'), {
+          targetRole: 'admin',
+          title: 'New Emergency Guest Confirmation',
+          message: `${guestData.donorName || 'Guest'} (${guestData.bloodType}) confirmed for emergency request`,
+          type: 'new_confirmation',
+          requestId: requestId,
+          read: false,
+          createdAt: serverTimestamp()
+        })
+      } catch (e) {
+        console.warn('[useConfirmDonation] Could not write guest admin notification:', e)
+      }
 
       success.value = true
       return confirmationId
@@ -613,6 +657,26 @@ export function useConfirmDonation() {
 
       if (newStatus === 'cancelled' && targetReqId && targetDonorId) {
         await removeLiveTrackingForConfirmation(targetReqId, targetDonorId)
+
+        const notifCenter = useNotificationCenter()
+        notifCenter.addNotification({
+          title: 'Registration Cancelled',
+          body: 'Your donation confirmation has been cancelled by Admin.',
+          type: 'warning'
+        })
+
+        try {
+          await addDoc(collection(db, 'notifications'), {
+            userId: targetDonorId,
+            title: 'Registration Cancelled',
+            message: 'Your donation confirmation has been cancelled by Admin.',
+            type: 'cancellation',
+            read: false,
+            createdAt: serverTimestamp()
+          })
+        } catch (e) {
+          console.warn('[useConfirmDonation] Could not write cancellation notification:', e)
+        }
       }
 
       if (targetReqId) {

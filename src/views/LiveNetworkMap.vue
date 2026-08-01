@@ -45,6 +45,7 @@
         :emergency-requests="requests"
         :events="events"
         :confirmed-request-ids="confirmedRequestIds"
+        :user-confirmation-statuses="userConfirmationStatuses"
         :is-visible="true"
         title-text="Live Map"
         @respond="handleRespond"
@@ -90,6 +91,7 @@ const pendingInterestEvent = ref(null)
 const isRemovingEventInterest = ref(false)
 
 const confirmedRequestIds = ref([])
+const userConfirmationStatuses = ref({})
 let unsubscribeConfirmations = null
 
 watch(
@@ -102,26 +104,37 @@ watch(
 
     let userUnsub = null
     let guestUnsub = null
+    const userStatuses = {}
+    const guestStatuses = {}
 
-    let localUserIds = []
-    let localGuestIds = []
-
-    const syncIds = () => {
-      confirmedRequestIds.value = [...new Set([...localUserIds, ...localGuestIds])]
+    const syncStatuses = () => {
+      userConfirmationStatuses.value = { ...userStatuses, ...guestStatuses }
+      confirmedRequestIds.value = Object.keys(userConfirmationStatuses.value).filter(
+        reqId => userConfirmationStatuses.value[reqId] !== 'cancelled'
+      )
     }
 
     if (newUser) {
       const q = query(collection(db, 'confirmations'), where('donorId', '==', newUser.uid))
       userUnsub = onSnapshot(q, (snap) => {
-        localUserIds = snap.docs.map((doc) => doc.data().requestId)
-        syncIds()
+        Object.keys(userStatuses).forEach(k => delete userStatuses[k])
+        snap.docs.forEach(d => {
+          const data = d.data()
+          userStatuses[String(data.requestId)] = data.status || 'confirmed'
+        })
+        syncStatuses()
       })
     }
-    if (newGuestId && !newUser) {
+
+    if (newGuestId) {
       const q2 = query(collection(db, 'guestConfirmations'), where('guestSessionId', '==', newGuestId))
       guestUnsub = onSnapshot(q2, (snap) => {
-        localGuestIds = snap.docs.map((doc) => doc.data().requestId)
-        syncIds()
+        Object.keys(guestStatuses).forEach(k => delete guestStatuses[k])
+        snap.docs.forEach(d => {
+          const data = d.data()
+          guestStatuses[String(data.requestId)] = data.status || 'confirmed'
+        })
+        syncStatuses()
       })
     }
 

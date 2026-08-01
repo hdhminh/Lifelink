@@ -143,6 +143,7 @@
                 :confirming="confirmLoading"
                 :en-route-count="getEnRouteCountForRequest(request.id)"
                 :has-confirmed="confirmedRequestIds.includes(String(request.id))"
+                :user-confirmation-status="userConfirmationStatuses[String(request.id)]"
                 @confirm="handleConfirm(request.id)"
                 @open-maps="handleOpenMaps(request.id)"
                 @edit="openEditForm(request)"
@@ -403,6 +404,7 @@ function handleFocusMap(requestId) {
 }
 
 const confirmedRequestIds = ref([])
+const userConfirmationStatuses = ref({})
 
 let unsubscribeConfirmations = null
 
@@ -414,41 +416,39 @@ watch(
       unsubscribeConfirmations = null
     }
 
-    // We will listen to both collections if possible
     let userUnsub = null
     let guestUnsub = null
-    const localUserIds = []
-    const localGuestIds = []
+    const userStatuses = {}
+    const guestStatuses = {}
 
-    const syncIds = () => {
-      confirmedRequestIds.value = [...new Set([...localUserIds, ...localGuestIds])]
+    const syncStatuses = () => {
+      userConfirmationStatuses.value = { ...userStatuses, ...guestStatuses }
+      confirmedRequestIds.value = Object.keys(userConfirmationStatuses.value).filter(
+        reqId => userConfirmationStatuses.value[reqId] !== 'cancelled'
+      )
     }
 
     if (newUser) {
       const q = query(collection(db, 'confirmations'), where('donorId', '==', newUser.uid))
       userUnsub = onSnapshot(q, (snap) => {
-        localUserIds.length = 0
+        Object.keys(userStatuses).forEach(k => delete userStatuses[k])
         snap.docs.forEach(d => {
           const data = d.data()
-          if (data.status !== 'cancelled') {
-            localUserIds.push(String(data.requestId))
-          }
+          userStatuses[String(data.requestId)] = data.status || 'confirmed'
         })
-        syncIds()
+        syncStatuses()
       })
     }
 
     if (newGuestId) {
       const q2 = query(collection(db, 'guestConfirmations'), where('guestSessionId', '==', newGuestId))
       guestUnsub = onSnapshot(q2, (snap) => {
-        localGuestIds.length = 0
+        Object.keys(guestStatuses).forEach(k => delete guestStatuses[k])
         snap.docs.forEach(d => {
           const data = d.data()
-          if (data.status !== 'cancelled') {
-            localGuestIds.push(String(data.requestId))
-          }
+          guestStatuses[String(data.requestId)] = data.status || 'confirmed'
         })
-        syncIds()
+        syncStatuses()
       })
     }
 

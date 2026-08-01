@@ -230,6 +230,10 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
+  userConfirmationStatuses: {
+    type: Object,
+    default: () => ({})
+  },
   titleText: {
     type: String,
     default: 'Live Map'
@@ -1172,7 +1176,11 @@ function renderHospitalMarkers() {
         <div class="ll-map-popup-actions d-flex flex-column gap-2 mt-2 pt-2 border-top border-slate-200">
           ${getDistanceBadgeHtml(coords.lat, coords.lng, '#8E2435')}
           ${
-            props.confirmedRequestIds.includes(String(req.id))
+            (props.userConfirmationStatuses && props.userConfirmationStatuses[String(req.id)] === 'cancelled')
+              ? `<div class="btn btn-sm text-white fw-bold w-100 d-flex align-items-center justify-content-center gap-1 ll-map-popup-button" style="background-color: #DC2626; font-size: 0.72rem; border-radius: 6px; cursor: default; pointer-events: none;">
+                 <i class="bi bi-x-circle-fill me-1"></i> Cancelled
+               </div>`
+              : (props.userConfirmationStatuses && props.userConfirmationStatuses[String(req.id)] === 'confirmed') || props.confirmedRequestIds.includes(String(req.id))
               ? `<div class="btn btn-sm text-white fw-bold w-100 d-flex align-items-center justify-content-center gap-1 ll-map-popup-button" style="background-color: #198754; font-size: 0.72rem; border-radius: 6px; cursor: default; pointer-events: none;">
                  <i class="bi bi-check-circle-fill me-1"></i> Confirmed
                </div>`

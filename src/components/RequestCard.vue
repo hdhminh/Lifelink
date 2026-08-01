@@ -156,22 +156,33 @@
         </button>
       </div>
 
-        <!-- When confirmed: static non-clickable green badge -->
+      <div v-else-if="!isAdmin">
+        <!-- When confirmation status is Cancelled -->
+        <button
+          v-if="userConfirmationStatus === 'cancelled'"
+          type="button"
+          class="btn w-100 fw-bold text-white d-inline-flex align-items-center justify-content-center gap-1 btn-danger disabled"
+          style="background-color: #DC2626 !important; border-color: #DC2626 !important; opacity: 0.9;"
+        >
+          <i class="bi bi-x-circle-fill me-1"></i> Cancelled
+        </button>
+
+        <!-- When confirmed: show confirmed badge -->
         <div
-          v-if="!isAdmin && hasConfirmed"
+          v-else-if="userConfirmationStatus === 'confirmed' || hasConfirmed"
           class="btn w-100 fw-bold text-white d-inline-flex align-items-center justify-content-center gap-1 ll-confirmed-action"
         >
           <i class="bi bi-check-circle-fill me-1"></i> Confirmed
         </div>
 
-        <!-- When not confirmed: normal confirm flow -->
+        <!-- When not confirmed or deleted: normal confirm flow -->
         <button
-          v-else-if="!isAdmin"
+          v-else
           type="button"
           class="btn w-100 fw-bold"
           :class="[
             'll-btn-primary',
-            { 'll-btn-disabled': (!eligibility.eligible || isExpired) && stillNeeded > 0 && !hasConfirmed }
+            { 'll-btn-disabled': (!eligibility.eligible || isExpired) && stillNeeded > 0 }
           ]"
           :disabled="stillNeeded <= 0 || confirming || !eligibility.eligible || isExpired"
           @click="emit('confirm')"
@@ -196,6 +207,8 @@
               : `Cooldown (${eligibility.daysLeft}d left)`
           }}</span>
         </button>
+      </div>
+
       <div
         v-if="!isAdmin && !eligibility.eligible"
         class="text-center mt-2 text-warning small font-weight-500"
@@ -241,7 +254,8 @@ const props = defineProps({
   isAdmin: { type: Boolean, default: false },
   confirming: { type: Boolean, default: false },
   enRouteCount: { type: Number, default: 0 },
-  hasConfirmed: { type: Boolean, default: false }
+  hasConfirmed: { type: Boolean, default: false },
+  userConfirmationStatus: { type: String, default: null }
 })
 
 const emit = defineEmits([
